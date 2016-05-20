@@ -5,7 +5,7 @@ from xml.dom import minidom
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
-def upperfist(word):
+def upperfirst(word):
 	return word[0].upper() + word[1:]
 
 ###############################################################################
@@ -37,7 +37,7 @@ class Phpclass:
 		return '\\'.join(self.class_namespace.split('\\')[:-1])
 
 	def upper_class_namespace(self, class_namespace):
-		return '\\'.join(upperfist(n) for n in class_namespace.split('\\'))
+		return '\\'.join(upperfirst(n) for n in class_namespace.split('\\'))
 	
 	def add_method(self, method):
 		self.methods = set(list(self.methods) + list([method]))
@@ -143,7 +143,7 @@ class Xmlnode:
 			if node in self.nodes and node.nodes:
 				index = self.nodes.index(node)
 				self.nodes[index].add_nodes(node.nodes)
-			else:
+			elif node not in self.nodes:
 				self.nodes.append(node)
 
 	def generate(self, element=None):
@@ -205,8 +205,8 @@ class StaticFile:
 class Module:
 
 	def __init__(self, package, name):
-		self.package = upperfist(package)
-		self.name = upperfist(name)
+		self.package = upperfirst(package)
+		self.name = upperfirst(name)
 		self._xmls = {}
 		self._classes = {}
 		self._static_files = {}
@@ -271,7 +271,7 @@ class Module:
 		current_xml = self._xmls.get(xml_file)
 		if current_xml:
 			if current_xml != node:
-				raise Exception('Cant merge XML nodes roor node must be the same')
+				raise Exception('Cant merge XML nodes root node must be the same')
 			current_xml.add_nodes(node.nodes)
 		else:
 			self._xmls[xml_file] = node
