@@ -3,7 +3,7 @@ from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet
 
 class PluginSnippet(Snippet):
 
-	def add(self, classname, sortorder=10, disabled='false', methodname='getName', plugintype='after'):
+	def add(self, classname, sortorder, disabled, methodname, plugintype):
 		file = 'etc/di.xml'
 
 		plugin_name = self.module_name.lower() + '_' + classname.lower().replace('\\','_')

@@ -116,11 +116,12 @@ class Phpmethod:
 ###############################################################################
 class Xmlnode:
 
-	def __init__(self, node_name, name=None, attributes=None, nodes=None, node_text=None):
+	def __init__(self, node_name, name=None, attributes=None, nodes=None, node_text=None, match_attributes= {'name'}):
 		self.node_name = node_name
 		self.name = name
 		self.node_text = node_text
 		self.attributes = attributes if attributes else {}
+		self.match_attributes = match_attributes if match_attributes else {}
 		self.nodes = nodes if nodes else []
 
 	def __str__(self):
@@ -129,8 +130,11 @@ class Xmlnode:
 	def __eq__(self, other):
 		if self.node_name != other.node_name:
 			return False
-		if self.name != other.name:
-			return False
+		for key in self.match_attributes:	
+			if key in self.attributes:
+				if self.attributes[key] != other.attributes[key]:
+					return False
+
 		return True
 
 	def output_tree(self, depth=0):
