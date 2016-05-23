@@ -116,9 +116,10 @@ class Phpmethod:
 ###############################################################################
 class Xmlnode:
 
-	def __init__(self, node_name, name=None, attributes=None, nodes=None):
+	def __init__(self, node_name, name=None, attributes=None, nodes=None, node_text=None):
 		self.node_name = node_name
 		self.name = name
+		self.node_text = node_text
 		self.attributes = attributes if attributes else {}
 		self.nodes = nodes if nodes else []
 
@@ -155,6 +156,9 @@ class Xmlnode:
 
 		if self.name:
 			el.set('name', self.name)
+		
+		if self.node_text:
+			el.text = self.node_text
 
 		for key, value in self.attributes.items():
 			el.set(str(key), str(value))
