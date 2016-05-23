@@ -3,10 +3,9 @@ from collections import defaultdict
 from xml.etree.ElementTree import Element, SubElement, tostring, ElementTree
 from xml.dom import minidom
 
-TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
+from mage2gen.utils import upperfirst
 
-def upperfirst(word):
-	return word[0].upper() + word[1:]
+TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
 ###############################################################################
 # PHP Class
@@ -42,10 +41,7 @@ class Phpclass:
 	def add_method(self, method):
 		self.methods = set(list(self.methods) + list([method]))
 
-	def generate(self):
-		with open(self.template_file, 'r') as tmpl:
-			template = tmpl.read()
-
+	def context_data(self):
 		methods = '\n\n'.join(m.generate() for m in self.methods)
 		if methods:
 			methods = '\n' + methods
@@ -54,12 +50,20 @@ class Phpclass:
 		if attributes:
 			attributes = '\n\t' + attributes
 
+		return {
+			'namespace': self.namespace,
+			'class_name': self.class_name,
+			'methods': methods,
+			'extends': ' extends {}'.format(self.extends) if self.extends else '',
+			'attributes': attributes
+		}
+
+	def generate(self):
+		with open(self.template_file, 'r') as tmpl:
+			template = tmpl.read()
+
 		return template.format(
-			namespace=self.namespace,
-			class_name=self.class_name,
-			methods=methods,
-			extends=' extends {}'.format(self.extends) if self.extends else '',
-			attributes=attributes
+			**self.context_data()
 		)
 
 	def save(self, root_location):
