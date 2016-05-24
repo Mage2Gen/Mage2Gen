@@ -36,7 +36,7 @@ class Phpclass:
 		return '\\'.join(self.class_namespace.split('\\')[:-1])
 
 	def upper_class_namespace(self, class_namespace):
-		return '\\'.join(upperfirst(n) for n in class_namespace.split('\\'))
+		return '\\'.join(upperfirst(n) for n in class_namespace.strip('\\').split('\\'))
 	
 	def add_method(self, method):
 		self.methods = set(list(self.methods) + list([method]))
