@@ -21,5 +21,5 @@ class TestPhp(unittest.TestCase):
 
 		merged_class = php_class1 + php_class2
 
-		self.assertEqual(len(merged_class.methods), 3 )
+		self.assertEqual(len(merged_class.methods), 2)
 		
