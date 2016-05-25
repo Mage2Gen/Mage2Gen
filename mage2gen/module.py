@@ -131,10 +131,8 @@ class Xmlnode:
 		if self.node_name != other.node_name:
 			return False
 		for key in self.match_attributes:	
-			if key in self.attributes:
-				if self.attributes[key] != other.attributes[key]:
+			if key in self.attributes and self.attributes[key] != other.attributes[key]:
 					return False
-
 		return True
 
 	def output_tree(self, depth=0):

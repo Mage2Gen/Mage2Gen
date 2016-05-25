@@ -19,6 +19,9 @@ controller_snippet = ControllerSnippet(module)
 c.add(frontname='mage2gen', section='order', action='json')
 c.add(frontname='mage2gen', section='order', action='json', adminhtml=True)
 
+
+plugin_snippet.add(classname='Magento\Catalog\Model\Product', sortorder='10', disabled='false', methodname='getName', plugintype='around')
+
 m.generate_module('to_folder')
 ```
 
