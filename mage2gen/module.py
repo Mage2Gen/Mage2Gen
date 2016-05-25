@@ -3,10 +3,9 @@ from collections import defaultdict
 from xml.etree.ElementTree import Element, SubElement, tostring, ElementTree
 from xml.dom import minidom
 
-TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
+from mage2gen.utils import upperfirst
 
-def upperfirst(word):
-	return word[0].upper() + word[1:]
+TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
 ###############################################################################
 # PHP Class
@@ -37,15 +36,12 @@ class Phpclass:
 		return '\\'.join(self.class_namespace.split('\\')[:-1])
 
 	def upper_class_namespace(self, class_namespace):
-		return '\\'.join(upperfirst(n) for n in class_namespace.split('\\'))
+		return '\\'.join(upperfirst(n) for n in class_namespace.strip('\\').split('\\'))
 	
 	def add_method(self, method):
 		self.methods = set(list(self.methods) + list([method]))
 
-	def generate(self):
-		with open(self.template_file, 'r') as tmpl:
-			template = tmpl.read()
-
+	def context_data(self):
 		methods = '\n\n'.join(m.generate() for m in self.methods)
 		if methods:
 			methods = '\n' + methods
@@ -54,12 +50,20 @@ class Phpclass:
 		if attributes:
 			attributes = '\n\t' + attributes
 
+		return {
+			'namespace': self.namespace,
+			'class_name': self.class_name,
+			'methods': methods,
+			'extends': ' extends {}'.format(self.extends) if self.extends else '',
+			'attributes': attributes
+		}
+
+	def generate(self):
+		with open(self.template_file, 'r') as tmpl:
+			template = tmpl.read()
+
 		return template.format(
-			namespace=self.namespace,
-			class_name=self.class_name,
-			methods=methods,
-			extends=' extends {}'.format(self.extends) if self.extends else '',
-			attributes=attributes
+			**self.context_data()
 		)
 
 	def save(self, root_location):
@@ -188,12 +192,22 @@ class Xmlnode:
 ###############################################################################
 class StaticFile:
 
-	def __init__(self, file_name, body=None):
+	def __init__(self, file_name, body=None, template_file='staticfile.tmpl', context_data=None):
 		self.file_name = file_name
-		self.body = body if body else ''
+		self.template_file = os.path.join(TEMPLATE_DIR, template_file)
+		self._context_data = context_data if context_data else {}
+		self._context_data['body'] = body if body else ''
+
+	def context_data(self):
+		return self._context_data
 
 	def generate(self):
-		return self.body
+		with open(self.template_file, 'r') as tmpl:
+			template = tmpl.read()
+
+		return template.format(
+			**self.context_data()
+		)
 
 	def save(self, file_path):
 		try:
@@ -223,6 +237,8 @@ class Module:
 		])
 		self.add_xml('etc/module.xml', etc_module)
 
+		self.add_static_file('.', StaticFile('registration.php', template_file='registration.tmpl', context_data={'module_name':self.module_name}))
+
 	@property
 	def module_name(self):
 	    return '{}_{}'.format(self.package, self.name)
@@ -241,14 +257,7 @@ class Module:
 		try:
 			os.makedirs(location)
 		except Exception:
-			pass
-
-		# Generate registration
-		with open(os.path.join(TEMPLATE_DIR, 'registration.tmpl'), 'r') as tmpl:
-			template = tmpl.read()
-
-		with open(os.path.join(location, 'registration.php'), 'w+') as reg_file:
-			reg_file.writelines(template.format(module_name=self.module_name))		
+			pass	
 
 		for class_name, phpclass in self._classes.items():
 			phpclass.save(root_location)

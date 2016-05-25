@@ -1,3 +1,7 @@
 __pycache__/
 src/var/
 *.py[cod]
+
+build/
+dist/
+*.egg-info/
