@@ -5,3 +5,4 @@ src/var/
 build/
 dist/
 *.egg-info/
+*.swp
