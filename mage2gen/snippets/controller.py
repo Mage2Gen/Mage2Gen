@@ -7,7 +7,7 @@ class ControllerSnippet(Snippet):
 		file = 'etc/{}/routes.xml'.format('adminhtml' if adminhtml else 'frontend')
 
 		# Create config router
-		module = Xmlnode('module', self.module_name)
+		module = Xmlnode('module', attributes={'name': self.module_name})
 		if adminhtml:
 			module.attributes['before'] = 'Magento_Backend'
 
@@ -59,8 +59,9 @@ class ControllerSnippet(Snippet):
 		# Add layout xml
 		layout_xml = Xmlnode('page', attributes={'layout':"admin-1column" if adminhtml else "1column", 'xsi:noNamespaceSchemaLocation':"urn:magento:framework:View/Layout/etc/page_configuration.xsd"}, nodes=[
 			Xmlnode('body', nodes=[
-				Xmlnode('referenceContainer', 'content', nodes=[
-					Xmlnode('block', "{}.{}".format(section, action), attributes={
+				Xmlnode('referenceContainer', attributes={'name': 'content'}, nodes=[
+					Xmlnode('block', attributes={
+						'name': "{}.{}".format(section, action), 
 						'class': block.class_namespace,
 						'template': "{}::{}_{}.phtml".format(self.module_name, section, action)
 					})

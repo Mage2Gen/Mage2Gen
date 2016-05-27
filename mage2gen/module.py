@@ -120,12 +120,11 @@ class Phpmethod:
 ###############################################################################
 class Xmlnode:
 
-	def __init__(self, node_name, name=None, attributes=None, nodes=None, node_text=None, match_attributes= {'name'}):
+	def __init__(self, node_name, attributes=None, nodes=None, node_text=None, match_attributes=None):
 		self.node_name = node_name
-		self.name = name
 		self.node_text = node_text
 		self.attributes = attributes if attributes else {}
-		self.match_attributes = match_attributes if match_attributes else {}
+		self.match_attributes = match_attributes if match_attributes else ['name', 'id']
 		self.nodes = nodes if nodes else []
 
 	def __str__(self):
@@ -140,7 +139,7 @@ class Xmlnode:
 		return True
 
 	def output_tree(self, depth=0):
-		output = ("  " * depth) + "<{} name='{}' {}>\n".format(self.node_name, self.name, self.attributes)
+		output = ("  " * depth) + "<{} {}>\n".format(self.node_name, self.attributes)
 		for node in self.nodes:
 			output += node.output_tree(depth + 1)
 		return output
@@ -160,9 +159,6 @@ class Xmlnode:
 			el = Element(self.node_name)
 			el.set('xmlns:xsi',"http://www.w3.org/2001/XMLSchema-instance")
 
-		if self.name:
-			el.set('name', self.name)
-		
 		if self.node_text:
 			el.text = self.node_text
 
@@ -233,7 +229,7 @@ class Module:
 
 		# minimum requirements for Magento2 module
 		etc_module = Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation':"urn:magento:framework:Module/etc/module.xsd"}, nodes=[
-			Xmlnode('module', self.module_name, attributes={'setup_version': '1.0.0'})
+			Xmlnode('module', attributes={'name': self.module_name, 'setup_version': '1.0.0'})
 		])
 		self.add_xml('etc/module.xml', etc_module)
 
