@@ -11,16 +11,17 @@ Example usage
 ============
 ```python
 from mage2gen import Module
-from mage2gen.snippets import ControllerSnippet
+from mage2gen.snippets import ControllerSnippet, PluginSnippet
 
 module = Module('Mage2gen', 'Module1')
-controller_snippet = ControllerSnippet(module)
 
+controller_snippet = ControllerSnippet(module)
 c.add(frontname='mage2gen', section='order', action='json')
 c.add(frontname='mage2gen', section='order', action='json', adminhtml=True)
 
-
-plugin_snippet.add(classname='Magento\Catalog\Model\Product', sortorder='10', disabled='false', methodname='getName', plugintype='around')
+plugin_snippet = PluginSnippet(m)
+plugin_snippet.add('Magento\Catalog\Model\Product', 'getName')
+plugin_snippet.add('Magento\Catalog\Model\Product', 'getName' sortorder=10, disabled=True, plugintype=PluginSnippet.TYPE_AROUND)
 
 m.generate_module('to_folder')
 ```
