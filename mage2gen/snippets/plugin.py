@@ -1,5 +1,6 @@
 # A Magento 2 module generator library
-# Copyright (C) 2016 Maikel Martens
+# Copyright (C) 2016 Derrick Heesbeen
+# Copyright (C) 2016 Maikel Martens Changed add API and refactor code
 #
 # This file is part of Mage2Gen.
 #
