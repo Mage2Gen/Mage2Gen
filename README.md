@@ -1,6 +1,6 @@
 # Mage2Gen
 
-Mage2Gen is a python librarie for generating Magento 2 modules. It is build to be extandeble with snippets for adding more complex Magento 2 modules.
+Mage2Gen is a python library for generating Magento 2 modules. It is build to be extandeble with snippets for adding more complex Magento 2 modules.
 
 Current Supported snippets 
 ==========================
