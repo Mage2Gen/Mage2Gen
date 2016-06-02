@@ -17,3 +17,4 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 from .controller import ControllerSnippet
 from .plugin import PluginSnippet
+from .observer import ObserverSnippet
