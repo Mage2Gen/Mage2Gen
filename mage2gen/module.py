@@ -29,11 +29,12 @@ TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 ###############################################################################
 class Phpclass:
 
-	def __init__(self, class_namespace, extends=None, attributes=None):
+	def __init__(self, class_namespace, extends=None, implements=None, attributes=None):
 		self.class_namespace = self.upper_class_namespace(class_namespace)
 		self.methods = set()
 		self.template_file = os.path.join(TEMPLATE_DIR, 'class.tmpl')
 		self.extends = extends
+		self.implements = implements if implements else []
 		self.attributes = attributes if attributes else []
 
 	def __eq__(self, other):
@@ -72,6 +73,7 @@ class Phpclass:
 			'class_name': self.class_name,
 			'methods': methods,
 			'extends': ' extends {}'.format(self.extends) if self.extends else '',
+			'implements': ' implements {}'.format(', '.join(self.implements)) if self.implements else '',
 			'attributes': attributes
 		}
 
