@@ -20,18 +20,42 @@ from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet
 
 class SystemSnippet(Snippet):
 
-	def add(self, tab, section, group, field, section_options, group_options, field_options):
+	def add(self, tab, section, group, field, tab_options, section_options, group_options, field_options):
+
+		resource_id = self.module_name+'::config_'+self.module_name.lower()
 
 		file = 'etc/adminhtml/system.xml'	
 
+		if tab_options.get('new') :
+			tabxml = Xmlnode('tab',attributes={'id':tab,'translate':tab_options.get('translate','label'),'sortOrder':tab_options.get('sortOrder',999)},nodes=[
+						Xmlnode('label',node_text=tab_options.get('label',tab))	
+					 ])
+		else:
+			tabxml = False
+
+		if field_options.get('source_model'):
+			source_model_xml = Xmlnode('source_model',node_text=field_options.get('source_model'))
+		else:
+			source_model_xml = False
+
+		if field_options.get('backend_model'):
+			backend_model_xml = Xmlnode('backend_model',node_text=field_options.get('backend_model'))
+		else:
+			backend_model_xml = False			
+
 		config = Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Config:etc/system_file.xsd"}, nodes=[
 				Xmlnode('system',  nodes=[
+					tabxml,
 					Xmlnode('section',attributes={'id':section,'sortOrder':field_options.get('sortorder',10),'showInWebsite':field_options.get('show_in_website',1),'showInStore':field_options.get('show_in_store',1),'showInDefault':field_options.get('show_in_default',1),'translate':'label'},match_attributes={'id'},nodes=[
+						Xmlnode('label',node_text=section_options.get('label',section)),
+						Xmlnode('tab',node_text=tab),
+						Xmlnode('resource',node_text=resource_id),
 						Xmlnode('group', attributes={'id':group,'sortOrder':field_options.get('sortorder',10),'showInWebsite':field_options.get('show_in_website',1),'showInStore':field_options.get('show_in_store',1),'showInDefault':field_options.get('show_in_default',1),'translate':'label'},match_attributes={'id'},nodes=[
 							Xmlnode('field', attributes={'id':field,'type':field_options.get('type','text'),'sortOrder':field_options.get('sortorder',10),'showInWebsite':field_options.get('show_in_website',1),'showInStore':field_options.get('show_in_store',1),'showInDefault':field_options.get('show_in_default',1),'translate':'label'},match_attributes={'id'},nodes=[
-								Xmlnode('label',node_text=field_options.get('label','label')),
-								Xmlnode('source_model',node_text=field_options.get('source_model')),
-								Xmlnode('comment',node_text=field_options.get('comment'))
+								Xmlnode('label',node_text=field_options.get('label',field)),
+								Xmlnode('comment',node_text=field_options.get('comment')),
+								source_model_xml,
+								backend_model_xml
 							])
 						])	
 					])
@@ -46,9 +70,11 @@ class SystemSnippet(Snippet):
 			Xmlnode('acl',nodes=[
 				Xmlnode('resources',nodes=[
 					Xmlnode('resource',attributes={'id':'Magento_Backend::admin'},match_attributes={'id'},nodes=[
-						Xmlnode('resource',attributes={'id':'Magento_Backend::stores_settings'},match_attributes={'id'},nodes=[
-							Xmlnode('resource',attributes={'id':'Magento_Config::config'},match_attributes={'id'},nodes=[
-								Xmlnode('resource',attributes={'id':'Experius_Core::experius_core'},match_attributes={'id'})
+						Xmlnode('resource',attributes={'id':'Magento_Backend::stores'},nodes=[
+							Xmlnode('resource',attributes={'id':'Magento_Backend::stores_settings'},match_attributes={'id'},nodes=[
+								Xmlnode('resource',attributes={'id':'Magento_Config::config'},match_attributes={'id'},nodes=[
+									Xmlnode('resource',attributes={'id':resource_id},match_attributes={'id'})
+								])
 							])
 						])
 					])
@@ -61,9 +87,11 @@ class SystemSnippet(Snippet):
 		config_file = 'etc/config.xml'
 		
 		default_config = Xmlnode('config',attributes={'xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Store:etc/config.xsd"},nodes=[
-			Xmlnode(section,nodes=[
-				Xmlnode(group,nodes=[
-					Xmlnode(field,node_text=field_options.get('default'))
+			Xmlnode('default',nodes=[
+				Xmlnode(section,nodes=[
+					Xmlnode(group,nodes=[
+						Xmlnode(field,node_text=field_options.get('default'))
+					])
 				])
 			])
 		]);
