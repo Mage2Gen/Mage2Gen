@@ -16,7 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from collections import defaultdict
+import json
+from collections import defaultdict, OrderedDict
 from xml.etree.ElementTree import Element, SubElement, tostring, ElementTree
 from xml.dom import minidom
 
@@ -29,11 +30,12 @@ TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 ###############################################################################
 class Phpclass:
 
-	def __init__(self, class_namespace, extends=None, attributes=None):
+	def __init__(self, class_namespace, extends=None, implements=None, attributes=None):
 		self.class_namespace = self.upper_class_namespace(class_namespace)
 		self.methods = set()
 		self.template_file = os.path.join(TEMPLATE_DIR, 'class.tmpl')
 		self.extends = extends
+		self.implements = implements if implements else []
 		self.attributes = attributes if attributes else []
 
 	def __eq__(self, other):
@@ -72,6 +74,7 @@ class Phpclass:
 			'class_name': self.class_name,
 			'methods': methods,
 			'extends': ' extends {}'.format(self.extends) if self.extends else '',
+			'implements': ' implements {}'.format(', '.join(self.implements)) if self.implements else '',
 			'attributes': attributes
 		}
 
@@ -241,9 +244,10 @@ class StaticFile:
 ###############################################################################
 class Module:
 
-	def __init__(self, package, name):
+	def __init__(self, package, name, description=''):
 		self.package = upperfirst(package)
 		self.name = upperfirst(name)
+		self.description = description
 		self._xmls = {}
 		self._classes = {}
 		self._static_files = {}
@@ -255,6 +259,24 @@ class Module:
 		self.add_xml('etc/module.xml', etc_module)
 
 		self.add_static_file('.', StaticFile('registration.php', template_file='registration.tmpl', context_data={'module_name':self.module_name}))
+		self._composer = OrderedDict()
+		self._composer['name'] = '{}/{}'.format(self.package.lower(), self.name.lower())
+		self._composer['authors'] = [
+				{
+					'name': 'Mage2Gen',
+					'email': 'mail@mage2gen'
+				}
+			]
+		self._composer['minimum-stability'] = 'dev'
+		self._composer['require'] = {}
+		self._composer['autoload'] = {
+		        'files': [
+		            'registration.php'
+		        ],
+		        'psr-4': {
+		            "{}\\{}\\".format(self.package, self.name): ""
+		        }
+		    }
 
 	@property
 	def module_name(self):
@@ -274,7 +296,10 @@ class Module:
 		try:
 			os.makedirs(location)
 		except Exception:
-			pass	
+			pass
+
+		# Add composer as static file
+		self.add_static_file('', StaticFile('composer.json', body=json.dumps(self._composer, indent=4)))
 
 		for class_name, phpclass in self._classes.items():
 			phpclass.save(root_location)
