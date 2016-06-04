@@ -138,6 +138,10 @@ class Phpmethod:
 class Xmlnode:
 
 	def __init__(self, node_name, attributes=None, nodes=None, node_text=None, match_attributes=None):
+		
+		if nodes : 
+			nodes = [x for x in nodes if x]
+
 		self.node_name = node_name
 		self.node_text = node_text
 		self.attributes = attributes if attributes else {}
