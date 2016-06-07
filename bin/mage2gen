@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import sys
+import os
+import json
 import cmd
 import inspect
 import mage2gen
@@ -106,8 +108,37 @@ class Mage2Gen(cmd.Cmd):
 			for kwargs in kwargss:
 				snippet.add(**kwargs)
 
-		# generate 
-		module.generate_module('gen')
+		# generate
+		path = ''
+		lookup_path = os.getcwd()
+		while True:
+			if lookup_path == os.path.dirname(lookup_path):
+				break
+
+			composer_path = os.path.join(lookup_path, 'composer.json')
+			try:
+				composer = json.loads(open(composer_path).read())
+				if composer['name'] == 'magento/project-community-edition':
+					path = os.path.join(lookup_path, 'app', 'code')
+					break
+			except Exception:
+				pass
+
+			lookup_path = os.path.dirname(lookup_path)
+
+		path = self.ask_input('Generate path', default=path)
+		module.generate_module(path)
+
+	def do_info(self, line):
+		"""Show current module configuration"""
+		print('Module: {}/{}'.format(self.package_name, self.module_name))
+		print('Added Snippets:')
+		for SnippetClass, kwargss in self._module_snippets.items():
+			print('---------------------------------------')
+			print('{}'.format(SnippetClass.__name__.lower().replace('snippet', '')))
+			print('---------------------------------------')
+			for index, kwargs in enumerate(kwargss):
+				print(index, kwargs)
 
 
 	def do_EOF(self, line):
