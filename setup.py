@@ -11,6 +11,7 @@ setup(
 	name = 'Mage2Gen',
 	packages = ['mage2gen', 'mage2gen.snippets'],
 	package_data={'mage2gen': ['templates/*.tmpl']},
+	scripts=['bin/mage2gen'],
 	version = '0.3',
 	description = 'Magento 2 module generator',
 	long_description=readme(),
