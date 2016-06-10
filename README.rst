@@ -104,12 +104,57 @@ Base snippet
 
 .. code:: python
 
-    python from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet
+    from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet
 
-    class CustomSnippet(Snippet): 
-        def add(self, **params): # create and add PHP classes, XML and static files to the module
+    class CustomSnippet(Snippet):
+        def add(self, **params):
+            # create and add PHP classes, XML and static files to the module
+            
+            # Get module name (<package>_<module>)
+            self.module_name
+            
+            # Add PHP class to module (You can add the same class with different 
+            # methods and attributes multiple times, Mage2Gen will merge them to 
+            # one class with all the methods and attributes).
+            self.add_class(PhpClassObject)
+            
+            # Add xml to module (Same as with the PHP class, you can add multiple
+            # XML nodes for the same file !importend root node must be the same.
+            # A XML node will be merge when the node name and the XML attributes 
+            # name or id  are the same. When creating node you can say witch attributes
+            # make the node unique, default is name and id).
+            self.add_xml('full/path/to/xml/with/file/name', XmlNodeObject)
+            
+            # Add static file
+            self.add_static_file('path/to/file/location', StaticFileObject)
 
-        # Get module name (<package>_<module
+Adding a PHP class
+~~~~~~~~~~~~~~~~~~
+
+TODO
+
+Adding XML file
+~~~~~~~~~~~~~~~
+
+TODO
+
+Adding Static file
+~~~~~~~~~~~~~~~~~~
+
+TODO
+
+TODO
+====
+
+-  Increase test coverage.
+-  [Nice to have] CLI interface for creating modules.
+-  Adding more snippets:
+    -  system.xml (Worked on by Derrick Heesbeen)
+    -  Model attributes
+    -  Custom models with adminhtml grid
+    -  Adding fields to checkout process
+    -  Shipping methods
+    -  Payment methods
 
 .. _docs: http://devdocs.magento.com/guides/v2.0/extension-dev-guide/plugins.html
 
