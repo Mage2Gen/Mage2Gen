@@ -5,6 +5,12 @@ Mage2Gen is a python library for generating Magento 2 modules. It is
 build to be extandeble with snippets for creating more complex Magento 2
 modules based on simple input.
 
+Installation
+============
+To install the Python library and the command line utility, run:
+
+    pip install mage2gen
+
 Example usage
 =============
 
