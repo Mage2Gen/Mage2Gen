@@ -22,9 +22,9 @@ from mage2gen.utils import upperfirst
 
 
 class ObserverSnippet(Snippet):
-	SCOPE_ALL = 0
-	SCOPE_FRONTEND = 1
-	SCOPE_ADMINHTML = 2
+	SCOPE_ALL = 'all'
+	SCOPE_FRONTEND = 'frontend'
+	SCOPE_ADMINHTML = 'backend'
 	
 	def add(self, event, scope=SCOPE_ALL):
 		split_event = event.split('_')
