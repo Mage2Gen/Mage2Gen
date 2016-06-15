@@ -1,5 +1,5 @@
 # A Magento 2 module generator library
-# Copyright (C) 2016 Maikel Martens
+# Copyright (C) 2016 Derrick Heesbeen
 #
 # This file is part of Mage2Gen.
 #
@@ -15,11 +15,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-from .controller import ControllerSnippet
-from .plugin import PluginSnippet
-from .system import SystemSnippet
-from .observer import ObserverSnippet
-from .install import InstallSnippet
-from .console import ConsoleSnippet
-from .shipping import ShippingSnippet
-from .language import LanguageSnippet
+import os
+from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet
+
+class LanguageSnippet(Snippet):
+
+	def add(self,languages):
+
+		for language in languages:
+			self.add_static_file('i18n', StaticFile(language+'.csv','string,stringtranslated'))
