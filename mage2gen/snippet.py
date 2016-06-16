@@ -15,10 +15,54 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-class Snippet:
+import inspect
+from collections import namedtuple
+
+SnippetParam = namedtuple('SnippetParam', 'name description required default choises yes_no')
+SnippetParam.__new__.__defaults__ = ('', False, None, None, None)
+
+class MetaClass(type):
+	snippets = []
+	
+	def __new__(cls, clsname, bases, attrs):
+		newclass = super(MetaClass, cls).__new__(cls, clsname, bases, attrs)
+		if clsname != 'Snippet':
+			MetaClass.snippets.append(newclass)
+		return newclass
+
+class Snippet(metaclass=MetaClass):
+	snippet_name = None
+	description = ''
 
 	def __init__(self, module):
 		self._module = module
+
+	@classmethod
+	def snippets(cls):
+		return type(cls).snippets
+
+	@property
+	def name(self):
+		if self.snippet_name:
+			return sel.snippet_name
+		return self.__class__.__name__.lower().replace('snippet', '').capitalize()
+	
+
+	def params(self):
+		params = []
+		for arg_name, arg in inspect.signature(self.add).parameters.items():
+			if arg_name == 'self':
+				continue
+			default = arg.default if arg.default != arg.empty else None
+			
+			params.append(SnippetParam(
+				name=arg_name, 
+				required=arg.default == arg.empty,
+				default=default,
+				yes_no=isinstance(default, bool),
+				))
+		return params
+
 
 	@property
 	def module_name(self):
