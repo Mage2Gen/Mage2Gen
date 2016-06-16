@@ -45,7 +45,7 @@ class Snippet(metaclass=MetaClass):
 	def name(cls):
 		if cls.snippet_name:
 			return sel.snippet_name
-		return cls.__class__.__name__.lower().replace('snippet', '').capitalize()
+		return cls.__name__.lower().replace('snippet', '').capitalize()
 	
 	@classmethod
 	def params(cls):
