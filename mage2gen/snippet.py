@@ -41,16 +41,16 @@ class Snippet(metaclass=MetaClass):
 	def snippets(cls):
 		return type(cls).snippets
 
-	@property
-	def name(self):
-		if self.snippet_name:
+	@classmethod
+	def name(cls):
+		if cls.snippet_name:
 			return sel.snippet_name
-		return self.__class__.__name__.lower().replace('snippet', '').capitalize()
+		return cls.__class__.__name__.lower().replace('snippet', '').capitalize()
 	
-
-	def params(self):
+	@classmethod
+	def params(cls):
 		params = []
-		for arg_name, arg in inspect.signature(self.add).parameters.items():
+		for arg_name, arg in inspect.signature(cls.add).parameters.items():
 			if arg_name == 'self':
 				continue
 			default = arg.default if arg.default != arg.empty else None
