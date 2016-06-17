@@ -17,12 +17,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet
+from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 class PluginSnippet(Snippet):
 	TYPE_BEFORE = 'before'
 	TYPE_AFTER = 'after'
 	TYPE_AROUND = 'around'
+
+	SCOPE_CHOISES = [
+		(TYPE_BEFORE, 'Before'),
+		(TYPE_AFTER, 'After'),
+		(TYPE_AROUND, 'Around'),
+	]
 
 	def add(self, classname, methodname, plugintype=TYPE_AFTER, sortorder=10, disabled=False):
 		# Add class
@@ -58,4 +64,14 @@ class PluginSnippet(Snippet):
 		])
 
 		self.add_xml('etc/di.xml', config)
+
+	@classmethod
+	def params(cls):
+		return [
+			SnippetParam(name='classname', required=True),
+			SnippetParam(name='methodname', required=True),
+			SnippetParam(name='plugintype', choises=cls.SCOPE_CHOISES, default=cls.TYPE_AFTER),
+			SnippetParam(name='sortorder', default=10),
+			SnippetParam(name='disabled', yes_no=True),
+		]
 		

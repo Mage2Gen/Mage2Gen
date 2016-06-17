@@ -17,7 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
 
-from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet
+from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 from mage2gen.utils import upperfirst
 
 
@@ -25,6 +25,12 @@ class ObserverSnippet(Snippet):
 	SCOPE_ALL = 'all'
 	SCOPE_FRONTEND = 'frontend'
 	SCOPE_ADMINHTML = 'backend'
+
+	SCOPE_CHOISES = [
+		(SCOPE_ALL, 'All'),
+		(SCOPE_FRONTEND, 'Frontend'),
+		(SCOPE_ADMINHTML, 'Backend'),
+	]
 	
 	def add(self, event, scope=SCOPE_ALL):
 		split_event = event.split('_')
@@ -58,3 +64,10 @@ class ObserverSnippet(Snippet):
 
 
 		self.add_xml(os.path.join(*xml_path), config)
+
+	@classmethod
+	def params(cls):
+		return [
+			SnippetParam(name='event', required=True),
+			SnippetParam(name='scope', choises=cls.SCOPE_CHOISES, default=cls.SCOPE_ALL)
+		]
