@@ -15,11 +15,32 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
+import re
 import inspect
 from collections import namedtuple
 
-SnippetParam = namedtuple('SnippetParam', 'name description required default choises yes_no')
-SnippetParam.__new__.__defaults__ = ('', False, None, None, None)
+class SnippetParam:
+	def __init__(
+		self, name, description='', required=False, default=None, 
+		choises=None, yes_no=False, regex_validator='', error_message=''
+	):
+		self.name = name
+		self.description = description
+		self.required = required
+		self.default = default
+		self.choises = choises
+		self.yes_no = yes_no
+		self.regex_validator = regex_validator
+		self.error_message = error_message
+
+	def validate(self, value):
+		re_validate = re.compile(self.regex_validator)
+
+		if self.required and not value:
+			raise Exception('This field is required')
+
+		if self.regex_validator and not re_validate.match(value):
+			raise Exception(self.error_message)
 
 class MetaClass(type):
 	snippets = []

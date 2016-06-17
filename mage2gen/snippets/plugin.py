@@ -71,7 +71,7 @@ class PluginSnippet(Snippet):
 			SnippetParam(name='classname', required=True),
 			SnippetParam(name='methodname', required=True),
 			SnippetParam(name='plugintype', choises=cls.SCOPE_CHOISES, default=cls.TYPE_AFTER),
-			SnippetParam(name='sortorder', default=10),
+			SnippetParam(name='sortorder', default=10, regex_validator=r'^\d*$', error_message='Must be numeric'),
 			SnippetParam(name='disabled', yes_no=True),
 		]
 		
