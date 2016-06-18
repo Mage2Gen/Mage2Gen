@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet
+from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 class ControllerSnippet(Snippet):
 
@@ -91,3 +91,19 @@ class ControllerSnippet(Snippet):
 		# add template file
 		path = os.path.join('view', 'adminhtml' if adminhtml else 'frontend', 'templates')
 		self.add_static_file(path, StaticFile('order_json.phtml'))
+
+
+	@classmethod
+	def params(cls):
+		return [
+			SnippetParam(name='frontname', required=True, 
+				regex_validator= r'^\w+$',
+				error_message='Only alphanumeric and underscore characters are allowed'),
+			SnippetParam(name='section', required=True,
+				regex_validator= r'^\w+$',
+				error_message='Only alphanumeric and underscore characters are allowed'),
+			SnippetParam(name='action', required=True,
+				regex_validator= r'^\w+$',
+				error_message='Only alphanumeric and underscore characters are allowed'),
+			SnippetParam(name='adminhtml', yes_no=True),
+		]

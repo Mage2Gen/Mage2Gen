@@ -68,10 +68,17 @@ class PluginSnippet(Snippet):
 	@classmethod
 	def params(cls):
 		return [
-			SnippetParam(name='classname', required=True),
-			SnippetParam(name='methodname', required=True),
+			SnippetParam(name='classname', required=True,
+				description='This must be the full class path, example: Magento\Catalog\Model\Product',
+				regex_validator=r'^[\w\\]+$',
+				error_message='Only alphanumeric, underscore and backslash characters are allowed'),
+			SnippetParam(name='methodname', required=True,
+				regex_validator= r'^\w+$',
+				error_message='Only alphanumeric and underscore characters are allowed'),
 			SnippetParam(name='plugintype', choises=cls.SCOPE_CHOISES, default=cls.TYPE_AFTER),
-			SnippetParam(name='sortorder', default=10, regex_validator=r'^\d*$', error_message='Must be numeric'),
+			SnippetParam(name='sortorder', default=10, 
+				regex_validator=r'^\d*$', 
+				error_message='Must be numeric'),
 			SnippetParam(name='disabled', yes_no=True),
 		]
 		

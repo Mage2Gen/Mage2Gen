@@ -22,6 +22,26 @@ from mage2gen.utils import upperfirst
 
 
 class ObserverSnippet(Snippet):
+	description = """
+	With observers you can hook in on events fired by Magento or other third party modules. 
+	For creating an observer we need the event name and the scope:
+
+	- **Event name:** Name of event you want to observer, example: catalog_product_save_after
+	- **Scope:** For witch scope the observer is active.
+		- *All:* Observer is always active
+		- *Frontend:* Observer is only active in frontend of Magento.
+		- *Backend:* Observer is only active in admin panel of Magento.
+
+	Some events:
+	-----------
+	- sales_order_place_before
+	- sales_order_place_after
+	- checkout_cart_product_add_after
+	- checkout_cart_update_items_before 
+	- checkout_cart_save_before
+	- catalog_product_get_final_price
+	"""
+	
 	SCOPE_ALL = 'all'
 	SCOPE_FRONTEND = 'frontend'
 	SCOPE_ADMINHTML = 'backend'
@@ -68,6 +88,11 @@ class ObserverSnippet(Snippet):
 	@classmethod
 	def params(cls):
 		return [
-			SnippetParam(name='event', required=True),
+			SnippetParam(
+				name='event', 
+				required=True, 
+				description='Magento event name, example: catalog_product_save_after',
+				regex_validator= r'^\w+$',
+				error_message='Only alphanumeric and underscore characters are allowed'),
 			SnippetParam(name='scope', choises=cls.SCOPE_CHOISES, default=cls.SCOPE_ALL)
 		]
