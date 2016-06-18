@@ -33,7 +33,7 @@ class ObserverSnippet(Snippet):
 		- *Backend:* Observer is only active in admin panel of Magento.
 
 	Some events:
-	-----------
+	------------
 	- sales_order_place_before
 	- sales_order_place_after
 	- checkout_cart_product_add_after
