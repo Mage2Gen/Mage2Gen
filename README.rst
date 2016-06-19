@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/krukas/Mage2Gen.svg?branch=master
+    :target: https://travis-ci.org/krukas/Mage2Gen
+    
 Mage2Gen
 ========
 
