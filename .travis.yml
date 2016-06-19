@@ -5,4 +5,4 @@ python:
   - 3.5
 
 script: 
-  - "cd tests && python -m unittest discover";
+  - "cd tests && python -m unittest discover;"
