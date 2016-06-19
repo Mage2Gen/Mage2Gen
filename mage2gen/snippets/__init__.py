@@ -23,3 +23,4 @@ from .install import InstallSnippet
 from .console import ConsoleSnippet
 from .shipping import ShippingSnippet
 from .language import LanguageSnippet
+from .payment import PaymentSnippet

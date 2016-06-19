@@ -43,6 +43,10 @@ class ShippingSnippet(Snippet):
 		shipping_code = method_name.lower().replace(' ', '_')
 		shipping_filename = method_name.replace(' ','')
 
+		shipping_class = ShippingClass('Model\\Carrier\\'+shipping_filename,shipping_code=shipping_code)
+
+		self.add_class(shipping_class)
+
 		system = Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Config:etc/system_file.xsd"}, nodes=[
 				Xmlnode('system',  nodes=[
 					Xmlnode('section',attributes={'id':'carriers','sortOrder':1000,'showInWebsite':1,'showInStore':1,'showInDefault':1,'translate':'label'},match_attributes={'id'},nodes=[
@@ -88,15 +92,11 @@ class ShippingSnippet(Snippet):
 
 		config_file = 'etc/config.xml'
 
-		shipping_model = ShippingClass('Model\\Carrier\\'+shipping_filename,shipping_code=shipping_code)
-
-		self.add_class(shipping_model)
-
 		config = Xmlnode('config',attributes={'xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Store:etc/config.xsd"},nodes=[
 			Xmlnode('default',nodes=[
 				Xmlnode('carriers',nodes=[
 					Xmlnode(shipping_code,nodes=[
-						Xmlnode('model',node_text=shipping_model.class_namespace),
+						Xmlnode('model',node_text=shipping_class.class_namespace),
 						Xmlnode('active',node_text='0'),
 						Xmlnode('title',node_text=method_name),
 						Xmlnode('name',node_text=method_name),
