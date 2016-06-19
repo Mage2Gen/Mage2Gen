@@ -17,12 +17,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet
+from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 class PluginSnippet(Snippet):
 	TYPE_BEFORE = 'before'
 	TYPE_AFTER = 'after'
 	TYPE_AROUND = 'around'
+
+	SCOPE_CHOISES = [
+		(TYPE_BEFORE, 'Before'),
+		(TYPE_AFTER, 'After'),
+		(TYPE_AROUND, 'Around'),
+	]
 
 	def add(self, classname, methodname, plugintype=TYPE_AFTER, sortorder=10, disabled=False):
 		# Add class
@@ -58,4 +64,21 @@ class PluginSnippet(Snippet):
 		])
 
 		self.add_xml('etc/di.xml', config)
+
+	@classmethod
+	def params(cls):
+		return [
+			SnippetParam(name='classname', required=True,
+				description='This must be the full class path, example: Magento\Catalog\Model\Product',
+				regex_validator=r'^[\w\\]+$',
+				error_message='Only alphanumeric, underscore and backslash characters are allowed'),
+			SnippetParam(name='methodname', required=True,
+				regex_validator= r'^\w+$',
+				error_message='Only alphanumeric and underscore characters are allowed'),
+			SnippetParam(name='plugintype', choises=cls.SCOPE_CHOISES, default=cls.TYPE_AFTER),
+			SnippetParam(name='sortorder', default=10, 
+				regex_validator=r'^\d*$', 
+				error_message='Must be numeric'),
+			SnippetParam(name='disabled', yes_no=True),
+		]
 		

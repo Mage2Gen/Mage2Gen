@@ -16,4 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 from .module import Module, Phpclass, Phpmethod, Xmlnode, StaticFile
-from .snippet import Snippet
+from .snippet import Snippet, SnippetParam
+
+# Load snippets
+from . import snippets

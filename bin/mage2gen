@@ -1,0 +1,197 @@
+#!/usr/bin/env python3
+import sys
+import os
+import json
+import cmd
+import inspect
+import mage2gen
+import mage2gen.snippets
+from collections import defaultdict, OrderedDict
+
+
+class Mage2Gen(cmd.Cmd):
+	prompt = '(Mage2Gen) '
+
+	def __init__(self, *args, **kwargs):
+		super(Mage2Gen, self).__init__(*args, **kwargs)
+		self.preloop_runed = False
+		self.package_name = ''
+		self.module_name = ''
+		self.description = ''
+
+		self._snippets = self.load_snippets()
+		self._module_snippets = defaultdict(list)
+
+	def load_snippets(self):
+		snippets = {}
+		for name, obj in inspect.getmembers(mage2gen.snippets):
+			if inspect.isclass(obj) and issubclass(obj, mage2gen.Snippet):
+				snippets[name.lower().replace('snippet', '')] = obj
+		return snippets
+
+	def cmdloop(self):
+		while True:
+			try:
+				super(Mage2Gen, self).cmdloop(intro="")
+				self.postloop()
+				break
+			except KeyboardInterrupt as e:
+				print("^C")
+
+	def emptyline(self):
+		return ''
+
+	def ask_input(self, text, default=None, required=True, yes_no=False):
+		default_label = ' [{}]'.format(default) if default else ''
+		
+		if yes_no:
+			required = True
+			default_label = ' [Y/n]' if default else ' [y/N]'
+
+		while True:
+			try:
+				result = input('{}{}: '.format(text, default_label))
+			except EOFError:
+				sys.exit()
+
+			if yes_no:
+				if result in ['y', 'Y']:
+					result = True
+				elif result in ['n', 'N']:
+					result = False
+				elif default != None:
+					result = default
+				else:
+					result = ''
+			elif default != None and not result:
+				result = default
+
+			if required and result == '':
+				continue
+
+			break
+
+		return result
+
+	def preloop(self):
+		if not self.preloop_runed:
+			self.package_name = self.ask_input('Package name', default='Mage2gen')
+			self.module_name = self.ask_input('Module name')
+			self.description = self.ask_input('Description', required=False)
+			print('\nType help or ? to list commands.')
+			self.preloop_runed = True
+
+	def do_list(self, line):
+		"""List available snippets"""
+		print(' '.join(self._snippets))
+
+	def do_add(self, line):
+		"""Add a snippet to module"""
+		SnippetClass = self._snippets.get(line)
+		if SnippetClass:
+			params = OrderedDict()
+			for arg_name, arg in inspect.signature(SnippetClass.add).parameters.items():
+				if arg_name == 'self':
+					continue
+
+				default = arg.default if arg.default != arg.empty else None
+				params[arg_name] =  self.ask_input(arg_name, default=default, yes_no=isinstance(default, bool))
+
+			self._module_snippets[SnippetClass].append(params)
+
+	def complete_add(self, text, line, begidx, endidx):
+		return [s for s in self._snippets if s.startswith(text)]
+
+	def do_remove(self, line):
+		"""Remove a snippet to module"""
+		args = line.split()
+		if len(args) == 2:
+			try:
+				SnippetClass = self._snippets.get(args[0])
+				self._module_snippets[SnippetClass].pop(int(args[1]))
+			except Exception:
+				print('Could not remove snippt')
+
+
+	def complete_remove(self, text, line, begidx, endidx):
+		return [s for s in self._snippets if s.startswith(text)]
+
+	def do_generate(self, line):
+		"""Generate module"""
+		module = mage2gen.Module(package=self.package_name, name=self.module_name, description=self.description)
+
+		# snippets
+		for SnippetClass, kwargss in self._module_snippets.items():
+			snippet = SnippetClass(module)
+			for kwargs in kwargss:
+				snippet.add(**kwargs)
+
+		# generate
+		path = ''
+		lookup_path = os.getcwd()
+		while True:
+			if lookup_path == os.path.dirname(lookup_path):
+				break
+
+			composer_path = os.path.join(lookup_path, 'composer.json')
+			try:
+				composer = json.loads(open(composer_path).read())
+				if composer['name'] == 'magento/project-community-edition':
+					path = os.path.join(lookup_path, 'app', 'code')
+					break
+			except Exception:
+				pass
+
+			lookup_path = os.path.dirname(lookup_path)
+
+		path = self.ask_input('Generate path', default=path).strip()
+
+		if not os.path.isdir(path):
+			if self.ask_input('Path does not exist, do you want to create it?', yes_no=True):
+				try:
+					os.makedirs(path)
+				except Exception:
+					pass
+			else:
+				return
+		elif os.path.isdir(os.path.join(path, module.package, module.name)):
+			if not self.ask_input('Module {}/{} already exists in this root, do you want to rewrite this?'.format(module.package, module.name), yes_no=True):
+				return
+		module.generate_module(path)
+		print('Module ({}/{}) generated to: {}'.format(module.package, module.name, path))
+
+	def do_info(self, line):
+		"""Show current module configuration"""
+		print('\n{}/{}'.format(self.package_name, self.module_name))
+		for SnippetClass, kwargss in self._module_snippets.items():
+			print('\n{}s\n'.format(SnippetClass.__name__.lower().replace('snippet', '').capitalize()))
+			kwarg_size = {}
+			for index, kwargs in enumerate(kwargss):
+				for key, value in kwargs.items():
+					size = len(str(value)) if len(str(value)) > len(str(key)) else len(str(key))
+					if size > kwarg_size.get(key, 0):
+						kwarg_size[key] = size + 2
+
+			for index, kwargs in enumerate(kwargss):
+				if index == 0:
+					header = 'index  '
+					for key, value in kwargs.items():
+						header += str(key).ljust(kwarg_size[key])
+					print(header)
+					total_size = sum(kwarg_size.values()) + 7
+					total_size = total_size if total_size > 80 else 80
+					print('-' * total_size)
+
+				row = str(index).ljust(7)
+				for key, value in kwargs.items():
+					row += str(value).ljust(kwarg_size[key])
+				print(row)
+			print('-' * 80)
+		print()
+
+
+	def do_EOF(self, line):
+		return True
+
+if __name__ == '__main__':
+	Mage2Gen().cmdloop()
