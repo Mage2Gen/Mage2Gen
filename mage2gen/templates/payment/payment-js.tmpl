@@ -1,0 +1,19 @@
+define(
+    [
+        'uiComponent',
+        'Magento_Checkout/js/model/payment/renderer-list'
+    ],
+    function (
+        Component,
+        rendererList
+    ) {{
+        'use strict';
+        rendererList.push(
+            {{
+                type: '{payment_code}',
+                component: '{module_name}/js/view/payment/method-renderer/{payment_code}-method'
+            }}
+        );
+        return Component.extend({{}});
+    }}
+);
