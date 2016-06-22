@@ -17,4 +17,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 from .controller import ControllerSnippet
 from .plugin import PluginSnippet
+from .system import SystemSnippet
 from .observer import ObserverSnippet
+from .install import InstallSnippet
+from .console import ConsoleSnippet
+from .shipping import ShippingSnippet
+from .language import LanguageSnippet
+from .payment import PaymentSnippet
+from .productattribute import ProductAttributSnippet

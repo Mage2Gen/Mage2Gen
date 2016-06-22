@@ -1,3 +1,4 @@
+
 .. image:: https://travis-ci.org/krukas/Mage2Gen.svg?branch=master
     :target: https://travis-ci.org/krukas/Mage2Gen
     
@@ -166,4 +167,3 @@ TODO
     -  Payment methods
 
 .. _docs: http://devdocs.magento.com/guides/v2.0/extension-dev-guide/plugins.html
-
