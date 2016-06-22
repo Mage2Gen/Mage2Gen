@@ -1,0 +1,8 @@
+language: python
+
+python:
+  - 3.4
+  - 3.5
+
+script: 
+  - "cd tests && python -m unittest discover;"

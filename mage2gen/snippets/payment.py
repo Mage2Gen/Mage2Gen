@@ -16,9 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet
+from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 class PaymentSnippet(Snippet):
+
+	description = "Creates a payment method"
 
 	def add(self,method_name):
 
@@ -154,3 +156,14 @@ class PaymentSnippet(Snippet):
 		self.add_static_file('view/frontend/web/template/payment', StaticFile(payment_code + '.html', template_file='payment/payment.tmpl',context_data={'module_name':self.module_name,'payment_code':payment_code}))
 		self.add_static_file('view/frontend/web/js/view/payment', StaticFile(payment_code + '.js', template_file='payment/payment-js.tmpl',context_data={'module_name':self.module_name,'payment_code':payment_code}))
 		self.add_static_file('view/frontend/web/js/view/payment/method-renderer', StaticFile(payment_code + '-method.js', template_file='payment/payment-method-js.tmpl',context_data={'module_name':self.module_name,'payment_code':payment_code}))
+
+	@classmethod
+	def params(cls):
+		return [
+			SnippetParam(
+				name='method_name', 
+				required=True, 
+				description='Payment Method name. Example: Invoice, Credits',
+				regex_validator= r'^[a-z\d\-_\s]+$',
+				error_message='Only alphanumeric'),
+		]	

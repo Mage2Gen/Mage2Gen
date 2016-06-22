@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet
+from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 from mage2gen.module import TEMPLATE_DIR
 
 class ShippingClass(Phpclass):
@@ -36,6 +36,8 @@ class ShippingClass(Phpclass):
 		return data 
 
 class ShippingSnippet(Snippet):
+
+	description = "Creates a shipping method"
 
 	def add(self,method_name):
 
@@ -58,7 +60,6 @@ class ShippingSnippet(Snippet):
 							]),
 							Xmlnode('field', attributes={'id':'name','type':'text','sortOrder':20,'showInWebsite':1,'showInStore':1,'showInDefault':1,'translate':'label'},match_attributes={'id'},nodes=[
 								Xmlnode('label',node_text='Method Name'),
-								Xmlnode('source_model',node_text='Magento\Config\Model\Config\Source\Yesno'),
 							]),
 							Xmlnode('field', attributes={'id':'price','type':'text','sortOrder':30,'showInWebsite':1,'showInStore':1,'showInDefault':1,'translate':'label'},match_attributes={'id'},nodes=[
 								Xmlnode('label',node_text='Price'),
@@ -109,3 +110,14 @@ class ShippingSnippet(Snippet):
 		]);
 
 		self.add_xml(config_file, config)
+
+	@classmethod
+	def params(cls):
+		return [
+			SnippetParam(
+				name='method_name', 
+				required=True, 
+				description='Shipping Method name. Example: Freeshipping, Per product shipping',
+				regex_validator= r'^[a-z\d\-_\s]+$',
+				error_message='Only alphanumeric'),
+		]

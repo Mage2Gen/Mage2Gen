@@ -16,25 +16,39 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet
+from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 class SystemSnippet(Snippet):
 
-	def add(self, tab, section, group, field, tab_options, section_options, group_options, field_options):
+	description = 'Creates adminhtml system config. Option to add fields to excisting tabs or create a new one'
+
+	TYPE_CHOISES = [
+		('text', 'Text'),
+		('textarea', 'Textarea'),
+		('select', 'Select'),
+		('multiselect', 'Multiselect'),
+	]
+
+	def add(self, tab, section, group, field, field_type, tab_options, section_options, group_options, field_options, new_tab=False):
 
 		resource_id = self.module_name+'::config_'+self.module_name.lower()
 
+		tab_code = tab.lower().replace(' ', '_')
+		section_code = section.lower().replace(' ', '_')
+		group_code = group.lower().replace(' ', '_')
+		field_code = field.lower().replace(' ', '_')
+
 		file = 'etc/adminhtml/system.xml'	
 
-		if tab_options.get('new') :
+		if new_tab :
 			tabxml = Xmlnode('tab',attributes={'id':tab,'translate':tab_options.get('translate','label'),'sortOrder':tab_options.get('sortOrder',999)},nodes=[
 						Xmlnode('label',node_text=tab_options.get('label',tab))	
 					 ])
 		else:
 			tabxml = False
 
-		if field_options.get('source_model'):
-			source_model_xml = Xmlnode('source_model',node_text=field_options.get('source_model'))
+		if field_type =='select' or field_type == 'multiselect' :
+			source_model_xml = Xmlnode('source_model',node_text='Magento\Config\Model\Config\Source\Yesno')
 		else:
 			source_model_xml = False
 
@@ -46,12 +60,12 @@ class SystemSnippet(Snippet):
 		config = Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Config:etc/system_file.xsd"}, nodes=[
 				Xmlnode('system',  nodes=[
 					tabxml,
-					Xmlnode('section',attributes={'id':section,'sortOrder':field_options.get('sortorder',10),'showInWebsite':field_options.get('show_in_website',1),'showInStore':field_options.get('show_in_store',1),'showInDefault':field_options.get('show_in_default',1),'translate':'label'},match_attributes={'id'},nodes=[
+					Xmlnode('section',attributes={'id':section,'sortOrder':section_options.get('sortorder',10),'showInWebsite':section_options.get('show_in_website',1),'showInStore':section_options.get('show_in_store',1),'showInDefault':section_options.get('show_in_default',1),'translate':'label'},match_attributes={'id'},nodes=[
 						Xmlnode('label',node_text=section_options.get('label',section)),
 						Xmlnode('tab',node_text=tab),
 						Xmlnode('resource',node_text=resource_id),
-						Xmlnode('group', attributes={'id':group,'sortOrder':field_options.get('sortorder',10),'showInWebsite':field_options.get('show_in_website',1),'showInStore':field_options.get('show_in_store',1),'showInDefault':field_options.get('show_in_default',1),'translate':'label'},match_attributes={'id'},nodes=[
-							Xmlnode('field', attributes={'id':field,'type':field_options.get('type','text'),'sortOrder':field_options.get('sortorder',10),'showInWebsite':field_options.get('show_in_website',1),'showInStore':field_options.get('show_in_store',1),'showInDefault':field_options.get('show_in_default',1),'translate':'label'},match_attributes={'id'},nodes=[
+						Xmlnode('group', attributes={'id':group,'sortOrder':group_options.get('sortorder',10),'showInWebsite':group_options.get('show_in_website',1),'showInStore':group_options.get('show_in_store',1),'showInDefault':group_options.get('show_in_default',1),'translate':'label'},match_attributes={'id'},nodes=[
+							Xmlnode('field', attributes={'id':field,'type':field_type,'sortOrder':field_options.get('sortorder',10),'showInWebsite':field_options.get('show_in_website',1),'showInStore':field_options.get('show_in_store',1),'showInDefault':field_options.get('show_in_default',1),'translate':'label'},match_attributes={'id'},nodes=[
 								Xmlnode('label',node_text=field_options.get('label',field)),
 								Xmlnode('comment',node_text=field_options.get('comment')),
 								source_model_xml,
@@ -97,3 +111,37 @@ class SystemSnippet(Snippet):
 		]);
 		
 		self.add_xml(config_file, default_config)
+
+	@classmethod
+	def params(cls):
+		return [
+			SnippetParam(
+				name='tab', 
+				required=True, 
+				description='Tab code. Example: catalog',
+				regex_validator= r'^[\w\d-\s]+$',
+				error_message='Only alphanumeric'),
+			SnippetParam(
+				name='section', 
+				required=True, 
+				description='Section code. Example: inventory',
+				regex_validator= r'^[\w\d-\s]+$',
+				error_message='Only alphanumeric'),
+			SnippetParam(
+				name='group', 
+				required=True, 
+				description='Group code. Example: options',
+				regex_validator= r'^[\w\d-\s]+$',
+				error_message='Only alphanumeric'),
+			SnippetParam(
+				name='field', 
+				required=True, 
+				description='Field code. Example: out of stock label ',
+				regex_validator= r'^[\w\d-\s]+$',
+				error_message='Only alphanumeric'),
+			SnippetParam(
+				name='type', 
+				choises=cls.TYPE_CHOISES, 
+				default='text')
+			,
+		]

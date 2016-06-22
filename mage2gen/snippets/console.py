@@ -16,9 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet
+from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 class ConsoleSnippet(Snippet):
+
+	description = 'Creates a bin/magento console script'
 
 	def add(self,action_name,short_description):
 
@@ -76,5 +78,22 @@ class ConsoleSnippet(Snippet):
 		])
 
 		self.add_xml('etc/di.xml', config)
+
+	@classmethod
+	def params(cls):
+		return [
+			SnippetParam(
+				name='action_name', 
+				required=True, 
+				description='Console action name. Example: Backup, Import',
+				regex_validator= r'^[a-z\d\-_\s]+$',
+				error_message='Only alphanumeric'),
+			SnippetParam(
+				name='short_description', 
+				required=True, 
+				description='Console action description. Example: Backups magento enviroment, Starts product import',
+				regex_validator= r'^[a-z\d\-_\s]+$',
+				error_message='Only alphanumeric')
+		]
 
 

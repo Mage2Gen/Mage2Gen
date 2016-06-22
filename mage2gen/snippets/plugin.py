@@ -36,14 +36,14 @@ class PluginSnippet(Snippet):
 		
 		variable = '$result'
 		if plugintype == self.TYPE_BEFORE:
-			variable = '$functionvariables'
+			variable = '//$functionvariables'
 		elif plugintype == self.TYPE_AROUND:
 			variable = '\Closure $proceed' 
 
 		plugin.add_method(Phpmethod(
 			plugintype + methodname[0].capitalize() + methodname[1:],
 			params=[
-				classname + ' $subject',
+				'\\' + classname + ' $subject',
 				variable
 			]
 		))
