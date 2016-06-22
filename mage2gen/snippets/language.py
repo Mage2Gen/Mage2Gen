@@ -107,19 +107,11 @@ class LanguageSnippet(Snippet):
 		('cy_GB', 'Welsh (United Kingdom)'),
 	]
 
-	def add(self,languages):
-
-		for language in languages:
-			self.add_static_file('i18n', StaticFile(language+'.csv','"string","stringtranslated"'))
+	def add(self, language):
+		self.add_static_file('i18n', StaticFile(language+'.csv','"string","stringtranslated"'))
 
 	@classmethod
 	def params(cls):
 		return [
-			SnippetParam(
-				name='event', 
-				required=True, 
-				description='Magento event name, example: catalog_product_save_after',
-				regex_validator= r'^\w+$',
-				error_message='Only alphanumeric and underscore characters are allowed'),
-				SnippetParam(name='languages', choises=cls.LANGUAGE_CHOISES, default='en_US')
+			SnippetParam(name='language', choises=cls.LANGUAGE_CHOISES, default='en_US')
 		]

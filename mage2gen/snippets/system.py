@@ -29,9 +29,13 @@ class SystemSnippet(Snippet):
 		('multiselect', 'Multiselect'),
 	]
 
-	def add(self, tab, section, group, field, field_type, tab_options, section_options, group_options, field_options, new_tab=False):
+	def add(self, tab, section, group, field, field_type, tab_options=None, section_options=None, group_options=None, field_options=None, new_tab=False):
 
 		resource_id = self.module_name+'::config_'+self.module_name.lower()
+		tab_options = tab_options if tab_options else {}
+		section_options = section_options if section_options else {}
+		group_options = group_options if group_options else {}
+		field_options = field_options if field_options else {}
 
 		tab_code = tab.lower().replace(' ', '_')
 		section_code = section.lower().replace(' ', '_')
@@ -122,6 +126,10 @@ class SystemSnippet(Snippet):
 				regex_validator= r'^[\w\d-\s]+$',
 				error_message='Only alphanumeric'),
 			SnippetParam(
+				name='new_tab', 
+				default=True,
+				yes_no=True),
+			SnippetParam(
 				name='section', 
 				required=True, 
 				description='Section code. Example: inventory',
@@ -140,8 +148,7 @@ class SystemSnippet(Snippet):
 				regex_validator= r'^[\w\d-\s]+$',
 				error_message='Only alphanumeric'),
 			SnippetParam(
-				name='type', 
+				name='field_type', 
 				choises=cls.TYPE_CHOISES, 
-				default='text')
-			,
+				default='text'),
 		]
