@@ -123,7 +123,7 @@ class SystemSnippet(Snippet):
 				name='tab', 
 				required=True, 
 				description='Tab code. Example: catalog',
-				regex_validator= r'^[\w\d-\s]+$',
+				regex_validator= r'^[a-z\d\-_\s]+$',
 				error_message='Only alphanumeric'),
 			SnippetParam(
 				name='new_tab', 
@@ -133,19 +133,19 @@ class SystemSnippet(Snippet):
 				name='section', 
 				required=True, 
 				description='Section code. Example: inventory',
-				regex_validator= r'^[\w\d-\s]+$',
+				regex_validator= r'^[a-z\d\-_\s]+$',
 				error_message='Only alphanumeric'),
 			SnippetParam(
 				name='group', 
 				required=True, 
 				description='Group code. Example: options',
-				regex_validator= r'^[\w\d-\s]+$',
+				regex_validator= r'^[a-z\d\-_\s]+$',
 				error_message='Only alphanumeric'),
 			SnippetParam(
 				name='field', 
 				required=True, 
 				description='Field code. Example: out of stock label ',
-				regex_validator= r'^[\w\d-\s]+$',
+				regex_validator= r'^[a-z\d\-_\s]+$',
 				error_message='Only alphanumeric'),
 			SnippetParam(
 				name='field_type', 
