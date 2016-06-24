@@ -86,8 +86,8 @@ class Phpclass:
 		}
 
 	def generate(self):
-		with open(self.template_file, 'r') as tmpl:
-			template = tmpl.read()
+		with open(self.template_file, 'rb') as tmpl:
+			template = tmpl.read().decode('utf-8')
 
 		return template.format(
 			**self.context_data()
@@ -100,7 +100,7 @@ class Phpclass:
 		except Exception:
 			pass
 		
-		with open(path, 'w+') as class_file:
+		with open(path, 'w+', encoding='utf-8') as class_file:
 			class_file.writelines(self.generate())
 
 class Phpmethod:
@@ -132,8 +132,8 @@ class Phpmethod:
 		return '\n\t\t'.join(s.strip('\t') for s in self.body.splitlines())
 
 	def generate(self):
-		with open(self.template_file, 'r') as tmpl:
-			template = tmpl.read()
+		with open(self.template_file, 'rb') as tmpl:
+			template = tmpl.read().decode('utf-8')
 
 		return template.format(
 			method=self.name,
@@ -210,7 +210,7 @@ class Xmlnode:
 		except Exception:
 			pass
 		
-		with open(xml_path, 'w+') as xml_file:
+		with open(xml_path, 'w+', encoding='utf-8') as xml_file:
 			xml_file.writelines(self.generate())
 
 
@@ -229,8 +229,8 @@ class StaticFile:
 		return self._context_data
 
 	def generate(self):
-		with open(self.template_file, 'r') as tmpl:
-			template = tmpl.read()
+		with open(self.template_file, 'rb') as tmpl:
+			template = tmpl.read().decode('utf-8')
 
 		return template.format(
 			**self.context_data()
@@ -242,7 +242,7 @@ class StaticFile:
 		except Exception:
 			pass
 		
-		with open(file_path, 'w+') as static_file:
+		with open(file_path, 'w+', encoding='utf-8') as static_file:
 			static_file.writelines(self.generate())
 
 
