@@ -164,6 +164,6 @@ class PaymentSnippet(Snippet):
 				name='method_name', 
 				required=True, 
 				description='Payment Method name. Example: Invoice, Credits',
-				regex_validator= r'^[a-z\d\-_\s]+$',
-				error_message='Only alphanumeric'),
+				regex_validator= r'^[a-zA-Z]{1}\w+$',
+				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
 		]	
