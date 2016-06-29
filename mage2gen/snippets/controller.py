@@ -19,8 +19,21 @@ import os
 from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 class ControllerSnippet(Snippet):
+	description = """
+	Controller is used to serve a reqeust path, an reqeust path look like this:
 
-	def add(self, frontname, section, action, adminhtml=False):
+		www.yourmagentoinstallation.com/frontname/section/action
+
+	- **frontname:** Configured in the router.xml and must be unique.
+	- **section:** Is a subfolder or folders to the action class.
+	- **action:** Action class that will execute the reqeust.
+
+	This snippet will also create a layout.xml, Block and phtml for the action.
+	"""
+
+	def add(self, frontname='', section='index', action='index', adminhtml=False):
+		if not frontname:
+			frontname = self._module.name.lower()
 		file = 'etc/{}/routes.xml'.format('adminhtml' if adminhtml else 'frontend')
 
 		# Create config router
@@ -96,14 +109,14 @@ class ControllerSnippet(Snippet):
 	@classmethod
 	def params(cls):
 		return [
-			SnippetParam(name='frontname', required=True, 
-				regex_validator= r'^\w+$',
-				error_message='Only alphanumeric and underscore characters are allowed'),
-			SnippetParam(name='section', required=True,
-				regex_validator= r'^\w+$',
-				error_message='Only alphanumeric and underscore characters are allowed'),
-			SnippetParam(name='action', required=True,
-				regex_validator= r'^\w+$',
-				error_message='Only alphanumeric and underscore characters are allowed'),
+			SnippetParam(name='frontname', required=False, description='When empty it will use the Module name in lower case',
+				regex_validator= r'^[a-zA-Z]{1}\w+$',
+				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
+			SnippetParam(name='section', required=False, default='index',
+				regex_validator= r'^[a-zA-Z]{1}\w+$',
+				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
+			SnippetParam(name='action', required=False, default='index',
+				regex_validator= r'^[a-zA-Z]{1}\w+$',
+				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
 			SnippetParam(name='adminhtml', yes_no=True),
 		]
