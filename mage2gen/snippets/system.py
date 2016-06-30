@@ -32,8 +32,9 @@ class SystemSnippet(Snippet):
 
 	Example:
 	--------
-	
-	$this->_scopeConfig->getValue('yourmodulename/general/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+	.. code::
+
+		$this->_scopeConfig->getValue('yourmodulename/general/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
 	(Depends on \Magento\Framework\App\Config\ScopeConfigInterface)
 
@@ -45,8 +46,7 @@ class SystemSnippet(Snippet):
 	- Textarea
 
 	For Select and Multiselect you will need to define a source model. By default this will be this will be the core magento yes/no.
-
-	'"""
+	"""
 
 	TYPE_CHOISES = [
 		('text', 'Text'),

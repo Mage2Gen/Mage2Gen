@@ -22,7 +22,7 @@ class PaymentSnippet(Snippet):
 
 	description = """Creates a payment method
 
-	Generated Payment methods can be found in Magento Adminpanel > Stores > Settings > Configuration > Sales > Payment Methods
+	Generated Payment methods can be found in *Magento Adminpanel > Stores > Settings > Configuration > Sales > Payment Methods*
 
 	It allows you to add extra payment methods to Magento. For example if you need to have a payment method wich can only be used in te backend 
 	or if you need a payment wich directly creates a invoice.

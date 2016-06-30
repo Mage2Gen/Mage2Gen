@@ -48,12 +48,14 @@ class ShippingSnippet(Snippet):
 
 	You want to calculate the shipping cost based on the shipping cost per product in the customers basket. 
 
-	$items = $request->getAllItems();
-	$cost = 0;
+	.. code::
 
-	foreach($items as $item){
-		$cost += $item->getProduct()->getShippingCost();
-	}
+		$items = $request->getAllItems();
+		$cost = 0;
+
+		foreach($items as $item){
+			$cost += $item->getProduct()->getShippingCost();
+		}
 
 	"""
 

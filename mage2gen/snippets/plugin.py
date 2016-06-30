@@ -34,16 +34,18 @@ class PluginSnippet(Snippet):
 
 	Input for the pluging form 
 
-	classname: Magento\Catalog\Model\Product 
-	methodname: getName
-	plugintype: After
+	- **classname:** Magento\Catalog\Model\Product 
+	- **methodname:** getName
+	- **plugintype:** After
 
-	public function afterGetName(
-		Magento\Catalog\Model\Product $subject,
-		$result
-	){
-		return '|'.$result.'|';
-	}
+	.. code::
+		
+		public function afterGetName(
+			Magento\Catalog\Model\Product $subject,
+			$result
+		){
+			return '|'.$result.'|';
+		}
 
 	"""
 
