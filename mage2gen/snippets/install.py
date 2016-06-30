@@ -20,13 +20,13 @@ from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet
 
 class InstallSnippet(Snippet):
 	description = """
-	For creating database tables and adding data to Magento 2 uses Schema and Data install and upgrade classes.
+	Install is used for creating database tables and adding data to Magento 2. It uses Schema and Data install and upgrade classes.
 
 	- **from_version:** Add sample upgrade from version statement
 
 	Snippet generation
 	------------------
-	When you generate the module, the following classes will be created:
+	When you generate a module, the following classes will be created:
 
 	**Install scripts**
 	

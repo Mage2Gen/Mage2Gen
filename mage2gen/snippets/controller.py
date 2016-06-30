@@ -20,13 +20,13 @@ from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, 
 
 class ControllerSnippet(Snippet):
 	description = """
-	Controller is used to serve a reqeust path, an reqeust path look like this:
+	Controller is used to serve a request path. A request path look like this:
 
 		www.yourmagentoinstallation.com/frontname/section/action
 
 	- **frontname:** Configured in the router.xml and must be unique.
 	- **section:** Is a subfolder or folders to the action class.
-	- **action:** Action class that will execute the reqeust.
+	- **action:** An action class that will execute the reqeust.
 
 	This snippet will also create a layout.xml, Block and phtml for the action.
 	"""

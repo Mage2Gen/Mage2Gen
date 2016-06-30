@@ -24,8 +24,8 @@ class PaymentSnippet(Snippet):
 
 	Generated Payment methods can be found in *Magento Adminpanel > Stores > Settings > Configuration > Sales > Payment Methods*
 
-	It allows you to add extra payment methods to Magento. For example if you need to have a payment method wich can only be used in te backend 
-	or if you need a payment wich directly creates a invoice.
+	It allows you to add extra payment methods to Magento. For example if you need to have a payment method which can only be used in the backend 
+	or if you need a payment that directly creates an invoice.
 
 	"""
 

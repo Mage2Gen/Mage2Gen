@@ -20,14 +20,14 @@ from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, 
 
 class ConsoleSnippet(Snippet):
 	description = """
-	Console commands are listed and exucuted by **bin/magento** command line tool.
+	Console commands are listed and executed by **bin/magento** command line tool.
 
 	- **action_name:** Console action name. Example: Backup, Import
-	- **short_description:** Console action description. Example: Backups magento enviroment, Starts product import
+	- **short_description:** Console action description. Example: Backups the Magento environment, Starts product import
 
 	Snippet generation
 	------------------
-	When you generate a module with an action_name (*backup*) and the module is namend (*MageGen/Module*).
+	When you generate a module with an action_name (*backup*) and the module is named (*MageGen/Module*).
 	The generated command used by **bin/magento** is:
 	
 		bin/magento mage2gen_module:backup

@@ -23,16 +23,16 @@ class PluginSnippet(Snippet):
 
 	description = """Creates a Plugin
 
-	Plugins are designed to overwrite core magento methods or methods from other 3rd party modules. 
+	Plugins are designed to overwrite core Magento methods or methods from other 3rd party modules. 
 
-	You can choose to change it before the original method is called, after, or around. 
+	You can choose to change it before, after, or around the original method is called. 
 
 	Example
 	-------
 
 	Change the product name to show pipes before and after the name. 
 
-	Input for the pluging form 
+	Input for the plugin form 
 
 	- **classname:** Magento\Catalog\Model\Product 
 	- **methodname:** getName

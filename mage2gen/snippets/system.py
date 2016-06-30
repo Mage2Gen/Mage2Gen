@@ -19,12 +19,10 @@ import os
 from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 class SystemSnippet(Snippet):
-
-	description = """Creates adminhtml system config. 
-
+	description = """
 	System config is used in Magento for storing settings to use in your module.
 
-	For example a option to enable and disable your module. 
+	For example an option to enable and disable your module. 
 
 	Generated configuration can be found in Magento Adminpanel > Stores > Settings > Configuration
 
@@ -45,7 +43,7 @@ class SystemSnippet(Snippet):
 	- Text
 	- Textarea
 
-	For Select and Multiselect you will need to define a source model. By default this will be this will be the core magento yes/no.
+	For Select and Multiselect you will need to define a source model. By default this will be this will be the core Magento yes/no.
 	"""
 
 	TYPE_CHOISES = [

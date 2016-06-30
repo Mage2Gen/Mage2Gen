@@ -41,12 +41,12 @@ class ShippingSnippet(Snippet):
 
 	Generated Shipping methods can be found in Magento Adminpanel > Stores > Settings > Configuration > Sales > Shipping Methods
 
-	It allows you to write your own price logic to calculate you shipping cost. Its written in /Model/Carries/Generatedshippingmethod.php
+	It allows you to write your own price logic to calculate the shipping cost. It is written in /Model/Carries/Generatedshippingmethod.php
 
 	Example:
 	________
 
-	You want to calculate the shipping cost based on the shipping cost per product in the customers basket. 
+	if you want to calculate the shipping cost based on the shipping cost per product in the customers basket. 
 
 	.. code::
 

@@ -26,11 +26,11 @@ class ObserverSnippet(Snippet):
 	With observers you can hook in on events fired by Magento or other third party modules. 
 	For creating an observer we need the event name and the scope:
 
-	- **Event name:** Name of event you want to observer, example: catalog_product_save_after
-	- **Scope:** For witch scope the observer is active.
+	- **Event name:** Name of event you want to observe, example: catalog_product_save_after
+	- **Scope:** For which scope the observer is active.
 		- *All:* Observer is always active
-		- *Frontend:* Observer is only active in frontend of Magento.
-		- *Backend:* Observer is only active in admin panel of Magento.
+		- *Frontend:* Observer is only active in the frontend of Magento.
+		- *Backend:* Observer is only active in the admin panel of Magento.
 
 	Some events:
 	------------

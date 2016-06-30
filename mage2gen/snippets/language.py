@@ -20,7 +20,7 @@ from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, 
 
 class LanguageSnippet(Snippet):
 	description = """
-	Magento 2 uses csv files for translations per langusage. This snippet wil generate 
+	Magento 2 uses csv files for translations per language. This snippet will generate 
 	a translation csv file for selected language with one example translation.
 
 	- **language:** Language for translation file.
