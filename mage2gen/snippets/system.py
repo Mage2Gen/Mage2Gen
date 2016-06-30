@@ -20,7 +20,33 @@ from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, 
 
 class SystemSnippet(Snippet):
 
-	description = 'Creates adminhtml system config. Option to add fields to excisting tabs or create a new one'
+	description = """Creates adminhtml system config. 
+
+	System config is used in Magento for storing settings to use in your module.
+
+	For example a option to enable and disable your module. 
+
+	Generated configuration can be found in Magento Adminpanel > Stores > Settings > Configuration
+
+	To retrieve the value you can use the xml path yourmodulename/general/enabled
+
+	Example:
+	--------
+	
+	$this->_scopeConfig->getValue('yourmodulename/general/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+
+	(Depends on \Magento\Framework\App\Config\ScopeConfigInterface)
+
+	Field Types:
+	------------
+	- Select
+	- Multiselect
+	- Text
+	- Textarea
+
+	For Select and Multiselect you will need to define a source model. By default this will be this will be the core magento yes/no.
+
+	'"""
 
 	TYPE_CHOISES = [
 		('text', 'Text'),

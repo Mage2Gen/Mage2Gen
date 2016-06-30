@@ -37,7 +37,25 @@ class ShippingClass(Phpclass):
 
 class ShippingSnippet(Snippet):
 
-	description = "Creates a shipping method"
+	description = """Creates a basic Magento 2 shipping method.  
+
+	Generated Shipping methods can be found in Magento Adminpanel > Stores > Settings > Configuration > Sales > Shipping Methods
+
+	It allows you to write your own price logic to calculate you shipping cost. Its written in /Model/Carries/Generatedshippingmethod.php
+
+	Example:
+	________
+
+	You want to calculate the shipping cost based on the shipping cost per product in the customers basket. 
+
+	$items = $request->getAllItems();
+	$cost = 0;
+
+	foreach($items as $item){
+		$cost += $item->getProduct()->getShippingCost();
+	}
+
+	"""
 
 	def add(self,method_name):
 
