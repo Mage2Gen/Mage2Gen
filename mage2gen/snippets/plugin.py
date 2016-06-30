@@ -20,6 +20,33 @@ import os
 from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 class PluginSnippet(Snippet):
+
+	description = """Creates a Plugin
+
+	Plugins are designed to overwrite core magento methods or methods from other 3rd party modules. 
+
+	You can choose to change it before the original method is called, after, or around. 
+
+	Example
+	-------
+
+	Change the product name to show pipes before and after the name. 
+
+	Input for the pluging form 
+
+	classname: Magento\Catalog\Model\Product 
+	methodname: getName
+	plugintype: After
+
+	public function afterGetName(
+		Magento\Catalog\Model\Product $subject,
+		$result
+	){
+		return '|'.$result.'|';
+	}
+
+	"""
+
 	TYPE_BEFORE = 'before'
 	TYPE_AFTER = 'after'
 	TYPE_AROUND = 'around'
