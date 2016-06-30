@@ -136,6 +136,6 @@ class ShippingSnippet(Snippet):
 				name='method_name', 
 				required=True, 
 				description='Shipping Method name. Example: Freeshipping, Per product shipping',
-				regex_validator= r'^[a-z\d\-_\s]+$',
-				error_message='Only alphanumeric'),
+				regex_validator= r'^[a-zA-Z]{1}\w+$',
+				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
 		]

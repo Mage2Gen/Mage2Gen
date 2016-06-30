@@ -19,8 +19,17 @@ import os, locale
 from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 class LanguageSnippet(Snippet):
+	description = """
+	Magento 2 uses csv files for translations per langusage. This snippet wil generate 
+	a translation csv file for selected language with one example translation.
 
-	description = "Adds languages files csv"
+	- **language:** Language for translation file.
+
+	Snippet generation
+	------------------
+	When you generate a module for the language *English (United States)*, it will create 
+	a csv translation file in *i18n/en_US.csv*
+	"""
 
 	LANGUAGE_CHOISES = [
 		('af_ZA', 'Afrikaans (South Africa)'),

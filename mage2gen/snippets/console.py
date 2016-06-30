@@ -19,8 +19,19 @@ import os
 from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 class ConsoleSnippet(Snippet):
+	description = """
+	Console commands are listed and exucuted by **bin/magento** command line tool.
 
-	description = 'Creates a bin/magento console script'
+	- **action_name:** Console action name. Example: Backup, Import
+	- **short_description:** Console action description. Example: Backups magento enviroment, Starts product import
+
+	Snippet generation
+	------------------
+	When you generate a module with an action_name (*backup*) and the module is namend (*MageGen/Module*).
+	The generated command used by **bin/magento** is:
+	
+		bin/magento mage2gen_module:backup
+	"""
 
 	def add(self,action_name,short_description):
 
@@ -86,14 +97,12 @@ class ConsoleSnippet(Snippet):
 				name='action_name', 
 				required=True, 
 				description='Console action name. Example: Backup, Import',
-				regex_validator= r'^[a-z\d\-_\s]+$',
-				error_message='Only alphanumeric'),
+				regex_validator= r'^[a-zA-Z]{1}\w+$',
+				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
 			SnippetParam(
 				name='short_description', 
 				required=True, 
-				description='Console action description. Example: Backups magento enviroment, Starts product import',
-				regex_validator= r'^[a-z\d\-_\s]+$',
-				error_message='Only alphanumeric')
+				description='Console action description. Example: Backups magento enviroment, Starts product import'),
 		]
 
 

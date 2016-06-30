@@ -19,8 +19,25 @@ import os
 from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet
 
 class InstallSnippet(Snippet):
+	description = """
+	For creating database tables and adding data to Magento 2 uses Schema and Data install and upgrade classes.
 
-	description = "Creates Install Data, Install Schema, Upgrade Data, Upgrade Schema"
+	- **from_version:** Add sample upgrade from version statement
+
+	Snippet generation
+	------------------
+	When you generate the module, the following classes will be created:
+
+	**Install scripts**
+	
+	- Setup/InstallSchema
+	- Setup/InstallData
+
+	**Upgrade scripts** (With the sample from_version statement)
+	
+	- Setup/UpgradeSchema
+	- Setup/UpgradeData  
+	"""
 
 	def add(self,from_version='1.0.0'):
 
