@@ -53,7 +53,7 @@ class SystemSnippet(Snippet):
 		('multiselect', 'Multiselect'),
 	]
 
-	def add(self, tab, section, group, field, field_type, tab_options=None, section_options=None, group_options=None, field_options=None, new_tab=False):
+	def add(self, tab, section, group, field, field_type='text', tab_options=None, section_options=None, group_options=None, field_options=None, new_tab=False):
 
 		resource_id = self.module_name+'::config_'+self.module_name.lower()
 		tab_options = tab_options if tab_options else {}
