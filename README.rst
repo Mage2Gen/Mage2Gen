@@ -165,5 +165,11 @@ TODO
     -  Adding fields to checkout process
     -  Shipping methods
     -  Payment methods
+    
+Example implementation:
+~~~~~~
+
+Mage2gen Online Magento Module Creator `mage2gen`_    
 
 .. _docs: http://devdocs.magento.com/guides/v2.0/extension-dev-guide/plugins.html
+.. _mage2gen: http://mage2gen.com
