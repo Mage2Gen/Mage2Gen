@@ -54,7 +54,7 @@ class Mage2Gen(cmd.Cmd):
 
 		while True:
 			try:
-				result = input('{}{}: '.format(param.name_label(), default_label))
+				result = input('{}{}{}: '.format(param.name_label(), default_label, '*' if param.required  else ''))
 			except EOFError:
 				sys.exit()
 
@@ -83,7 +83,7 @@ class Mage2Gen(cmd.Cmd):
 
 	def preloop(self):
 		if not self.preloop_runed:
-			self.package_name = self.ask_param_input(SnippetParam(name='Package name', default='Mage2gen'))
+			self.package_name = self.ask_param_input(SnippetParam(name='Package name', default='Mage2gen', required=True))
 			self.module_name = self.ask_param_input(SnippetParam(name='Module name', required=True))
 			self.description = self.ask_param_input(SnippetParam(name='Description', required=False))
 			print('\nType help or ? to list commands.')
