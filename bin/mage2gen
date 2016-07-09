@@ -15,7 +15,7 @@ class Mage2Gen(cmd.Cmd):
 	def __init__(self, *args, **kwargs):
 		super(Mage2Gen, self).__init__(*args, **kwargs)
 		self.preloop_runed = False
-		self.package_name = ''
+		self.package_name = 'Mage2gen'
 		self.module_name = ''
 		self.description = ''
 
@@ -83,11 +83,15 @@ class Mage2Gen(cmd.Cmd):
 
 	def preloop(self):
 		if not self.preloop_runed:
-			self.package_name = self.ask_param_input(SnippetParam(name='Package name', default='Mage2gen', required=True))
-			self.module_name = self.ask_param_input(SnippetParam(name='Module name', required=True))
-			self.description = self.ask_param_input(SnippetParam(name='Description', required=False))
+			self.do_edit()
 			print('\nType help or ? to list commands.')
 			self.preloop_runed = True
+
+	def do_edit(self, line=None):
+		"""Edit the Module package name, name and description"""
+		self.package_name = self.ask_param_input(SnippetParam(name='Package name', default=self.package_name, required=True))
+		self.module_name = self.ask_param_input(SnippetParam(name='Module name', default=self.module_name , required=True))
+		self.description = self.ask_param_input(SnippetParam(name='Description', default=self.description , required=False))
 
 	def do_list(self, line):
 		"""List available snippets"""
