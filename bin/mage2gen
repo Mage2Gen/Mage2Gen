@@ -142,7 +142,7 @@ class Mage2Gen(cmd.Cmd):
 			composer_path = os.path.join(lookup_path, 'composer.json')
 			try:
 				composer = json.loads(open(composer_path).read())
-				if composer['name'] == 'magento/project-community-edition':
+				if composer['name'] in ['magento/project-community-edition', 'magento/magento2ce']:
 					path = os.path.join(lookup_path, 'app', 'code')
 					break
 			except Exception:
