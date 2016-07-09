@@ -27,7 +27,7 @@ class CronjobSnippet(Snippet):
 
     """
 
-	def add(self,cronjob_name,schedule):
+	def add(self, cronjob_name, schedule='*/5 * * * *'):
 
 		crontab_file = 'etc/crontab.xml'
 
