@@ -19,6 +19,8 @@ import re
 import inspect
 from collections import namedtuple
 
+from mage2gen.utils import upperfirst
+
 class SnippetParam:
 	def __init__(
 		self, name, description='', required=False, default=None, 
@@ -32,6 +34,9 @@ class SnippetParam:
 		self.yes_no = yes_no
 		self.regex_validator = regex_validator
 		self.error_message = error_message
+
+	def name_label(self):
+		return upperfirst(self.name.replace('_', ' '))
 
 	def validate(self, value):
 		re_validate = re.compile(self.regex_validator)
