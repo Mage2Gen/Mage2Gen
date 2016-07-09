@@ -4,7 +4,6 @@
     
 Mage2Gen
 ========
-
 Mage2Gen is a python library for generating Magento 2 modules. It is
 build to be extandeble with snippets for creating more complex Magento 2
 modules based on simple input.
@@ -13,10 +12,101 @@ Installation
 ============
 To install the Python library and the command line utility, run:
 
-    pip install mage2gen
+    sudo pip3 install mage2gen
 
-Example usage
-=============
+Interactive command line
+========================
+With the mage2gen command line tool you can interactively create and generate Magento 2 modules.
+If you have installed mage2gen for you whole system you can start it by running *mage2gen*.
+You will be asked to give the module package name, name and description:
+
+.. code:: bash
+
+    bash> mage2gen
+    Package name [Mage2gen]: Mage2gen
+    Module name: Test
+    Description: A Mage2Gen test module
+    
+    Type help or ? to list commands.
+    (Mage2Gen) 
+
+Help
+~~~~
+You can use *help* or *?* to show available commands and *help <command>* to show command help description: 
+
+.. code:: bash
+
+    (Mage2Gen) help
+    
+    Documented commands (type help <topic>):
+    ========================================
+    add  exit  generate  help  info  list  remove
+    
+    Undocumented commands:
+    ======================
+    EOF
+    
+    (Mage2Gen) help add
+    Add a snippet to module
+
+List snippets
+~~~~~~~~~~~~~
+With the *list* command you get a list of all the available snippets you can add to you module:
+
+.. code:: bash
+
+    (Mage2Gen) list
+    console cronjob controller system plugin shipping install language observer payment
+
+Add snippet
+~~~~~~~~~~~
+To add a snippet you can use the *add <snippet name>* command, you can auto-complete a snippet name with TAB:
+
+.. code:: bash
+    
+    (Mage2Gen) add console
+    Action name*: test
+    Short description*: Test log command
+
+Show added snippets
+~~~~~~~~~~~~~~~~~~~
+When you have added multiple snippets and you want to see which snippets are added to the module you can use the *info* command to show an overview:
+
+.. code:: bash
+
+    (Mage2Gen) info
+    
+    Mage2gen/Test
+    
+    Consoles
+    
+    Index  Action name  Short description  
+    --------------------------------------------------------------------------------
+    0      test         Test log command   
+    --------------------------------------------------------------------------------
+
+Remove snippet
+~~~~~~~~~~~~~~
+When you want to remove an added snippet you can use the *remove <snippet name> <index>* command, to remove the snippet from the module:
+
+.. code:: bash
+
+    (Mage2Gen) remove console 0
+    Removed Console snippet
+
+Generate module
+~~~~~~~~~~~~~~~
+When you are ready with you module and added the snippets you wanted to use you can generate the module with the *generate* command. If you are inside a Magento 2 project directory it will select the default path for the module:
+
+.. code:: bash
+
+    (Mage2Gen) generate
+    Generate path [/media/data/Downloads/magento2/app/code]*: 
+    Path does not exist, do you want to create it? [y/N]: y
+    Module (Mage2gen/Test) generated to: /media/data/Downloads/magento2/app/code
+
+Example usage library
+=====================
 
 .. code:: python
 
@@ -157,17 +247,13 @@ TODO
 ====
 
 -  Increase test coverage.
--  [Nice to have] CLI interface for creating modules.
 -  Adding more snippets:
-    -  system.xml (Worked on by Derrick Heesbeen)
     -  Model attributes
     -  Custom models with adminhtml grid
     -  Adding fields to checkout process
-    -  Shipping methods
-    -  Payment methods
     
 Example implementation:
-~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Mage2gen Online Magento Module Creator `mage2gen`_    
 
