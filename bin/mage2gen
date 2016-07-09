@@ -150,10 +150,10 @@ class Mage2Gen(cmd.Cmd):
 
 			lookup_path = os.path.dirname(lookup_path)
 
-		path = self.ask_input('Generate path', default=path).strip()
+		path = self.ask_param_input(SnippetParam(name='Generate path', default=path, required=True))
 
 		if not os.path.isdir(path):
-			if self.ask_input('Path does not exist, do you want to create it?', yes_no=True):
+			if self.ask_param_input(SnippetParam(name='Path does not exist, do you want to create it?', yes_no=True)):
 				try:
 					os.makedirs(path)
 				except Exception:
@@ -161,7 +161,7 @@ class Mage2Gen(cmd.Cmd):
 			else:
 				return
 		elif os.path.isdir(os.path.join(path, module.package, module.name)):
-			if not self.ask_input('Module {}/{} already exists in this root, do you want to rewrite this?'.format(module.package, module.name), yes_no=True):
+			if self.ask_param_input(SnippetParam(name='Module {}/{} already exists in this root, do you want to rewrite this?'.format(module.package, module.name), yes_no=True)):
 				return
 		
 		module.generate_module(path)
