@@ -25,3 +25,4 @@ from .shipping import ShippingSnippet
 from .language import LanguageSnippet
 from .payment import PaymentSnippet
 from .cronjob import CronjobSnippet
+from .unittest import UnitTestSnippet
