@@ -255,7 +255,8 @@ TODO
 Example implementation:
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Mage2gen Online Magento Module Creator `mage2gen`_    
+- Interactive command line
+- Mage2gen Online `Magento 2 Module Creator`_    
 
 .. _docs: http://devdocs.magento.com/guides/v2.0/extension-dev-guide/plugins.html
 .. _mage2gen: http://mage2gen.com
