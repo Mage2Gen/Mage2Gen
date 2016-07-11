@@ -28,7 +28,7 @@ class UnitTestSnippet(Snippet):
 	"""
 
 	def add(self, test_suite, test_name):
-		class_name = "\\Test\\Unit\\{}".format(test_suite)
+		class_name = "\\Test\\Unit\\{}Test".format(test_suite)
 
 		unittest_class = Phpclass(class_name,extends='\\PHPUnit_Framework_TestCase')
 
@@ -36,7 +36,7 @@ class UnitTestSnippet(Snippet):
 		unittest_class.add_method(
 			Phpmethod(
 				'setUpBeforeClass',
-				access='protected',
+				access='static',
 				body='# Is called once before running all test in class'
 			)
 		)
@@ -44,7 +44,7 @@ class UnitTestSnippet(Snippet):
 		unittest_class.add_method(
 			Phpmethod(
 				'tearDownAfterClass',
-				access='protected',
+				access='static',
 				body='# Is called once after running all test in class'
 			)
 		)
@@ -71,7 +71,7 @@ class UnitTestSnippet(Snippet):
 		unittest_class.add_method(
 			Phpmethod(
 				'test{}'.format(upperfirst(test_name)),
-				access='protected',
+				access='public',
 				body="# The test itself, every test function must start with 'test'\n$this->assertTrue(false);"
 			)
 		)
