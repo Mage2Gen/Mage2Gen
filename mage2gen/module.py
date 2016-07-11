@@ -34,7 +34,7 @@ class Phpclass:
 
 	def __init__(self, class_namespace, extends=None, implements=None, attributes=None, dependencies=None):
 		self.class_namespace = self.upper_class_namespace(class_namespace)
-		self.methods = set()
+		self.methods = []
 		self.extends = extends
 		self.implements = implements if implements else []
 		self.attributes = attributes if attributes else []
@@ -44,8 +44,9 @@ class Phpclass:
 		return self.class_namespace == other.class_namespace
 
 	def __add__(self, other):
-		self.attributes = set(list(self.attributes) + list(other.attributes)) 
-		self.methods = set(list(self.methods) + list(other.methods))
+		self.attributes = set(list(self.attributes) + list(other.attributes))
+		for method in other.methods:
+			self.add_method(method)
 		return self
 
 	@property
@@ -60,7 +61,8 @@ class Phpclass:
 		return '\\'.join(upperfirst(n) for n in class_namespace.strip('\\').split('\\'))
 	
 	def add_method(self, method):
-		self.methods = set(list(self.methods) + list([method]))
+		if method not in self.methods:
+			self.methods.append(method)
 
 	def context_data(self):
 		methods = '\n\n'.join(m.generate() for m in self.methods)
