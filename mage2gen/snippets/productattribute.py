@@ -70,12 +70,12 @@ class ProductAttributeSnippet(Snippet):
     """
     
     def add(self,attribute_label,frontend_input,required,scope,options=None,extra_params=None):
-
+        extra_params = extra_params if extra_params else {}
         attribute_code = attribute_label.lower().replace(' ','_');
         value_type = self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int');
         user_defined = 'true'
         options = options.split(',') if options else []
-        options_php_array = '"'+'","'.join(options) + '"'
+        options_php_array = '"'+'","'.join(x.strip() for x in options) + '"'
         options_php_array_string = "array('values' => array("+options_php_array+"))"
         methodName = 'install' + attribute_label + 'ProductAttribute'
 
@@ -147,7 +147,7 @@ class ProductAttributeSnippet(Snippet):
                  name='scope',
                  required=True,  
                  choises=cls.SCOPE_CHOICES, 
-                 default='text'),
+                 default='1'),
          ]
 
     @classmethod
