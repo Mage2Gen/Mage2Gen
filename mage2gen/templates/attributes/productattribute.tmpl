@@ -1,0 +1,28 @@
+$eavSetup->addAttribute(
+    \Magento\Catalog\Model\Product::ENTITY,
+    '{attribute_code}',
+    [
+        'type' => '{value_type}',
+        'backend' => '',
+        'frontend' => '',
+        'label' => '{attribute_label}',
+        'input' => '{frontend_input}',
+        'class' => '',
+        'source' => '',
+        'global' => {scope},
+        'visible' => true,
+        'required' => {required},
+        'user_defined' => {user_defined},
+        'default' => {default},
+        'searchable' => {searchable},
+        'filterable' => {filterable},
+        'comparable' => {comparable},
+        'visible_on_front' => {visible_on_front},
+        'used_in_product_listing' => {used_in_product_listing},
+        'unique' => {unique},
+        'apply_to' => '',
+        'system' => 1,
+        'group' => 'General',
+        'option' => {options}
+    ]
+);

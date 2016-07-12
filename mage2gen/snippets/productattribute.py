@@ -118,7 +118,7 @@ class ProductAttributeSnippet(Snippet):
         self.add_class(install_data)
 
     
-    # @classmethod
+    @classmethod
     def params(cls):
          return [
              SnippetParam(
@@ -133,6 +133,12 @@ class ProductAttributeSnippet(Snippet):
                  required=True,  
                  default='text'),
              SnippetParam(
+                name='options',
+                depend= {'frontend_input': r'select|multiselect'}, 
+                required=False, 
+                description='Dropdown or Multiselect options comma seperated',
+                error_message='Only alphanumeric'),
+             SnippetParam(
                  name='required',
                  required=True,  
                  default=True,
@@ -142,14 +148,9 @@ class ProductAttributeSnippet(Snippet):
                  required=True,  
                  choises=cls.SCOPE_CHOICES, 
                  default='text'),
-             SnippetParam(
-                name='options',
-                depend= {'frontend_input': r'select|multiselect'}, 
-                required=false, 
-                description='Dropdown or Multiselect options comma seperated',
-                error_message='Only alphanumeric'),
          ]
 
+    @classmethod
     def extra_params(cls):
          return [
              SnippetParam(
