@@ -62,14 +62,13 @@ class ProductAttributeSnippet(Snippet):
     #     ("configurable","Configurable Products")
     # ]
 
-    description ="""
-        Creates a setup script for product select attributes. 
+    description = """
+        Install Magento 2 product attributes programmatically. 
 
         The attribute is automatically added to all the attribute sets.
-
     """
     
-    def add(self,attribute_label,frontend_input,required,scope,options=None,extra_params=None):
+    def add(self,attribute_label,frontend_input='text',required=False,scope=1,options=None,extra_params=None):
         extra_params = extra_params if extra_params else {}
         attribute_code = attribute_label.lower().replace(' ','_');
         value_type = self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int');
