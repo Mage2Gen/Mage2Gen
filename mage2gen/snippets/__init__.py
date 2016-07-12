@@ -24,4 +24,5 @@ from .console import ConsoleSnippet
 from .shipping import ShippingSnippet
 from .language import LanguageSnippet
 from .payment import PaymentSnippet
+from .productattribute import ProductAttributeSnippet
 from .cronjob import CronjobSnippet

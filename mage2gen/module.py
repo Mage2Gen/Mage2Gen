@@ -34,18 +34,20 @@ class Phpclass:
 
 	def __init__(self, class_namespace, extends=None, implements=None, attributes=None, dependencies=None):
 		self.class_namespace = self.upper_class_namespace(class_namespace)
-		self.methods = set()
+		self.methods = []
 		self.extends = extends
 		self.implements = implements if implements else []
 		self.attributes = attributes if attributes else []
 		self.dependencies = dependencies if dependencies else []
-
 	def __eq__(self, other):
 		return self.class_namespace == other.class_namespace
 
 	def __add__(self, other):
 		self.attributes = set(list(self.attributes) + list(other.attributes)) 
-		self.methods = set(list(self.methods) + list(other.methods))
+
+		for method in other.methods :
+			self.add_method(method)		
+
 		return self
 
 	@property
@@ -60,7 +62,11 @@ class Phpclass:
 		return '\\'.join(upperfirst(n) for n in class_namespace.strip('\\').split('\\'))
 	
 	def add_method(self, method):
-		self.methods = set(list(self.methods) + list([method]))
+		if method in self.methods:
+			method_index = self.methods.index(method)
+			self.methods[method_index] = self.methods[method_index] + method
+		else :
+			self.methods.append(method)
 
 	def context_data(self):
 		methods = '\n\n'.join(m.generate() for m in self.methods)
@@ -109,14 +115,20 @@ class Phpmethod:
 	PRIVATE = 'private'
 
 	def __init__(self, name, **kwargs):
+
 		self.name = name
 		self.access = kwargs.get('access', self.PUBLIC)
 		self.params = kwargs.get('params', [])
-		self.body = kwargs.get('body', '')
+		self.body = [kwargs.get('body', '')]
 		self.template_file = os.path.join(TEMPLATE_DIR, 'method.tmpl')
-
 	def __eq__(self, other):
 		return self.name == other.name
+
+	def __add__(self, other):
+		for code in other.body :
+			if code not in self.body :
+				self.body.append(code)
+		return self
 
 	def __hash__(self):
 		return hash(self.name)
@@ -128,8 +140,15 @@ class Phpmethod:
 		else:
 			return ', '.join(self.params)
 
+	def add_body_code(self,code):
+		if code not in self.body:
+			self.append(code)
+
 	def body_code(self):
-		return '\n\t\t'.join(s.strip('\t') for s in self.body.splitlines())
+		body_string = ''
+		for body_code in self.body:
+			body_string += '\n\t\t'.join(s.strip('\t') for s in body_code.splitlines()) + '\n\n\t\t'
+		return body_string
 
 	def generate(self):
 		with open(self.template_file, 'rb') as tmpl:
