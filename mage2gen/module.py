@@ -44,10 +44,8 @@ class Phpclass:
 
 	def __add__(self, other):
 		self.attributes = set(list(self.attributes) + list(other.attributes)) 
-
 		for method in other.methods :
 			self.add_method(method)		
-
 		return self
 
 	@property

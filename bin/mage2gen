@@ -3,9 +3,9 @@ import sys
 import os
 import json
 import cmd
-import inspect
 import mage2gen
-import mage2gen.snippets
+from mage2gen import Snippet, SnippetParam
+from mage2gen.utils import upperfirst
 from collections import defaultdict, OrderedDict
 
 
@@ -15,7 +15,7 @@ class Mage2Gen(cmd.Cmd):
 	def __init__(self, *args, **kwargs):
 		super(Mage2Gen, self).__init__(*args, **kwargs)
 		self.preloop_runed = False
-		self.package_name = ''
+		self.package_name = 'Mage2gen'
 		self.module_name = ''
 		self.description = ''
 
@@ -24,9 +24,8 @@ class Mage2Gen(cmd.Cmd):
 
 	def load_snippets(self):
 		snippets = {}
-		for name, obj in inspect.getmembers(mage2gen.snippets):
-			if inspect.isclass(obj) and issubclass(obj, mage2gen.Snippet):
-				snippets[name.lower().replace('snippet', '')] = obj
+		for snippet in Snippet.snippets():
+			snippets[snippet.name().lower()] = snippet
 		return snippets
 
 	def cmdloop(self):
@@ -41,45 +40,58 @@ class Mage2Gen(cmd.Cmd):
 	def emptyline(self):
 		return ''
 
-	def ask_input(self, text, default=None, required=True, yes_no=False):
-		default_label = ' [{}]'.format(default) if default else ''
-		
-		if yes_no:
+	def do_exit(self, line):
+		"""Exit mage2gen console"""
+		return True
+
+	def ask_param_input(self, param):
+		default_label = ' [{}]'.format(param.default) if param.default else ''
+		required = param.required
+
+		if param.yes_no:
 			required = True
-			default_label = ' [Y/n]' if default else ' [y/N]'
+			default_label = ' [Y/n]' if param.default else ' [y/N]'
 
 		while True:
 			try:
-				result = input('{}{}: '.format(text, default_label))
+				result = input('{}{}{}: '.format(param.name_label(), default_label, '*' if param.required  else ''))
 			except EOFError:
 				sys.exit()
 
-			if yes_no:
+			if param.yes_no:
 				if result in ['y', 'Y']:
 					result = True
 				elif result in ['n', 'N']:
 					result = False
-				elif default != None:
-					result = default
+				elif param.default != None:
+					result = param.default
 				else:
 					result = ''
-			elif default != None and not result:
-				result = default
+			elif param.default != None and not result:
+				result = param.default
 
-			if required and result == '':
+			try:
+				param.validate(result)
+			except Exception as e:
+				print(e)
 				continue
 
 			break
 
 		return result
 
+
 	def preloop(self):
 		if not self.preloop_runed:
-			self.package_name = self.ask_input('Package name', default='Mage2gen')
-			self.module_name = self.ask_input('Module name')
-			self.description = self.ask_input('Description', required=False)
+			self.do_edit()
 			print('\nType help or ? to list commands.')
 			self.preloop_runed = True
+
+	def do_edit(self, line=None):
+		"""Edit the Module package name, name and description"""
+		self.package_name = self.ask_param_input(SnippetParam(name='Package name', default=self.package_name, required=True))
+		self.module_name = self.ask_param_input(SnippetParam(name='Module name', default=self.module_name , required=True))
+		self.description = self.ask_param_input(SnippetParam(name='Description', default=self.description , required=False))
 
 	def do_list(self, line):
 		"""List available snippets"""
@@ -90,13 +102,8 @@ class Mage2Gen(cmd.Cmd):
 		SnippetClass = self._snippets.get(line)
 		if SnippetClass:
 			params = OrderedDict()
-			for arg_name, arg in inspect.signature(SnippetClass.add).parameters.items():
-				if arg_name == 'self':
-					continue
-
-				default = arg.default if arg.default != arg.empty else None
-				params[arg_name] =  self.ask_input(arg_name, default=default, yes_no=isinstance(default, bool))
-
+			for param in SnippetClass.params():
+				params[param.name] = self.ask_param_input(param)
 			self._module_snippets[SnippetClass].append(params)
 
 	def complete_add(self, text, line, begidx, endidx):
@@ -109,8 +116,11 @@ class Mage2Gen(cmd.Cmd):
 			try:
 				SnippetClass = self._snippets.get(args[0])
 				self._module_snippets[SnippetClass].pop(int(args[1]))
+				print('Removed {} snippet'.format(SnippetClass.name()))
+				if len(self._module_snippets[SnippetClass]) == 0:
+					self._module_snippets.pop(SnippetClass, None)
 			except Exception:
-				print('Could not remove snippt')
+				print('Could not remove snippet')
 
 
 	def complete_remove(self, text, line, begidx, endidx):
@@ -136,7 +146,7 @@ class Mage2Gen(cmd.Cmd):
 			composer_path = os.path.join(lookup_path, 'composer.json')
 			try:
 				composer = json.loads(open(composer_path).read())
-				if composer['name'] == 'magento/project-community-edition':
+				if composer['name'] in ['magento/project-community-edition', 'magento/magento2ce']:
 					path = os.path.join(lookup_path, 'app', 'code')
 					break
 			except Exception:
@@ -144,10 +154,10 @@ class Mage2Gen(cmd.Cmd):
 
 			lookup_path = os.path.dirname(lookup_path)
 
-		path = self.ask_input('Generate path', default=path).strip()
+		path = self.ask_param_input(SnippetParam(name='Generate path', default=path, required=True))
 
 		if not os.path.isdir(path):
-			if self.ask_input('Path does not exist, do you want to create it?', yes_no=True):
+			if self.ask_param_input(SnippetParam(name='Path does not exist, do you want to create it?', yes_no=True)):
 				try:
 					os.makedirs(path)
 				except Exception:
@@ -155,8 +165,9 @@ class Mage2Gen(cmd.Cmd):
 			else:
 				return
 		elif os.path.isdir(os.path.join(path, module.package, module.name)):
-			if not self.ask_input('Module {}/{} already exists in this root, do you want to rewrite this?'.format(module.package, module.name), yes_no=True):
+			if self.ask_param_input(SnippetParam(name='Module {}/{} already exists in this root, do you want to rewrite this?'.format(module.package, module.name), yes_no=True)):
 				return
+		
 		module.generate_module(path)
 		print('Module ({}/{}) generated to: {}'.format(module.package, module.name, path))
 
@@ -174,9 +185,9 @@ class Mage2Gen(cmd.Cmd):
 
 			for index, kwargs in enumerate(kwargss):
 				if index == 0:
-					header = 'index  '
+					header = 'Index  '
 					for key, value in kwargs.items():
-						header += str(key).ljust(kwarg_size[key])
+						header += upperfirst(key.replace('_', ' ')).ljust(kwarg_size[key])
 					print(header)
 					total_size = sum(kwarg_size.values()) + 7
 					total_size = total_size if total_size > 80 else 80

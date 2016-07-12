@@ -27,7 +27,7 @@ class CronjobSnippet(Snippet):
 
     """
 
-	def add(self,cronjob_name,schedule):
+	def add(self, cronjob_name, schedule='*/5 * * * *'):
 
 		crontab_file = 'etc/crontab.xml'
 
@@ -74,19 +74,20 @@ class CronjobSnippet(Snippet):
 
 		self.add_xml(crontab_file, crontab_xml)
 
-	# @classmethod
+	@classmethod
 	def params(cls):
 		return [
 			SnippetParam(
                 name='cronjob_name', 
                 required=True, 
                 description='Cronjob Name',
-                regex_validator= r'^[a-z\d\-_\s]+$',
-                error_message='Only alphanumeric'),
+                regex_validator= r'^[a-zA-Z]{1}\w+$',
+                error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
 			SnippetParam(
                 name='schedule', 
                 required=True, 
+                default='*/5 * * * *',
                 description='Cron Schedule. For example */5 * * * *',
-                regex_validator= r'([\d\*-,]*) ([\d\*-,]*) ([\d\*-,]*) ([\d\*-,]*) ([\d\*-,]*) (.*)',
+                regex_validator= r'^([\d*,-/]+)\s+([\d*,-/]+)\s+([\d*,-/\?LW]+)\s+([\d\w*,-/]+)\s+([\d\w*,-/\?L#]+)\s*([\d\w*,-/]*)$',
                 error_message='Enter a valid cron schedule'),
 		]
