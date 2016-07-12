@@ -53,13 +53,9 @@ class SystemSnippet(Snippet):
 		('multiselect', 'Multiselect'),
 	]
 
-	def add(self, tab, section, group, field, field_type='text', tab_options=None, section_options=None, group_options=None, field_options=None, new_tab=False):
-
+	def add(self, tab, section, group, field, field_type='text', new_tab=False, extra_params=None):
 		resource_id = self.module_name+'::config_'+self.module_name.lower()
-		tab_options = tab_options if tab_options else {}
-		section_options = section_options if section_options else {}
-		group_options = group_options if group_options else {}
-		field_options = field_options if field_options else {}
+		extra_params = extra_params if extra_params else {}
 
 		tab_code = tab.lower().replace(' ', '_')
 		section_code = section.lower().replace(' ', '_')
@@ -69,9 +65,12 @@ class SystemSnippet(Snippet):
 		file = 'etc/adminhtml/system.xml'	
 
 		if new_tab :
-			tabxml = Xmlnode('tab',attributes={'id':tab,'translate':tab_options.get('translate','label'),'sortOrder':tab_options.get('sortOrder',999)},nodes=[
-						Xmlnode('label',node_text=tab_options.get('label',tab))	
-					 ])
+			tabxml = Xmlnode('tab',attributes={
+					'id':tab,
+					'translate':'label',
+					'sortOrder':extra_params.get('tab_sortOrder',999)},nodes=[
+				Xmlnode('label',node_text=extra_params.get('tab_label',tab))	
+			 ])
 		else:
 			tabxml = False
 
@@ -80,22 +79,40 @@ class SystemSnippet(Snippet):
 		else:
 			source_model_xml = False
 
-		if field_options.get('backend_model'):
-			backend_model_xml = Xmlnode('backend_model',node_text=field_options.get('backend_model'))
+		if extra_params.get('field_backend_model'):
+			backend_model_xml = Xmlnode('backend_model',node_text=extra_params.get('field_backend_model'))
 		else:
 			backend_model_xml = False			
 
 		config = Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Config:etc/system_file.xsd"}, nodes=[
 				Xmlnode('system',  nodes=[
 					tabxml,
-					Xmlnode('section',attributes={'id':section,'sortOrder':section_options.get('sortorder',10),'showInWebsite':section_options.get('show_in_website',1),'showInStore':section_options.get('show_in_store',1),'showInDefault':section_options.get('show_in_default',1),'translate':'label'},match_attributes={'id'},nodes=[
-						Xmlnode('label',node_text=section_options.get('label',section)),
+					Xmlnode('section',attributes={
+							'id':section,
+							'sortOrder':extra_params.get('section_sortorder',10),
+							'showInWebsite':1 if extra_params.get('section_show_in_website',True) else 0,
+							'showInStore':1 if extra_params.get('section_show_in_store',True) else 0,
+							'showInDefault': 1 if extra_params.get('section_show_in_default',True) else 0,
+							'translate':'label'},match_attributes={'id'},nodes=[
+						Xmlnode('label',node_text=extra_params.get('section_label',section)),
 						Xmlnode('tab',node_text=tab),
 						Xmlnode('resource',node_text=resource_id),
-						Xmlnode('group', attributes={'id':group,'sortOrder':group_options.get('sortorder',10),'showInWebsite':group_options.get('show_in_website',1),'showInStore':group_options.get('show_in_store',1),'showInDefault':group_options.get('show_in_default',1),'translate':'label'},match_attributes={'id'},nodes=[
-							Xmlnode('field', attributes={'id':field,'type':field_type,'sortOrder':field_options.get('sortorder',10),'showInWebsite':field_options.get('show_in_website',1),'showInStore':field_options.get('show_in_store',1),'showInDefault':field_options.get('show_in_default',1),'translate':'label'},match_attributes={'id'},nodes=[
-								Xmlnode('label',node_text=field_options.get('label',field)),
-								Xmlnode('comment',node_text=field_options.get('comment')),
+						Xmlnode('group', attributes={
+								'id':group,'sortOrder':extra_params.get('group_sortorder',10),
+								'showInWebsite': 1 if extra_params.get('group_show_in_website',True) else 0,
+								'showInStore': 1 if extra_params.get('group_show_in_store',True) else 0,
+								'showInDefault': 1 if extra_params.get('group_show_in_default',True) else 0,
+								'translate':'label'},match_attributes={'id'},nodes=[
+							Xmlnode('field', attributes={
+									'id':field,
+									'type':field_type,
+									'sortOrder':extra_params.get('field_sortorder',10),
+									'showInWebsite': 1 if extra_params.get('field_show_in_website',True) else 0,
+									'showInStore': 1 if extra_params.get('field_show_in_store',True) else 0,
+									'showInDefault': 1 if extra_params.get('field_show_in_default',True) else 0,
+									'translate':'label'},match_attributes={'id'},nodes=[
+								Xmlnode('label',node_text=extra_params.get('field_label',field)),
+								Xmlnode('comment',node_text=extra_params.get('field_comment')),
 								source_model_xml,
 								backend_model_xml
 							])
@@ -132,7 +149,7 @@ class SystemSnippet(Snippet):
 			Xmlnode('default',nodes=[
 				Xmlnode(section,nodes=[
 					Xmlnode(group,nodes=[
-						Xmlnode(field,node_text=field_options.get('default'))
+						Xmlnode(field,node_text=extra_params.get('field_default'))
 					])
 				])
 			])
@@ -175,4 +192,74 @@ class SystemSnippet(Snippet):
 				name='field_type', 
 				choises=cls.TYPE_CHOISES, 
 				default='text'),
+		]
+
+	@classmethod
+	def extra_params(cls):
+		return [
+			'Tab',
+			SnippetParam(
+				name='tab_sortOrder',
+				regex_validator= r'^\d+$',
+				error_message='Only numeric value'),
+			SnippetParam(name='tab_label'),
+			'Section',
+			SnippetParam(name='section_label'),
+			SnippetParam(
+				name='section_sortorder',
+				regex_validator= r'^\d+$',
+				error_message='Only numeric value'),
+			SnippetParam(
+				name='section_show_in_website',
+				default=True,
+				yes_no=True),
+			SnippetParam(
+				name='section_show_in_store',
+				default=True,
+				yes_no=True),
+			SnippetParam(
+				name='section_show_in_default',
+				default=True,
+				yes_no=True),
+			'Group',
+			SnippetParam(
+				name='group_sortorder',
+				regex_validator= r'^\d+$',
+				error_message='Only numeric value'),
+			SnippetParam(
+				name='group_show_in_website',
+				default=True,
+				yes_no=True),
+			SnippetParam(
+				name='group_show_in_store',
+				default=True,
+				yes_no=True),
+			SnippetParam(
+				name='group_show_in_default',
+				default=True,
+				yes_no=True),
+			'Field',
+			SnippetParam(name='field_label'),
+			SnippetParam(name='field_comment'),
+			SnippetParam(name='field_default'),
+			SnippetParam(
+				name='field_sortorder',
+				regex_validator= r'^\d+$',
+				error_message='Only numeric value'),
+			SnippetParam(
+				name='field_show_in_website',
+				default=True,
+				yes_no=True),
+			SnippetParam(
+				name='field_show_in_store',
+				default=True,
+				yes_no=True),
+			SnippetParam(
+				name='field_show_in_default',
+				default=True,
+				yes_no=True),
+			SnippetParam(
+				name='field_backend_model',
+				regex_validator=r'^[\w\\]+$',
+				error_message='Only alphanumeric, underscore and backslash characters are allowed'),
 		]

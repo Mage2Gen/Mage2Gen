@@ -100,6 +100,15 @@ class Snippet(metaclass=MetaClass):
 				))
 		return params
 
+	@classmethod
+	def extra_params(cls):
+		"""
+		Gives a list of optional params, these params must be given to the add functon in a dict for the keyword extra_params.
+
+		To seperate params with a title, add a string with name in the list between the items. 
+		"""
+		return []
+
 
 	@property
 	def module_name(self):
