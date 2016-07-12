@@ -22,9 +22,19 @@ from collections import namedtuple
 from mage2gen.utils import upperfirst
 
 class SnippetParam:
+	"""
+	SnippetParam defines how a param can be rendered and validated by external program.
+
+	depend is a dict where the key is the name of an other param and the value is a regex, example:
+	{
+		'some_param': r'value|value2'
+	}
+	"""
+	
 	def __init__(
 		self, name, description='', required=False, default=None, 
-		choises=None, yes_no=False, regex_validator='', error_message=''
+		choises=None, yes_no=False, regex_validator='', error_message='',
+		depend=None
 	):
 		self.name = name
 		self.description = description
@@ -34,6 +44,7 @@ class SnippetParam:
 		self.yes_no = yes_no
 		self.regex_validator = regex_validator
 		self.error_message = error_message
+		self.depend = depend
 
 	def name_label(self):
 		return upperfirst(self.name.replace('_', ' '))
