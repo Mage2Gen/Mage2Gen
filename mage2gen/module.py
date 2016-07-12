@@ -39,14 +39,13 @@ class Phpclass:
 		self.implements = implements if implements else []
 		self.attributes = attributes if attributes else []
 		self.dependencies = dependencies if dependencies else []
-
 	def __eq__(self, other):
 		return self.class_namespace == other.class_namespace
 
 	def __add__(self, other):
-		self.attributes = set(list(self.attributes) + list(other.attributes))
-		for method in other.methods:
-			self.add_method(method)
+		self.attributes = set(list(self.attributes) + list(other.attributes)) 
+		for method in other.methods :
+			self.add_method(method)		
 		return self
 
 	@property
@@ -61,7 +60,10 @@ class Phpclass:
 		return '\\'.join(upperfirst(n) for n in class_namespace.strip('\\').split('\\'))
 	
 	def add_method(self, method):
-		if method not in self.methods:
+		if method in self.methods:
+			method_index = self.methods.index(method)
+			self.methods[method_index] = self.methods[method_index] + method
+		else :
 			self.methods.append(method)
 
 	def context_data(self):
@@ -111,14 +113,20 @@ class Phpmethod:
 	PRIVATE = 'private'
 
 	def __init__(self, name, **kwargs):
+
 		self.name = name
 		self.access = kwargs.get('access', self.PUBLIC)
 		self.params = kwargs.get('params', [])
-		self.body = kwargs.get('body', '')
+		self.body = [kwargs.get('body', '')]
 		self.template_file = os.path.join(TEMPLATE_DIR, 'method.tmpl')
-
 	def __eq__(self, other):
 		return self.name == other.name
+
+	def __add__(self, other):
+		for code in other.body :
+			if code not in self.body :
+				self.body.append(code)
+		return self
 
 	def __hash__(self):
 		return hash(self.name)
@@ -130,8 +138,15 @@ class Phpmethod:
 		else:
 			return ', '.join(self.params)
 
+	def add_body_code(self,code):
+		if code not in self.body:
+			self.append(code)
+
 	def body_code(self):
-		return '\n\t\t'.join(s.strip('\t') for s in self.body.splitlines())
+		body_string = ''
+		for body_code in self.body:
+			body_string += '\n\t\t'.join(s.strip('\t') for s in body_code.splitlines()) + '\n\n\t\t'
+		return body_string
 
 	def generate(self):
 		with open(self.template_file, 'rb') as tmpl:
