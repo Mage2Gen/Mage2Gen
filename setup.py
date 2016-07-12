@@ -10,7 +10,7 @@ def readme():
 setup(
 	name = 'Mage2Gen',
 	packages = ['mage2gen', 'mage2gen.snippets'],
-	package_data={'mage2gen': ['templates/*.tmpl', 'templates/payment/*.tmpl']},
+	package_data={'mage2gen': ['templates/*.tmpl', 'templates/payment/*.tmpl', 'templates/attributes/*.tmpl']},
 	scripts=['bin/mage2gen'],
 	version = '0.7',
 	description = 'Magento 2 module generator',
