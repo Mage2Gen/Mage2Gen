@@ -93,7 +93,7 @@ class ControllerSnippet(Snippet):
 					Xmlnode('block', attributes={
 						'name': "{}.{}".format(section, action), 
 						'class': block.class_namespace,
-						'template': "{}::{}_{}.phtml".format(self.module_name, section, action)
+						'template': "{}::{}/{}.phtml".format(self.module_name, section, action)
 					})
 				])
 			])
@@ -103,7 +103,7 @@ class ControllerSnippet(Snippet):
 
 		# add template file
 		path = os.path.join('view', 'adminhtml' if adminhtml else 'frontend', 'templates')
-		self.add_static_file(path, StaticFile('order_json.phtml'))
+		self.add_static_file(path, StaticFile("{}/{}.phtml".format(section, action),body="Hello {}/{}.phtml".format(section, action)))
 
 
 	@classmethod
