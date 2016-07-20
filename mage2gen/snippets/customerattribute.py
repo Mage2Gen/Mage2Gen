@@ -196,16 +196,6 @@ class CustomerAttributeSnippet(Snippet):
                 depend= {'frontend_input': r'static'}, 
                 required=True, 
                 ),
-             SnippetParam(
-                 name='required',
-                 required=True,  
-                 default=True,
-                 yes_no=True),
-             SnippetParam(
-                 name='scope',
-                 required=True,  
-                 choises=cls.SCOPE_CHOICES, 
-                 default='1'),
          ]
 
 	@classmethod
