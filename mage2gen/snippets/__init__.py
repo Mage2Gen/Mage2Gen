@@ -25,6 +25,7 @@ from .shipping import ShippingSnippet
 from .language import LanguageSnippet
 from .payment import PaymentSnippet
 from .productattribute import ProductAttributeSnippet
+from .customerattribute import CustomerAttributeSnippet
 from .cronjob import CronjobSnippet
 from .unittest import UnitTestSnippet
 

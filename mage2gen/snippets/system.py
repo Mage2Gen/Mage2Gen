@@ -53,7 +53,26 @@ class SystemSnippet(Snippet):
 		('multiselect', 'Multiselect'),
 	]
 
-	def add(self, tab, section, group, field, field_type='text', new_tab=False, extra_params=None):
+	SOURCE_MODELS = [
+		('Magento\\Config\\Model\\Config\\Source\\Yesno','Yes/No'),
+		('Magento\\Config\\Model\\Config\\Source\\Enabledisable','Enable/Disable'),
+		('Magento\\Config\\Model\\Config\\Source\\Locale','Locale'),
+		('Magento\\Config\\Model\\Config\\Source\\Store','Stores'),
+		('Magento\\Config\\Model\\Config\\Source\\Website','Websites'),
+		('Magento\\Config\\Model\\Config\\Source\\Nooptreq','No/Optional/Required'),
+		('Magento\\Config\\Model\\Config\\Source\\Email\\Template','Email Template'),
+		('Magento\\Config\\Model\\Config\\Source\\Email\\Identity','Email Identity'),
+		('Magento\\Config\\Model\\Config\\Locale\\Source\\Currency','Currency'),
+		('Magento\\Sales\\Model\\Config\\Source\\Order\\Status\\NewStatus','Order Status (state New)'),
+		('Magento\\Sales\\Model\\Config\\Source\\Order\\Status\\Processing','Order Status (state Processing)'),
+		('Magento\\Sales\\Model\\Config\\Source\\Order\\Status\\Newprocessing','Order Status (state New / Processing)'),
+		('Magento\\Payment\\Model\\Config\\Source\\Allspecificcountries','All Specific Countries'),
+		('Magento\\Directory\\Model\\Config\\Source\\Country','Countries'),
+		('','------------------'),
+		('custom','Create Your own')
+	]
+
+	def add(self, tab, section, group, field, field_type='text', new_tab=False, extra_params=None, source_model=False, source_model_options=False):
 		resource_id = self.module_name+'::config_'+self.module_name.lower()
 		extra_params = extra_params if extra_params else {}
 
@@ -75,7 +94,7 @@ class SystemSnippet(Snippet):
 			tabxml = False
 
 		if field_type =='select' or field_type == 'multiselect' :
-			source_model_xml = Xmlnode('source_model',node_text='Magento\Config\Model\Config\Source\Yesno')
+			source_model_xml = Xmlnode('source_model',node_text=source_model)
 		else:
 			source_model_xml = False
 
@@ -157,6 +176,16 @@ class SystemSnippet(Snippet):
 		
 		self.add_xml(config_file, default_config)
 
+		if source_model_options:
+
+			source_model_class = Phpclass(
+				'Model\\Config\\Source\\'+ field_code,
+				implements=['\Magento\Framework\Option\ArrayInterface']
+			)
+
+			source_model_class.add_method(Phpmethod('toOptionArray',body="return [['value' => 1, 'label' => __('Yes')], ['value' => 0, 'label' => __('No')]];"))
+			source_model_class.add_method(Phpmethod('toArray',body="return [0 => __('No'), 1 => __('Yes')];"))
+
 	@classmethod
 	def params(cls):
 		return [
@@ -192,6 +221,17 @@ class SystemSnippet(Snippet):
 				name='field_type', 
 				choises=cls.TYPE_CHOISES, 
 				default='text'),
+			SnippetParam(
+				name='source_model', 
+				choises=cls.SOURCE_MODELS,
+				depend= {'field_type': r'select|multiselect'}, 
+				default='Magento\Config\Model\Config\Source\Yesno'),
+			SnippetParam(
+				name='source_model_options', 
+				depend= {'source_model': r'custom'}, 
+				description='Dropdown or Multiselect options comma seperated',
+				error_message='Only alphanumeric')
+
 		]
 
 	@classmethod
