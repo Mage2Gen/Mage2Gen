@@ -39,7 +39,7 @@ class InstallSnippet(Snippet):
 	- Setup/UpgradeData  
 	"""
 
-	def add(self,from_version='1.0.0'):
+	def add(self,from_version='1.0.0', extra_params=None):
 
 		install_schema = Phpclass('Setup\\InstallSchema',implements=['InstallSchemaInterface'],dependencies=['Magento\\Framework\\Setup\\InstallSchemaInterface','Magento\\Framework\\Setup\\ModuleContextInterface','Magento\\Framework\\Setup\\SchemaSetupInterface'])
 		install_schema.add_method(Phpmethod('install',params=['SchemaSetupInterface $setup','ModuleContextInterface $context'],body='$installer = $setup;\n $installer->startSetup();\n $installer->endSetup();'))

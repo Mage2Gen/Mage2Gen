@@ -116,7 +116,7 @@ class LanguageSnippet(Snippet):
 		('cy_GB', 'Welsh (United Kingdom)'),
 	]
 
-	def add(self, language='en_US'):
+	def add(self, language='en_US', extra_params=None):
 		self.add_static_file('i18n', StaticFile(language+'.csv','"string","stringtranslated"'))
 
 	@classmethod

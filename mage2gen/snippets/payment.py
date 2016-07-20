@@ -29,7 +29,7 @@ class PaymentSnippet(Snippet):
 
 	"""
 
-	def add(self,method_name):
+	def add(self,method_name, extra_params=None):
 
 		payment_code = method_name.lower().replace(' ', '_')
 		payment_class_name = method_name
