@@ -59,7 +59,7 @@ class ShippingSnippet(Snippet):
 
 	"""
 
-	def add(self,method_name):
+	def add(self,method_name, extra_params=None):
 
 		system_file = 'etc/adminhtml/system.xml'
 		shipping_code = method_name.lower().replace(' ', '_')

@@ -59,7 +59,7 @@ class PluginSnippet(Snippet):
 		(TYPE_AROUND, 'Around'),
 	]
 
-	def add(self, classname, methodname, plugintype=TYPE_AFTER, sortorder=10, disabled=False):
+	def add(self, classname, methodname, plugintype=TYPE_AFTER, sortorder=10, disabled=False, extra_params=None):
 		# Add class
 		plugin = Phpclass('Plugin\\{}'.format(classname))
 		

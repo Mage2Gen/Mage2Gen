@@ -52,7 +52,7 @@ class ObserverSnippet(Snippet):
 		(SCOPE_ADMINHTML, 'Backend'),
 	]
 	
-	def add(self, event, scope=SCOPE_ALL):
+	def add(self, event, scope=SCOPE_ALL, extra_params=None):
 		split_event = event.split('_')
 
 		observer = Phpclass(
