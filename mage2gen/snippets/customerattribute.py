@@ -112,20 +112,16 @@ class CustomerAttributeSnippet(Snippet):
 				'Magento\\Framework\\Setup\\ModuleContextInterface',
 				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
 				'Magento\\Customer\\Model\\Customer',
-				'Magento\\Customer\\Setup\\CustomerSetupFactory',
-				'Magento\\Eav\\Model\\Entity\\Attribute\\Set as AttributeSet',
-				'Magento\\Eav\\Model\\Entity\\Attribute\\SetFactory as AttributeSetFactory'
+				'Magento\\Customer\\Setup\\CustomerSetupFactory'
 				]
 		)
 
 		install_data.attributes.append('private $customerSetupFactory;')
-		install_data.attributes.append('private $attributeSetFactory;')
 		
 		install_data.add_method(Phpmethod(
 			'__construct',
 			params=[
-				'CustomerSetupFactory $customerSetupFactory',
-				'AttributeSetFactory $attributeSetFactory'
+				'CustomerSetupFactory $customerSetupFactory'
 			],
 			body="$this->customerSetupFactory = $customerSetupFactory; \n$this->attributeSetFactory = $attributeSetFactory;"
 		))
