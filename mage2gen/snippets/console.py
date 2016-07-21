@@ -33,7 +33,7 @@ class ConsoleSnippet(Snippet):
 		bin/magento mage2gen_module:backup
 	"""
 
-	def add(self,action_name,short_description):
+	def add(self,action_name,short_description, extra_params=None):
 
 		console = Phpclass(
 			'Console\\Command\\'+action_name, 

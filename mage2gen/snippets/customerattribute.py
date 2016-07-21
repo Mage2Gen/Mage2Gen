@@ -2,6 +2,7 @@ import os, locale
 from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 class CustomerAttributeSnippet(Snippet):
+	snippet_label = 'Customer Attribute'
 
 	FRONTEND_INPUT_TYPE = [
         ("text","Text Field"),
@@ -44,19 +45,19 @@ class CustomerAttributeSnippet(Snippet):
 		('customer_register_address','customer_register_address')
 	]
 
-	CUSTOMER_ENTITY = {
+	CUSTOMER_ENTITY = [
 		('customer','Customer'),
 		('customer_address','Customer Address')
-	}
+	]
 
-	CUSTOMER_SOURCE_MODELS = {
+	CUSTOMER_SOURCE_MODELS = [
 		('Magento\Customer\Model\Customer\Attribute\Source\Group','Magento\Customer\Model\Customer\Attribute\Source\Group')
-	}
+	]
 
-	CUSTOMER_ADDRESS_SOURCE_MODELS = {
+	CUSTOMER_ADDRESS_SOURCE_MODELS = [
 		('Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Country','Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Country'),
 		('Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Region','Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Region')
-	}
+	]
 
 	meta_description = """
 
@@ -76,6 +77,9 @@ class CustomerAttributeSnippet(Snippet):
 		forms_php_array = ''
 
 		forms_array = customer_forms if customer_entity == 'customer' else customer_address_forms
+
+		if not isinstance(forms_array, list):
+			forms_array = [forms_array]
 		
 		for form in forms_array:
 			forms_php_array += "'"+form+"'," 
@@ -161,7 +165,7 @@ class CustomerAttributeSnippet(Snippet):
                  name='customer_entity', 
                  choises=cls.CUSTOMER_ENTITY,
                  required=True,  
-                 default='text'),
+                 default='customer'),
              SnippetParam(
                 name='attribute_label', 
                 required=True, 
@@ -171,18 +175,17 @@ class CustomerAttributeSnippet(Snippet):
              SnippetParam(
                 name='customer_forms',
                 choises=cls.USED_IN_FORMS,
-                depend= {'customer_entity': r'customer'}, 
+                depend= {'customer_entity': r'^customer$'}, 
                 required=True, 
                 ),
              SnippetParam(
                 name='customer_address_forms',
                 choises=cls.ADDRESS_USED_IN_FORMS,
-                depend= {'customer_entity': r'customer_address'}, 
+                depend= {'customer_entity': r'^customer_address$'}, 
                 required=True, 
                 ),
              SnippetParam(
-                 name='required',
-                 required=True,  
+                 name='required', 
                  default=True,
                  yes_no=True),
              SnippetParam(
@@ -196,16 +199,6 @@ class CustomerAttributeSnippet(Snippet):
                 depend= {'frontend_input': r'static'}, 
                 required=True, 
                 ),
-             SnippetParam(
-                 name='required',
-                 required=True,  
-                 default=True,
-                 yes_no=True),
-             SnippetParam(
-                 name='scope',
-                 required=True,  
-                 choises=cls.SCOPE_CHOICES, 
-                 default='1'),
          ]
 
 	@classmethod

@@ -31,7 +31,7 @@ class ControllerSnippet(Snippet):
 	This snippet will also create a layout.xml, Block and phtml for the action.
 	"""
 
-	def add(self, frontname='', section='index', action='index', adminhtml=False):
+	def add(self, frontname='', section='index', action='index', adminhtml=False, extra_params=None):
 		if not frontname:
 			frontname = self._module.name.lower()
 		file = 'etc/{}/routes.xml'.format('adminhtml' if adminhtml else 'frontend')
