@@ -28,10 +28,18 @@ class ProductAttributeSnippet(Snippet):
         ("multiselect","Multiple Select"),
         ("select","Dropdown"),
         ("price","Price"),
+        ("static","Static")
         #("media_image","Media Image"),
         #("weee","Fixed Product Tax"),
         #("swatch_visual","Visual Swatch"),
         #("swatch_text","Text Swatch")
+    ]
+
+    STATIC_FIELD_TYPES = [
+        ("varchar","Varchar"),
+        ("text","Text"),
+        ("int","Int"),
+        ("decimal","Decimal")
     ]
 
     FRONTEND_INPUT_VALUE_TYPE = {
@@ -115,7 +123,6 @@ class ProductAttributeSnippet(Snippet):
         install_data.add_method(Phpmethod('install',params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],body=methodBody))
     
         self.add_class(install_data)
-
     
     @classmethod
     def params(cls):
