@@ -67,25 +67,22 @@ class CustomerAttributeSnippet(Snippet):
 		magento 2 create customer attribute programmatically
     """
 
-	def add(self,customer_entity,attribute_label,customer_forms,customer_address_forms,frontend_input,static_field_type,required=False,extra_params=None):
+	def add(self,attribute_label, customer_forms=False, customer_address_forms=False, customer_entity='customer', frontend_input='text',
+		static_field_type='varchar', required=False, extra_params=None):
 
+		extra_params = extra_params if extra_params else {}
 		attribute_code = attribute_label.lower().replace(' ','_');
 		value_type = static_field_type if frontend_input=='static' else self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int');
 		source_model = "Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Country" if frontend_input=='select' or frontend_input == 'multiselect' else 'Null'
 
-
-		forms_php_array = ''
-
 		forms_array = customer_forms if customer_entity == 'customer' else customer_address_forms
+		forms_array = forms_array if forms_array else []
+		forms_array = forms_array if isinstance(forms_array, list) else [forms_array]
 
-		if not isinstance(forms_array, list):
-			forms_array = [forms_array]
-		
-		for form in forms_array:
-			forms_php_array += "'"+form+"'," 
-
-		forms_php_array =forms_php_array[:-1]
-
+		if forms_array:
+			forms_php_array = "'" + "','".join(forms_array) + "'"
+		else:
+			forms_php_array = None
 
 		template = 'customerattribute.tmpl' if customer_entity=='customer' else 'customeraddressattribute.tmpl' 
 		templatePath = os.path.join(os.path.dirname(__file__), '../templates/attributes/'+template)
@@ -133,17 +130,15 @@ class CustomerAttributeSnippet(Snippet):
 		install_data.add_method(Phpmethod('install',params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],body="$customerSetup = $this->customerSetupFactory->create(['setup' => $setup]);"))
 		install_data.add_method(Phpmethod('install',params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],body=methodBody))
 
-		attribute_form_data = "$attribute = $customerSetup->getEavConfig()->getAttribute('"+customer_entity+"', '"+attribute_code+"')->addData(['used_in_forms' => ["+forms_php_array+"]]);\n$attribute->save();"
-		install_data.add_method(Phpmethod('install',params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],body=attribute_form_data))
+		if forms_php_array:
+			attribute_form_data = "$attribute = $customerSetup->getEavConfig()->getAttribute('"+customer_entity+"', '"+attribute_code+"')->addData(['used_in_forms' => ["+forms_php_array+"]]);\n$attribute->save();"
+			install_data.add_method(Phpmethod('install',params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],body=attribute_form_data))
 
 		self.add_class(install_data)	
 
 		extension_attributes_file = 'etc/extension_attributes.xml'
 
 		api_class = "Magento\Customer\Api\Data\CustomerInterface"  if customer_entity=='customer' else 'Magento\Customer\Api\Data\AddressInterface'
-
-		print(api_class)
-		print(customer_entity)
 	
 		extension_attributes_xml = Xmlnode('config',attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:framework:Api/etc/extension_attributes.xsd"},nodes=[
 			Xmlnode('extension_attributes',attributes={'for':api_class},match_attributes={'for'},nodes=[
@@ -175,14 +170,16 @@ class CustomerAttributeSnippet(Snippet):
              SnippetParam(
                 name='customer_forms',
                 choises=cls.USED_IN_FORMS,
-                depend= {'customer_entity': r'^customer$'}, 
-                required=True, 
+                depend= {'customer_entity': r'^customer$'},
+                default=False,
+				multiple_choices=True,
                 ),
              SnippetParam(
                 name='customer_address_forms',
                 choises=cls.ADDRESS_USED_IN_FORMS,
                 depend= {'customer_entity': r'^customer_address$'}, 
-                required=True, 
+                default=False,
+				multiple_choices=True,
                 ),
              SnippetParam(
                  name='required', 
@@ -196,6 +193,7 @@ class CustomerAttributeSnippet(Snippet):
              SnippetParam(
                 name='static_field_type',
                 choises=cls.STATIC_FIELD_TYPES,
+                default='varchar',
                 depend= {'frontend_input': r'static'}, 
                 required=True, 
                 ),
