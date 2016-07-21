@@ -2,6 +2,7 @@ import os, locale
 from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 class CustomerAttributeSnippet(Snippet):
+	snippet_label = 'Customer Attribute'
 
 	FRONTEND_INPUT_TYPE = [
         ("text","Text Field"),

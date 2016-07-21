@@ -69,7 +69,7 @@ class MetaClass(type):
 		return newclass
 
 class Snippet(metaclass=MetaClass):
-	snippet_name = None
+	snippet_label = None
 	description = ''
 
 	def __init__(self, module):
@@ -80,9 +80,13 @@ class Snippet(metaclass=MetaClass):
 		return type(cls).snippets
 
 	@classmethod
+	def label(cls):
+		if cls.snippet_label:
+			return cls.snippet_label
+		return cls.name()
+
+	@classmethod
 	def name(cls):
-		if cls.snippet_name:
-			return sel.snippet_name
 		return cls.__name__.lower().replace('snippet', '').capitalize()
 	
 	@classmethod

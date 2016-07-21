@@ -20,6 +20,7 @@ from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, 
 from mage2gen.utils import upperfirst
 
 class UnitTestSnippet(Snippet):
+	snippet_label = 'Unit Test'
 	description = """
 	Unit tests are runned with *magento dev:tests:run <test>* and is used to test your code in development.
 
