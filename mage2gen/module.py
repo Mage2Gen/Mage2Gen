@@ -43,7 +43,9 @@ class Phpclass:
 		return self.class_namespace == other.class_namespace
 
 	def __add__(self, other):
-		self.attributes = set(list(self.attributes) + list(other.attributes)) 
+		self.attributes = set(list(self.attributes) + list(other.attributes))
+		self.implements = set(list(self.implements) + list(other.implements))
+		self.dependencies = set(list(self.dependencies) + list(other.dependencies))
 		for method in other.methods :
 			self.add_method(method)		
 		return self
