@@ -132,7 +132,7 @@ class ProductAttributeSnippet(Snippet):
                 name='attribute_label', 
                 required=True, 
                 description='Tab code. Example: catalog',
-                regex_validator= r'^[a-z\d\-_\s]+$',
+                regex_validator= r'^[a-zA-Z\d\-_\s]+$',
                 error_message='Only alphanumeric'),
              SnippetParam(
                  name='frontend_input', 

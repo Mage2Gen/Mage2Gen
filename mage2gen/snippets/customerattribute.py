@@ -59,15 +59,15 @@ class CustomerAttributeSnippet(Snippet):
 		('Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Region','Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Region')
 	]
 
-	meta_description = """
-
-	"""
-
 	description ="""
-		magento 2 create customer attribute programmatically
+		With this snippet you can create customer and customer address attribute programmatically thru a Magento 2 InstallData setup script. You can asign them to the forms where the should appear. 
+
+		Warning. Not all template files are setup to load customer or customer address attributes dynamically. 
+
+		Magento 2 create customer attribute programmatically
     """
 
-	def add(self,attribute_label, customer_forms=False, customer_address_forms=False, customer_entity='customer', frontend_input='text',
+	def add(self,attribute_label, customer_forms=['adminhtml_customer','adminhtml_checkout','customer_account_create','customer_account_edit'], customer_address_forms=False, customer_entity='customer', frontend_input='text',
 		static_field_type='varchar', required=False, extra_params=None):
 
 		extra_params = extra_params if extra_params else {}
@@ -161,7 +161,7 @@ class CustomerAttributeSnippet(Snippet):
                 name='attribute_label', 
                 required=True, 
                 description='Tab code. Example: catalog',
-                regex_validator= r'^[a-z\d\-_\s]+$',
+                regex_validator= r'^[a-zA-Z\d\-_\s]+$',
                 error_message='Only alphanumeric'),
              SnippetParam(
                 name='customer_forms',
