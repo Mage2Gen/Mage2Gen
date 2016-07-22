@@ -72,7 +72,7 @@ class SystemSnippet(Snippet):
 		('custom','Create Your own')
 	]
 
-	def add(self, tab, section, group, field, field_type='text', new_tab=False, extra_params=None, source_model=False, source_model_options=False):
+	def add(self, tab, section, group, field, field_type='text', new_tab=False, extra_params=None, source_model=False):
 		resource_id = self.module_name+'::config_'+self.module_name.lower()
 		extra_params = extra_params if extra_params else {}
 
@@ -81,6 +81,23 @@ class SystemSnippet(Snippet):
 		group_code = group.lower().replace(' ', '_')
 		field_code = field.lower().replace(' ', '_')
 
+		# customer source model
+		if source_model == 'custom':
+
+			source_model_class = Phpclass(
+				'Model\\Config\\Source\\'+ field_code.capitalize(),
+				implements=['\Magento\Framework\Option\ArrayInterface']
+			)
+
+			source_model_class.add_method(Phpmethod('toOptionArray',body="return [['value' => 1, 'label' => __('Yes')], ['value' => 0, 'label' => __('No')]];"))
+			source_model_class.add_method(Phpmethod('toArray',body="return [0 => __('No'), 1 => __('Yes')];"))
+
+			self.add_class(source_model_class)
+
+			source_model = source_model_class.class_namespace
+
+
+		# system xml
 		file = 'etc/adminhtml/system.xml'	
 
 		if new_tab :
@@ -142,6 +159,7 @@ class SystemSnippet(Snippet):
 
 		self.add_xml(file, config)
 
+		# acl xml
 		aclfile = 'etc/acl.xml'
 		
 		acl = Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation':"urn:magento:framework:Acl/etc/acl.xsd"}, nodes=[
@@ -162,6 +180,7 @@ class SystemSnippet(Snippet):
 
 		self.add_xml(aclfile, acl)
 
+		# default config values xml
 		config_file = 'etc/config.xml'
 		
 		default_config = Xmlnode('config',attributes={'xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Store:etc/config.xsd"},nodes=[
@@ -175,16 +194,6 @@ class SystemSnippet(Snippet):
 		]);
 		
 		self.add_xml(config_file, default_config)
-
-		if source_model_options:
-
-			source_model_class = Phpclass(
-				'Model\\Config\\Source\\'+ field_code,
-				implements=['\Magento\Framework\Option\ArrayInterface']
-			)
-
-			source_model_class.add_method(Phpmethod('toOptionArray',body="return [['value' => 1, 'label' => __('Yes')], ['value' => 0, 'label' => __('No')]];"))
-			source_model_class.add_method(Phpmethod('toArray',body="return [0 => __('No'), 1 => __('Yes')];"))
 
 	@classmethod
 	def params(cls):

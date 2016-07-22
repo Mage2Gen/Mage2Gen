@@ -1,3 +1,22 @@
+
+# A Magento 2 module generator library
+# Copyright (C) 2016 Derrick Heesbeen
+#
+# This file is part of Mage2Gen.
+#
+# Mage2Gen is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
 import os, locale
 from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
@@ -59,12 +78,12 @@ class CustomerAttributeSnippet(Snippet):
 		('Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Region','Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Region')
 	]
 
-	meta_description = """
-
-	"""
-
 	description ="""
-		magento 2 create customer attribute programmatically
+		With this snippet you can create customer and customer address attribute programmatically thru a Magento 2 InstallData setup script. You can asign them to the forms where the should appear. 
+
+		Warning. Not all template files are setup to load customer or customer address attributes dynamically. 
+
+		Magento 2 create customer attribute programmatically
     """
 
 	def add(self,attribute_label, customer_forms=False, customer_address_forms=False, customer_entity='customer', frontend_input='text',
@@ -81,7 +100,9 @@ class CustomerAttributeSnippet(Snippet):
 
 		if forms_array:
 			forms_php_array = "'" + "','".join(forms_array) + "'"
-		else:
+		elif customer_entity=='customer' and customer_forms==False:
+			forms_php_array = "'adminhtml_customer','adminhtml_checkout','customer_account_create','customer_account_edit'"
+		else :
 			forms_php_array = None
 
 		template = 'customerattribute.tmpl' if customer_entity=='customer' else 'customeraddressattribute.tmpl' 
@@ -109,20 +130,16 @@ class CustomerAttributeSnippet(Snippet):
 				'Magento\\Framework\\Setup\\ModuleContextInterface',
 				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
 				'Magento\\Customer\\Model\\Customer',
-				'Magento\\Customer\\Setup\\CustomerSetupFactory',
-				'Magento\\Eav\\Model\\Entity\\Attribute\\Set as AttributeSet',
-				'Magento\\Eav\\Model\\Entity\\Attribute\\SetFactory as AttributeSetFactory'
+				'Magento\\Customer\\Setup\\CustomerSetupFactory'
 				]
 		)
 
 		install_data.attributes.append('private $customerSetupFactory;')
-		install_data.attributes.append('private $attributeSetFactory;')
 		
 		install_data.add_method(Phpmethod(
 			'__construct',
 			params=[
-				'CustomerSetupFactory $customerSetupFactory',
-				'AttributeSetFactory $attributeSetFactory'
+				'CustomerSetupFactory $customerSetupFactory'
 			],
 			body="$this->customerSetupFactory = $customerSetupFactory; \n$this->attributeSetFactory = $attributeSetFactory;"
 		))
@@ -165,7 +182,7 @@ class CustomerAttributeSnippet(Snippet):
                 name='attribute_label', 
                 required=True, 
                 description='Tab code. Example: catalog',
-                regex_validator= r'^[a-z\d\-_\s]+$',
+                regex_validator= r'^[a-zA-Z\d\-_\s]+$',
                 error_message='Only alphanumeric'),
              SnippetParam(
                 name='customer_forms',
