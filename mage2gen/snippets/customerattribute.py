@@ -90,7 +90,10 @@ class CustomerAttributeSnippet(Snippet):
 		static_field_type='varchar', required=False, extra_params=None):
 
 		extra_params = extra_params if extra_params else {}
-		attribute_code = attribute_label.lower().replace(' ','_');
+		attribute_code = extra_params.get('attribute_code', None)
+		if not attribute_code:
+			attribute_code = attribute_label.lower().replace(' ','_')
+
 		value_type = static_field_type if frontend_input=='static' else self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int');
 		source_model = "Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Country" if frontend_input=='select' or frontend_input == 'multiselect' else 'Null'
 
@@ -117,7 +120,7 @@ class CustomerAttributeSnippet(Snippet):
 			value_type=value_type,
 			frontend_input=frontend_input,
 			required = required,
-			sort_order = extra_params.get('sort_order','333'),
+			sort_order = extra_params.get('sort_order','333') if extra_params.get('sort_order','333') else '333',
 			visible =  extra_params.get('visible','true'),
 			source_model = source_model
 		)
@@ -188,7 +191,7 @@ class CustomerAttributeSnippet(Snippet):
                 name='customer_forms',
                 choises=cls.USED_IN_FORMS,
                 depend= {'customer_entity': r'^customer$'},
-                default=False,
+                default=['adminhtml_customer','adminhtml_checkout','customer_account_create','customer_account_edit'],
 				multiple_choices=True,
                 ),
              SnippetParam(
@@ -218,4 +221,17 @@ class CustomerAttributeSnippet(Snippet):
 
 	@classmethod
 	def extra_params(cls):
-		return []
+		return [
+			SnippetParam(
+				name='attribute_code', 
+				regex_validator= r'^[a-zA-Z]{1}\w+$',
+				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
+			SnippetParam(
+				name='sort_order',
+				regex_validator= r'^\d+$',
+				error_message='Only numeric value'),
+			SnippetParam(
+				name='visible',
+				default=True,
+				yes_no=True),
+		]
