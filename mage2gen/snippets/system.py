@@ -72,7 +72,7 @@ class SystemSnippet(Snippet):
 		('custom','Create Your own')
 	]
 
-	def add(self, tab, section, group, field, field_type='text', new_tab=False, extra_params=None, source_model=False):
+	def add(self, tab, section, group, field, field_type='text', new_tab=False, extra_params=None, source_model=False, source_model_options=False):
 		resource_id = self.module_name+'::config_'+self.module_name.lower()
 		extra_params = extra_params if extra_params else {}
 
@@ -88,9 +88,12 @@ class SystemSnippet(Snippet):
 				'Model\\Config\\Source\\'+ field_code.capitalize(),
 				implements=['\Magento\Framework\Option\ArrayInterface']
 			)
+			source_model_options = source_model_options.split(',')
+			to_option_array = "[{}]".format(','.join("['value' => '{0}', 'label' => __('{0}')]".format(o.strip()) for o in source_model_options))
+			to_array = "[{}]".format(','.join("'{0}' => __('{0}')".format(o.strip()) for o in source_model_options))
 
-			source_model_class.add_method(Phpmethod('toOptionArray',body="return [['value' => 1, 'label' => __('Yes')], ['value' => 0, 'label' => __('No')]];"))
-			source_model_class.add_method(Phpmethod('toArray',body="return [0 => __('No'), 1 => __('Yes')];"))
+			source_model_class.add_method(Phpmethod('toOptionArray',body="return {};".format(to_option_array)))
+			source_model_class.add_method(Phpmethod('toArray',body="return {};".format(to_array)))
 
 			self.add_class(source_model_class)
 
@@ -236,8 +239,9 @@ class SystemSnippet(Snippet):
 				depend= {'field_type': r'select|multiselect'}, 
 				default='Magento\Config\Model\Config\Source\Yesno'),
 			SnippetParam(
-				name='source_model_options', 
-				depend= {'source_model': r'custom'}, 
+				name='source_model_options',
+				required=True,
+				depend= {'source_model': r'custom'},
 				description='Dropdown or Multiselect options comma seperated',
 				error_message='Only alphanumeric')
 
