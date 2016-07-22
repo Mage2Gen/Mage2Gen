@@ -86,7 +86,7 @@ class CustomerAttributeSnippet(Snippet):
 		Magento 2 create customer attribute programmatically
     """
 
-	def add(self,attribute_label, customer_forms=['adminhtml_customer','adminhtml_checkout','customer_account_create','customer_account_edit'], customer_address_forms=False, customer_entity='customer', frontend_input='text',
+	def add(self,attribute_label, customer_forms=False, customer_address_forms=False, customer_entity='customer', frontend_input='text',
 		static_field_type='varchar', required=False, extra_params=None):
 
 		extra_params = extra_params if extra_params else {}
@@ -100,7 +100,9 @@ class CustomerAttributeSnippet(Snippet):
 
 		if forms_array:
 			forms_php_array = "'" + "','".join(forms_array) + "'"
-		else:
+		elif customer_entity=='customer' and customer_forms==False:
+			forms_php_array = "'adminhtml_customer','adminhtml_checkout','customer_account_create','customer_account_edit'"
+		else :
 			forms_php_array = None
 
 		template = 'customerattribute.tmpl' if customer_entity=='customer' else 'customeraddressattribute.tmpl' 
