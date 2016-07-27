@@ -28,4 +28,4 @@ from .productattribute import ProductAttributeSnippet
 from .customerattribute import CustomerAttributeSnippet
 from .cronjob import CronjobSnippet
 from .unittest import UnitTestSnippet
-
+from .model import ModelSnippet

@@ -41,22 +41,38 @@ class InstallSnippet(Snippet):
 
 	def add(self,from_version='1.0.0', extra_params=None):
 
-		install_schema = Phpclass('Setup\\InstallSchema',implements=['InstallSchemaInterface'],dependencies=['Magento\\Framework\\Setup\\InstallSchemaInterface','Magento\\Framework\\Setup\\ModuleContextInterface','Magento\\Framework\\Setup\\SchemaSetupInterface'])
-		install_schema.add_method(Phpmethod('install',params=['SchemaSetupInterface $setup','ModuleContextInterface $context'],body='$installer = $setup;\n $installer->startSetup();\n $installer->endSetup();'))
+		install_schema = Phpclass('Setup\\InstallSchema',implements=['InstallSchemaInterface'],dependencies=[
+			'Magento\\Framework\\Setup\\InstallSchemaInterface',
+			'Magento\\Framework\\Setup\\ModuleContextInterface',
+			'Magento\\Framework\\Setup\\SchemaSetupInterface'])
+		install_schema.add_method(Phpmethod('install',params=['SchemaSetupInterface $setup','ModuleContextInterface $context'],
+			body='$installer = $setup;\n$installer->startSetup();',
+			body_return='$setup->endSetup();'))
 	
 		self.add_class(install_schema)
 
-		install_data = Phpclass('Setup\\InstallData',implements=['InstallDataInterface'],dependencies=['Magento\\Framework\\Setup\\InstallDataInterface','Magento\\Framework\\Setup\\ModuleContextInterface','Magento\\Framework\\Setup\\ModuleDataSetupInterface'])
+		install_data = Phpclass('Setup\\InstallData',implements=['InstallDataInterface'],dependencies=[
+			'Magento\\Framework\\Setup\\InstallDataInterface',
+			'Magento\\Framework\\Setup\\ModuleContextInterface',
+			'Magento\\Framework\\Setup\\ModuleDataSetupInterface'])
 		install_data.add_method(Phpmethod('install',params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context']))
 	
 		self.add_class(install_data)
 
-		update_schema = Phpclass('Setup\\UpgradeSchema',implements=['UpgradeSchemaInterface'],dependencies=['Magento\\Framework\\Setup\\UpgradeSchemaInterface','Magento\\Framework\\Setup\\ModuleContextInterface','Magento\\Framework\\Setup\\SchemaSetupInterface'])
-		update_schema.add_method(Phpmethod('upgrade',params=['SchemaSetupInterface $setup','ModuleContextInterface $context'],body='$setup->startSetup();\nif(version_compare($context->getVersion(), "'+from_version+'", "<")){\n//Your upgrade script\n}\n$setup->endSetup();\n'))
+		update_schema = Phpclass('Setup\\UpgradeSchema',implements=['UpgradeSchemaInterface'],dependencies=[
+			'Magento\\Framework\\Setup\\UpgradeSchemaInterface',
+			'Magento\\Framework\\Setup\\ModuleContextInterface',
+			'Magento\\Framework\\Setup\\SchemaSetupInterface'])
+		update_schema.add_method(Phpmethod('upgrade',params=['SchemaSetupInterface $setup','ModuleContextInterface $context'],
+			body='$setup->startSetup();\nif(version_compare($context->getVersion(), "'+from_version+'", "<")){\n//Your upgrade script\n}\n$setup->endSetup();\n'))
 	
 		self.add_class(update_schema)
 
-		update_data = Phpclass('Setup\\UpgradeData',implements=['UpgradeDataInterface'],dependencies=['Magento\\Framework\\Setup\\UpgradeDataInterface','Magento\\Framework\\Setup\\ModuleContextInterface','Magento\\Framework\\Setup\\ModuleDataSetupInterface'])
-		update_data.add_method(Phpmethod('upgrade',params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],body='$setup->startSetup();\nif(version_compare($context->getVersion(), "'+from_version+'", "<")){\n//Your upgrade script\n}\n$setup->endSetup();\n'))
+		update_data = Phpclass('Setup\\UpgradeData',implements=['UpgradeDataInterface'],dependencies=[
+			'Magento\\Framework\\Setup\\UpgradeDataInterface',
+			'Magento\\Framework\\Setup\\ModuleContextInterface',
+			'Magento\\Framework\\Setup\\ModuleDataSetupInterface'])
+		update_data.add_method(Phpmethod('upgrade',params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
+			body='$setup->startSetup();\nif(version_compare($context->getVersion(), "'+from_version+'", "<")){\n//Your upgrade script\n}\n$setup->endSetup();\n'))
 		
 		self.add_class(update_data)		

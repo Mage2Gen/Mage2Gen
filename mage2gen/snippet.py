@@ -94,7 +94,7 @@ class Snippet(metaclass=MetaClass):
 	def params(cls):
 		params = []
 		for arg_name, arg in inspect.signature(cls.add).parameters.items():
-			if arg_name == 'self':
+			if arg_name == 'self' or arg_name == 'extra_params':
 				continue
 			default = arg.default if arg.default != arg.empty else None
 			

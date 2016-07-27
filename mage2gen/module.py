@@ -120,14 +120,19 @@ class Phpmethod:
 		self.access = kwargs.get('access', self.PUBLIC)
 		self.params = kwargs.get('params', [])
 		self.body = [kwargs.get('body', '')]
+		self.end_body = [kwargs.get('end_body', '')]
+		self.body_return = kwargs.get('body_return', '')
 		self.template_file = os.path.join(TEMPLATE_DIR, 'method.tmpl')
 	def __eq__(self, other):
 		return self.name == other.name
 
 	def __add__(self, other):
-		for code in other.body :
-			if code not in self.body :
+		for code in other.body:
+			if code not in self.body:
 				self.body.append(code)
+		for code in other.end_body:
+			if code not in self.end_body:
+				self.end_body.insert(0, code)
 		return self
 
 	def __hash__(self):
@@ -147,7 +152,13 @@ class Phpmethod:
 	def body_code(self):
 		body_string = ''
 		for body_code in self.body:
-			body_string += '\n\t\t'.join(s.strip('\t') for s in body_code.splitlines()) + '\n\n\t\t'
+			if body_code:
+				body_string += '\n\t\t'.join(s.strip('\t') for s in body_code.splitlines()) + '\n\n\t\t'
+		for body_code in self.end_body:
+			if body_code:
+				body_string += '\n\t\t'.join(s.strip('\t') for s in body_code.splitlines()) + '\n\n\t\t'
+		if self.body_return:
+			body_string += self.body_return
 		return body_string
 
 	def generate(self):
