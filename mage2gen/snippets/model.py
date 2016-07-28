@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os, locale
+from collections import OrderedDict
 from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 
@@ -60,13 +61,36 @@ class ModelSnippet(Snippet):
 			comment='Entity ID'	
 		))
 
+		# create options
+		options = OrderedDict()
+		if extra_params.get('default'):
+			options['default'] = "'{}'".format(extra_params.get('default'))
+		if not extra_params.get('nullable'):
+			options['nullable'] = extra_params.get('nullable')
+		if extra_params.get('primary'):
+			options['primary'] = extra_params.get('primary')
+		if extra_params.get('primary_position'):
+			options['primary_position'] = extra_params.get('primary_position')
+		if extra_params.get('identity'):
+			options['identity'] = True
+		if extra_params.get('auto_increment'):
+			options['auto_increment'] = True
+		if extra_params.get('unsigned'):
+			options['unsigned'] = True
+		if extra_params.get('precision'):
+			options['precision'] = extra_params.get('precision')
+		if extra_params.get('scale'):
+			options['scale'] = extra_params.get('scale')
+		
+		options = "[{}]".format(','.join("'{}' => {}".format(key, value) for key, value in options.items()))
+
 		# Add field
 		install_method.body.append("$table{table}->addColumn(\n  '{field}',\n  {type},\n  {size},\n  {options},\n  '{comment}'\n);".format(
 			table=model_name,
 			field=field_name,
 			type='\\Magento\\Framework\\DB\\Ddl\\Table::TYPE_{}'.format(field_type.upper()),
 			size=extra_params.get('field_size') or 'null',
-			options='[]',
+			options=options,
 			comment=extra_params.get('comment') or field_name	
 		))
 		
@@ -118,6 +142,19 @@ class ModelSnippet(Snippet):
 	def extra_params(cls):
 		return [
 			SnippetParam('comment', required=False),
+			SnippetParam('default', required=False),
+			SnippetParam(
+				name='primary_position',
+				required=False, 
+				regex_validator= r'^\d+$',
+				error_message='Only numeric value allowed.',
+
+			),
+			SnippetParam('primary', yes_no=True),
+			SnippetParam('nullable', yes_no=True, default=True),
+			SnippetParam('identity', yes_no=True),
+			SnippetParam('auto_increment', yes_no=True),
+			'Extra',
 			SnippetParam(
 				name='field_size', 
 				required=False, 
@@ -125,6 +162,27 @@ class ModelSnippet(Snippet):
 				error_message='Only numeric value allowed.',
 				depend={'field_type': r'text|blob|decimal|numeric'}
 			),
+			SnippetParam(
+				name='precision', 
+				required=False, 
+				regex_validator= r'^\d+$',
+				error_message='Only numeric value allowed.',
+				depend={'field_type': r'decimal|numeric'}
+			),
+			SnippetParam(
+				name='scale', 
+				required=False, 
+				regex_validator= r'^\d+$',
+				error_message='Only numeric value allowed.',
+				depend={'field_type': r'decimal|numeric'}
+			),
+			SnippetParam(
+				name='unsigned', 
+				yes_no=True, 
+				depend={'field_type': r'smallint|integer|bigint|float|decimal|numeric'}
+			),
+
+
 		]
 
 
