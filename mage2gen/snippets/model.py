@@ -21,6 +21,17 @@ from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, 
 
 
 class ModelSnippet(Snippet):
+	description = """
+	Model is used to create a easie CRUD interface to the database 
+
+	- **Model ame:** The name of the model, the table name wil be <module_name>_<model_name>.
+	- **Field name:** The name of the database table field.
+	- **Field type:** The type of database field.
+	- **Adminhtml grid:** Add this field to the adminhtml grid layout  
+
+	**Model ID field**:	The snippet will auto add the model id field to the database table, the field name is <model_name>_id.
+	"""
+
 	FIELD_TYPE_CHOISES = [
 		('boolean','Boolean'),	
 		('smallint','Smallint'),	
