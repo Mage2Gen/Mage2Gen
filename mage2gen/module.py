@@ -159,7 +159,7 @@ class Phpmethod:
 				body_string += '\n\t\t'.join(s.strip('\t') for s in body_code.splitlines()) + '\n\n\t\t'
 		if self.body_return:
 			body_string += self.body_return
-		return body_string
+		return body_string.strip()
 
 	def generate(self):
 		with open(self.template_file, 'rb') as tmpl:
