@@ -1,0 +1,18 @@
+$eavSetup->addAttribute(
+    \Magento\Catalog\Model\Category::ENTITY,
+    '{attribute_code}',
+    [
+        'type' => '{value_type}',
+        'label' => '{attribute_label}',
+        'input' => '{frontend_input}',
+        'sort_order' => {sort_order},
+        'source' => '{source_model}',
+        'global' => {scope},
+        'visible' => true,
+        'required' => {required},
+        'user_defined' => {user_defined},
+        'default' => {default},
+        'group' => 'General Information',
+        'backend' => '{backend_model}'
+    ]
+);

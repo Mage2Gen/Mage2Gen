@@ -79,13 +79,16 @@ class ProductAttributeSnippet(Snippet):
     
     def add(self,attribute_label,frontend_input='text',required=False,scope=1,options=None,extra_params=None):
         extra_params = extra_params if extra_params else {}
-        attribute_code = attribute_label.lower().replace(' ','_');
+        
         value_type = self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int');
         user_defined = 'true'
         options = options.split(',') if options else []
         options_php_array = '"'+'","'.join(x.strip() for x in options) + '"'
         options_php_array_string = "array('values' => array("+options_php_array+"))"
-        methodName = 'install' + attribute_label + 'ProductAttribute'
+
+        attribute_code = extra_params.get('attribute_code', None)
+        if not attribute_code:
+            attribute_code = attribute_label.lower().replace(' ','_')
 
         templatePath = os.path.join(os.path.dirname(__file__), '../templates/attributes/productattribute.tmpl')
 
@@ -191,4 +194,14 @@ class ProductAttributeSnippet(Snippet):
                  required=True,  
                  default=False,
                  yes_no=True),
+             SnippetParam(
+                 name='default',
+                 required=False,  
+                 default=False,
+                 description='Default value',
+                 yes_no=True),
+              SnippetParam(
+                name='attribute_code', 
+                regex_validator= r'^[a-zA-Z]{1}\w+$',
+                error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.')
          ]

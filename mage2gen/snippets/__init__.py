@@ -26,6 +26,7 @@ from .language import LanguageSnippet
 from .payment import PaymentSnippet
 from .productattribute import ProductAttributeSnippet
 from .customerattribute import CustomerAttributeSnippet
+from .categoryattribute import CategoryAttributeSnippet
 from .cronjob import CronjobSnippet
 from .unittest import UnitTestSnippet
 from .model import ModelSnippet
