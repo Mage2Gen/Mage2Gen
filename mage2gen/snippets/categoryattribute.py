@@ -144,6 +144,10 @@ class CategoryAttributeSnippet(Snippet):
         else:
             options_xml = False
 
+        required_value = 'true' if required else 'false'
+        required_xml = Xmlnode('item',attributes={'name':'required','xsi:type':'boolean'},node_text=required_value)
+        required_entry_xml = Xmlnode('item',attributes={'name':'validation','xsi:type':'array'},nodes=[Xmlnode('item',attributes={'name':'required-entry','xsi:type':'boolean'},node_text=required_value)])
+
         category_form_xml = Xmlnode('form',attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Ui:etc/ui_configuration.xsd"},nodes=[
             Xmlnode('fieldset',attributes={'name':'general'},nodes=[
                 # Xmlnode('argument',attributes={'name':'data','xsi:type':'array'},nodes=[
@@ -157,6 +161,8 @@ class CategoryAttributeSnippet(Snippet):
                     Xmlnode('argument',attributes={'name':'data','xsi:type':'array'},nodes=[
                  		options_xml,                  
                         Xmlnode('item',attributes={'name':'config','xsi:type':'array'},nodes=[
+                            required_xml,
+                            required_entry_xml,
                             Xmlnode('item',attributes={'name':'sortOrder','xsi:type':'number',},node_text=sort_order),
                             Xmlnode('item',attributes={'name':'dataType','xsi:type':'string'},node_text='string'),
                             Xmlnode('item',attributes={'name':'formElement','xsi:type':'string'},node_text=form_element),
