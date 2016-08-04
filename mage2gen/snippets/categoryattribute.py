@@ -82,7 +82,7 @@ class CategoryAttributeSnippet(Snippet):
         Install Magento 2 category attributes programmatically. 
     """
     
-    def add(self,attribute_label,frontend_input='text',required=False,scope=1,extra_params=None):
+    def add(self,attribute_label, frontend_input='text', scope=1, required=False, extra_params=None):
         extra_params = extra_params if extra_params else {}
         
         value_type = self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int');
@@ -117,7 +117,7 @@ class CategoryAttributeSnippet(Snippet):
             user_defined = user_defined,
             scope = scope,
             required = required,
-            default = extra_params.get('default','Null'),
+            default = 'null',
             sort_order = sort_order,
             source_model = source_model,
             backend_model = backend_model
@@ -183,27 +183,21 @@ class CategoryAttributeSnippet(Snippet):
                  choises=cls.FRONTEND_INPUT_TYPE,
                  required=True,  
                  default='text'),
+			 SnippetParam(
+                 name='scope',
+                 required=True,  
+                 choises=cls.SCOPE_CHOICES, 
+                 default='1'),
              SnippetParam(
                  name='required',
                  required=True,  
                  default=True,
                  yes_no=True),
-             SnippetParam(
-                 name='scope',
-                 required=True,  
-                 choises=cls.SCOPE_CHOICES, 
-                 default='1'),
-         ]
+		]
 
     @classmethod
     def extra_params(cls):
          return [
-             SnippetParam(
-                 name='default',
-                 required=False,  
-                 default=False,
-                 description='Default value',
-                 yes_no=True),
              SnippetParam(
 				name='sort_order',
 				regex_validator= r'^\d+$',
