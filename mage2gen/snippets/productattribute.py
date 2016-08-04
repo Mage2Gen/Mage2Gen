@@ -77,7 +77,7 @@ class ProductAttributeSnippet(Snippet):
         The attribute is automatically added to all the attribute sets.
     """
     
-    def add(self,attribute_label,frontend_input='text',required=False,scope=1,options=None,extra_params=None):
+    def add(self, attribute_label, frontend_input='text', scope=1, required=False, options=None, extra_params=None):
         extra_params = extra_params if extra_params else {}
         
         value_type = self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int');
@@ -110,7 +110,7 @@ class ProductAttributeSnippet(Snippet):
             comparable = extra_params.get('comparable','false'),
             used_in_product_listing = extra_params.get('used_in_product_listing','false'),
             unique = extra_params.get('unique','false'),
-            default = extra_params.get('default','0'),
+            default = 'null',
             is_visible_in_advanced_search = extra_params.get('is_visible_in_advanced_search','0')
         )
 
@@ -148,21 +148,25 @@ class ProductAttributeSnippet(Snippet):
                 required=False, 
                 description='Dropdown or Multiselect options comma seperated',
                 error_message='Only alphanumeric'),
+			 SnippetParam(
+                 name='scope',
+                 required=True,  
+                 choises=cls.SCOPE_CHOICES, 
+                 default='1'),
              SnippetParam(
                  name='required',
                  required=True,  
                  default=True,
                  yes_no=True),
-             SnippetParam(
-                 name='scope',
-                 required=True,  
-                 choises=cls.SCOPE_CHOICES, 
-                 default='1'),
-         ]
+                      ]
 
     @classmethod
     def extra_params(cls):
          return [
+			SnippetParam(
+                name='attribute_code', 
+                regex_validator= r'^[a-zA-Z]{1}\w+$',
+                error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
              SnippetParam(
                  name='searchable',
                  required=True,  
@@ -194,14 +198,4 @@ class ProductAttributeSnippet(Snippet):
                  required=True,  
                  default=False,
                  yes_no=True),
-             SnippetParam(
-                 name='default',
-                 required=False,  
-                 default=False,
-                 description='Default value',
-                 yes_no=True),
-              SnippetParam(
-                name='attribute_code', 
-                regex_validator= r'^[a-zA-Z]{1}\w+$',
-                error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.')
-         ]
+		]
