@@ -39,6 +39,8 @@ class Phpclass:
 		self.implements = implements if implements else []
 		self.attributes = attributes if attributes else []
 		self.dependencies = dependencies if dependencies else []
+		self.license = None
+
 	def __eq__(self, other):
 		return self.class_namespace == other.class_namespace
 
@@ -82,6 +84,7 @@ class Phpclass:
 			dependencies = '\n' + dependencies + ';'	
 
 		return {
+			'license': self.license.get_php_docstring() if self.license else '',
 			'namespace': self.namespace,
 			'class_name': self.class_name,
 			'methods': methods,
@@ -281,10 +284,11 @@ class StaticFile:
 ###############################################################################
 class Module:
 
-	def __init__(self, package, name, description=''):
+	def __init__(self, package, name, description='', license=None):
 		self.package = upperfirst(package)
 		self.name = upperfirst(name)
 		self.description = description
+		self.license = license
 		self._xmls = {}
 		self._classes = {}
 		self._static_files = {}
@@ -336,6 +340,9 @@ class Module:
 		except Exception:
 			pass
 
+		if self.license:
+			self.add_static_file('', StaticFile('LICENSE.txt', body=self.license.get_text()))
+
 		# Add composer as static file
 		self.add_static_file('', StaticFile('composer.json', body=json.dumps(self._composer, indent=4)))
 
@@ -360,6 +367,9 @@ class Module:
 			current_class += phpclass
 		else:
 			current_class = phpclass
+
+		current_class.license = self.license
+		
 		self._classes[current_class.class_namespace] = current_class
 
 	def add_xml(self, xml_file, node):

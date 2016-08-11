@@ -15,5 +15,19 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
+import string
+
+
+class DefaultFormatter(string.Formatter):
+	def __init__(self, default=''):
+		self.default = default
+	
+	def get_field(self, field_name, args, kwargs):
+		try:
+			return super().get_field(field_name, args, kwargs)
+		except (KeyError, AttributeError):
+			return self.default
+
 def upperfirst(word):
 	return word[0].upper() + word[1:]
+
