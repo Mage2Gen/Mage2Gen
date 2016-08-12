@@ -106,8 +106,9 @@ class CustomerAttributeSnippet(Snippet):
 
 		# customer source model
 		if source_model == 'custom' and source_model_options and frontend_input == 'select' or frontend_input == 'multiselect':
+			source_model_folder = 'Customer' if customer_entity =='customer' else 'Customer\\Address'
 			source_model_class = Phpclass(
-				'Model\\'+customer_entity.capitalize()+'\\Attribute\\Source\\'+ attribute_code.capitalize(),
+				'Model\\'+source_model_folder+'\\Attribute\\Source\\'+ attribute_code.capitalize(),
 				extends='\Magento\Eav\Model\Entity\Attribute\Source\AbstractSource'
 			)
 			source_model_options = source_model_options.split(',')
