@@ -71,7 +71,9 @@ class CategoryAttributeSnippet(Snippet):
         ('Magento\Eav\Model\Entity\Attribute\Source\Boolean','Magento\Eav\Model\Entity\Attribute\Source\Boolean'),
         ('Magento\Catalog\Model\Category\Attribute\Source\Page','Magento\Catalog\Model\Category\Attribute\Source\Page'),
         ('Magento\Catalog\Model\Category\Attribute\Source\Mode','Magento\Catalog\Model\Category\Attribute\Source\Mode'),
-        ('Magento\Catalog\Model\Category\Attribute\Source\Sortby','Magento\Catalog\Model\Category\Attribute\Source\Sortby')
+        ('Magento\Catalog\Model\Category\Attribute\Source\Sortby','Magento\Catalog\Model\Category\Attribute\Source\Sortby'),
+        ('','------------------'),
+        ('custom','Create Your own')
 	]
 
     CATEGORY_BACKEND_MODELS = [
@@ -82,7 +84,7 @@ class CategoryAttributeSnippet(Snippet):
         Install Magento 2 category attributes programmatically. 
     """
     
-    def add(self,attribute_label, frontend_input='text', scope=1, required=False, extra_params=None):
+    def add(self,attribute_label, frontend_input='text', scope=1, required=False, source_model=False, source_model_options=False, extra_params=None):
         extra_params = extra_params if extra_params else {}
         
         value_type = self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int');
@@ -90,17 +92,45 @@ class CategoryAttributeSnippet(Snippet):
         form_element = self.FRONTEND_FORM_ELEMENT.get(frontend_input,'input')
 
         user_defined = 'false'
-        source_model = ''
         backend_model = ''
 
         attribute_code = extra_params.get('attribute_code', None)
         if not attribute_code:
             attribute_code = attribute_label.lower().replace(' ','_')
-        if frontend_input == 'select':
+        if frontend_input == 'select' and not source_model:
             source_model = "Magento\Eav\Model\Entity\Attribute\Source\Boolean"
-        elif frontend_input == 'multiselect':    
-            source_model = "Magento\Catalog\Model\Category\Attribute\Source\Page"
+        elif frontend_input == 'multiselect':
             backend_model = "Magento\Eav\Model\Entity\Attribute\Backend\ArrayBackend"
+            if not source_model:    
+                source_model = "Magento\Catalog\Model\Category\Attribute\Source\Page"
+        elif frontend_input != 'multiselect' and frontend_input != 'select':
+            source_model = 'Null'
+            backend_model = 'Null'
+
+        # customer source model
+        if source_model == 'custom' and source_model_options and frontend_input == 'select' or frontend_input == 'multiselect':
+
+            source_model_class = Phpclass(
+                'Model\\Category\\Attribute\\Source\\'+ attribute_code.capitalize(),
+                extends='\Magento\Eav\Model\Entity\Attribute\Source\AbstractSource'
+            )
+            source_model_options = source_model_options.split(',')
+
+            if frontend_input == 'select':
+                to_option_array = "[\n{}\n]".format(',\n'.join("['value' => '{1}', 'label' => __('{0}')]".format(o.strip(),source_model_options.index(o)+1) for o in source_model_options))
+            else:
+                to_option_array = "[\n{}\n]".format(',\n'.join("['value' => '{0}', 'label' => __('{0}')]".format(o.strip()) for o in source_model_options))
+
+            source_model_class.attributes.append('protected $_optionsData;')
+            source_model_class.add_method(Phpmethod('__construct',params=['array $options'],body="$this->_optionsData = $options;")) 
+
+            get_all_options_array = "\t$this->_options = {};".format(to_option_array)
+
+            source_model_class.add_method(Phpmethod('getAllOptions',body="if ($this->_options === null) { \n " + get_all_options_array + "\n}\nreturn $this->_options;"))
+
+            self.add_class(source_model_class)
+
+            source_model = source_model_class.class_namespace
 
         sort_order = extra_params.get('sort_order','333') if extra_params.get('sort_order','333') else '333'
 
@@ -189,6 +219,17 @@ class CategoryAttributeSnippet(Snippet):
                  choises=cls.FRONTEND_INPUT_TYPE,
                  required=True,  
                  default='text'),
+             SnippetParam(
+                name='source_model', 
+                choises=cls.CATEGORY_SOURCE_MODELS,
+                depend= {'frontend_input': r'select|multiselect'}, 
+                default='Magento\Eav\Model\Entity\Attribute\Source\Boolean'),
+             SnippetParam(
+                name='source_model_options',
+                required=True,
+                depend= {'source_model': r'custom'},
+                description='Dropdown or Multiselect options comma seperated',
+                error_message='Only alphanumeric'),
 			 SnippetParam(
                  name='scope',
                  required=True,  

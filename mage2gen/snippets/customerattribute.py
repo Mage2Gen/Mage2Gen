@@ -69,13 +69,12 @@ class CustomerAttributeSnippet(Snippet):
 		('customer_address','Customer Address')
 	]
 
-	CUSTOMER_SOURCE_MODELS = [
-		('Magento\Customer\Model\Customer\Attribute\Source\Group','Magento\Customer\Model\Customer\Attribute\Source\Group')
-	]
-
-	CUSTOMER_ADDRESS_SOURCE_MODELS = [
+	SOURCE_MODELS = [
+		('Magento\Customer\Model\Customer\Attribute\Source\Group','Magento\Customer\Model\Customer\Attribute\Source\Group'),
 		('Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Country','Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Country'),
-		('Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Region','Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Region')
+		('Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Region','Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Region'),
+		('','------------------'),
+		('custom','Create Your own')
 	]
 
 	description ="""
@@ -84,18 +83,53 @@ class CustomerAttributeSnippet(Snippet):
 		Warning. Not all template files are setup to load customer or customer address attributes dynamically. 
 
 		Magento 2 create customer attribute programmatically
-    """
+	"""
 
 	def add(self,attribute_label, customer_forms=False, customer_address_forms=False, customer_entity='customer', frontend_input='text',
-		static_field_type='varchar', required=False, extra_params=None):
+		static_field_type='varchar', required=False, source_model=False, source_model_options=False, extra_params=None):
 
 		extra_params = extra_params if extra_params else {}
 		attribute_code = extra_params.get('attribute_code', None)
+		backend_model = ''
+		
 		if not attribute_code:
 			attribute_code = attribute_label.lower().replace(' ','_')
+		if frontend_input == 'select' and not source_model:
+			source_model = "Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Country"
+		elif frontend_input == 'multiselect':
+			backend_model = "Magento\Eav\Model\Entity\Attribute\Backend\ArrayBackend"
+			if not source_model:    
+				source_model = "Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Country"
+		elif frontend_input != 'multiselect' and frontend_input != 'select':
+			source_model = 'Null'
+			backend_model = 'Null'
+
+		# customer source model
+		if source_model == 'custom' and source_model_options and frontend_input == 'select' or frontend_input == 'multiselect':
+			source_model_folder = 'Customer' if customer_entity =='customer' else 'Customer\\Address'
+			source_model_class = Phpclass(
+				'Model\\'+source_model_folder+'\\Attribute\\Source\\'+ attribute_code.capitalize(),
+				extends='\Magento\Eav\Model\Entity\Attribute\Source\AbstractSource'
+			)
+			source_model_options = source_model_options.split(',')
+
+			if frontend_input == 'select':
+				to_option_array = "[\n{}\n]".format(',\n'.join("['value' => '{1}', 'label' => __('{0}')]".format(o.strip(),source_model_options.index(o)+1) for o in source_model_options))
+			else:
+				to_option_array = "[\n{}\n]".format(',\n'.join("['value' => '{0}', 'label' => __('{0}')]".format(o.strip()) for o in source_model_options))
+
+			source_model_class.attributes.append('protected $_optionsData;')
+			source_model_class.add_method(Phpmethod('__construct',params=['array $options'],body="$this->_optionsData = $options;")) 
+
+			get_all_options_array = "\t$this->_options = {};".format(to_option_array)
+
+			source_model_class.add_method(Phpmethod('getAllOptions',body="if ($this->_options === null) { \n " + get_all_options_array + "\n}\nreturn $this->_options;"))
+
+			self.add_class(source_model_class)
+
+			source_model = source_model_class.class_namespace
 
 		value_type = static_field_type if frontend_input=='static' else self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int');
-		source_model = "Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Country" if frontend_input=='select' or frontend_input == 'multiselect' else 'Null'
 
 		forms_array = customer_forms if customer_entity == 'customer' else customer_address_forms
 		forms_array = forms_array if forms_array else []
@@ -122,7 +156,8 @@ class CustomerAttributeSnippet(Snippet):
 			required = required,
 			sort_order = extra_params.get('sort_order','333') if extra_params.get('sort_order','333') else '333',
 			visible =  extra_params.get('visible','true'),
-			source_model = source_model
+			source_model = source_model,
+			backend_model = backend_model
 		)
 
 		install_data = Phpclass(
@@ -144,7 +179,7 @@ class CustomerAttributeSnippet(Snippet):
 			params=[
 				'CustomerSetupFactory $customerSetupFactory'
 			],
-			body="$this->customerSetupFactory = $customerSetupFactory; \n$this->attributeSetFactory = $attributeSetFactory;"
+			body="$this->customerSetupFactory = $customerSetupFactory;"
 		))
 
 		install_data.add_method(Phpmethod('install',params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],body="$customerSetup = $this->customerSetupFactory->create(['setup' => $setup]);"))
@@ -210,6 +245,17 @@ class CustomerAttributeSnippet(Snippet):
                  choises=cls.FRONTEND_INPUT_TYPE,
                  required=True,  
                  default='text'),
+             SnippetParam(
+                name='source_model', 
+                choises=cls.SOURCE_MODELS,
+                depend= {'frontend_input': r'select|multiselect'}, 
+                default='Magento\Customer\Model\Customer\Attribute\Source\Group'),
+             SnippetParam(
+                name='source_model_options',
+                required=True,
+                depend= {'source_model': r'custom'},
+                description='Dropdown or Multiselect options comma seperated',
+                error_message='Only alphanumeric'),
              SnippetParam(
                 name='static_field_type',
                 choises=cls.STATIC_FIELD_TYPES,
