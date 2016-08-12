@@ -42,7 +42,7 @@ class ModelSnippet(Snippet):
 		('decimal', 'Decimal'),
 		('date', 'Date'),
 		('timestamp', 'Timestamp'),
-		('datatime', 'Datetime'),
+		('datetime', 'Datetime'),
 		('text', 'Text'),
 		('blob', 'Blob'),
 	]
@@ -50,7 +50,7 @@ class ModelSnippet(Snippet):
 	def add(self, model_name, field_name, field_type='text', adminhtml_grid=False, extra_params=False):
 		extra_params = extra_params if extra_params else {}
 		
-		model_table = '{}_{}'.format(self._module.name.lower(), model_name.lower())
+		model_table = '{}_{}'.format(self._module.package.lower(), model_name.lower())
 		model_id = '{}_id'.format(model_name.lower())
 		
 		install_class = Phpclass('Setup\\InstallSchema',implements=['InstallSchemaInterface'],dependencies=[
@@ -82,10 +82,6 @@ class ModelSnippet(Snippet):
 			options['default'] = "'{}'".format(extra_params.get('default'))
 		if not extra_params.get('nullable'):
 			options['nullable'] = extra_params.get('nullable')
-		if extra_params.get('primary'):
-			options['primary'] = extra_params.get('primary')
-		if extra_params.get('primary_position'):
-			options['primary_position'] = extra_params.get('primary_position')
 		if extra_params.get('identity'):
 			options['identity'] = True
 		if extra_params.get('auto_increment'):
@@ -303,14 +299,6 @@ class ModelSnippet(Snippet):
 		return [
 			SnippetParam('comment', required=False),
 			SnippetParam('default', required=False),
-			SnippetParam(
-				name='primary_position',
-				required=False, 
-				regex_validator= r'^\d+$',
-				error_message='Only numeric value allowed.',
-
-			),
-			SnippetParam('primary', yes_no=True),
 			SnippetParam('nullable', yes_no=True, default=True),
 			SnippetParam('identity', yes_no=True),
 			SnippetParam('auto_increment', yes_no=True),
