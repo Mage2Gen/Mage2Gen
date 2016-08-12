@@ -63,11 +63,22 @@ class SystemSnippet(Snippet):
 		('Magento\\Config\\Model\\Config\\Source\\Email\\Template','Email Template'),
 		('Magento\\Config\\Model\\Config\\Source\\Email\\Identity','Email Identity'),
 		('Magento\\Config\\Model\\Config\\Locale\\Source\\Currency','Currency'),
-		('Magento\\Sales\\Model\\Config\\Source\\Order\\Status\\NewStatus','Order Status (state New)'),
-		('Magento\\Sales\\Model\\Config\\Source\\Order\\Status\\Processing','Order Status (state Processing)'),
-		('Magento\\Sales\\Model\\Config\\Source\\Order\\Status\\Newprocessing','Order Status (state New / Processing)'),
-		('Magento\\Payment\\Model\\Config\\Source\\Allspecificcountries','All Specific Countries'),
 		('Magento\\Directory\\Model\\Config\\Source\\Country','Countries'),
+		('Magento\\Payment\\Model\\Config\\Source\\Allspecificcountries','Payment | All Specific Countries'),
+		('Magento\\Sales\\Model\\Config\\Source\\Order\\Status\\NewStatus','Sales | Order Status (state New)'),
+		('Magento\\Sales\\Model\\Config\\Source\\Order\\Status\\Processing','Sales | Order Status (state Processing)'),
+		('Magento\\Sales\\Model\\Config\\Source\\Order\\Status\\Newprocessing','Sales | Order Status (state New / Processing)'),
+		('Magento\\Catalog\\Model\\Category\\Attribute\\Source\\Mode','Category | Display mode'),
+		('Magento\\Catalog\\Model\\Category\\Attribute\\Source\\Page','Category | Static Block List'),
+		('Magento\\Catalog\\Model\\Category\\Attribute\\Source\\Layout','Category | Page Layout'),
+		('Magento\\Catalog\\Model\\Category\\Attribute\\Source\\Sortby','Category | Sort By'),
+		('Magento\\Catalog\\Model\\Product\\Attribute\\Source\\Layout','Product | Layout'),
+		('Magento\\Catalog\\Model\\Product\\Attribute\\Source\\Status','Product | Status'),
+		('Magento\\Catalog\\Model\\Product\\Attribute\\Source\\Countryofmanufacture','Product | Country of manufacture'),
+		('Magento\\Catalog\\Model\\Product\\Type','Product | Product Type'),
+		('Magento\\Customer\\Model\\Customer\\Attribute\\Source\\Group','Customer | Group'),
+		('Magento\\Customer\\Model\\Customer\\Attribute\\Source\\Store','Customer | Store'),
+		('Magento\\Customer\\Model\\Customer\\Attribute\\Source\\Website','Customer | Website'),
 		('','------------------'),
 		('custom','Create Your own')
 	]
@@ -82,7 +93,7 @@ class SystemSnippet(Snippet):
 		field_code = field.lower().replace(' ', '_')
 
 		# customer source model
-		if source_model == 'custom':
+		if source_model == 'custom' and source_model_options and field_type == 'select' or field_type == 'multiselect':
 
 			source_model_class = Phpclass(
 				'Model\\Config\\Source\\'+ field_code.capitalize(),
