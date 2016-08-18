@@ -30,7 +30,7 @@ class CategoryAttributeSnippet(Snippet):
         ("select","Dropdown"),
         ("price","Price"),
         ("static","Static"),
-        #("image","Image")
+        ##("image","Image")
     ]
 
     STATIC_FIELD_TYPES = [
@@ -48,7 +48,7 @@ class CategoryAttributeSnippet(Snippet):
         "multiselect":"varchar",
         "select":"int",
         "price":"decimal",
-        #"image":"varchar"
+        "image":"varchar"
     }
 
     FRONTEND_FORM_ELEMENT = {
@@ -58,7 +58,7 @@ class CategoryAttributeSnippet(Snippet):
     	"select":"select",
     	"multiselect":"multiselect",
     	"date":"date",
-    	#"image":"fileUploader"
+    	"image":"fileUploader"
     }
 
     SCOPE_CHOICES = [
@@ -103,9 +103,12 @@ class CategoryAttributeSnippet(Snippet):
             backend_model = "Magento\Eav\Model\Entity\Attribute\Backend\ArrayBackend"
             if not source_model:    
                 source_model = "Magento\Catalog\Model\Category\Attribute\Source\Page"
+        elif frontend_input == "image":
+            source_model = ''
+            backend_model = "Magento\Catalog\Model\Category\Attribute\Backend\Image"
         elif frontend_input != 'multiselect' and frontend_input != 'select':
-            source_model = 'Null'
-            backend_model = 'Null'
+            source_model = ''
+            backend_model = ''
 
         # customer source model
         if source_model == 'custom' and source_model_options and frontend_input == 'select' or frontend_input == 'multiselect':
@@ -119,7 +122,7 @@ class CategoryAttributeSnippet(Snippet):
             if frontend_input == 'select':
                 to_option_array = "[\n{}\n]".format(',\n'.join("['value' => '{1}', 'label' => __('{0}')]".format(o.strip(),source_model_options.index(o)+1) for o in source_model_options))
             else:
-                to_option_array = "[\n{}\n]".format(',\n'.join("['value' => '{0}', 'label' => __('{0}')]".format(o.strip()) for o in source_model_options))
+                to_option_array = "[\n{}\n]".format(',\n'.join("['value' => (string) '{0}', 'label' => __('{0}')]".format(o.strip()) for o in source_model_options))
 
             source_model_class.attributes.append('protected $_optionsData;')
             source_model_class.add_method(Phpmethod('__construct',params=['array $options'],body="$this->_optionsData = $options;")) 
@@ -174,9 +177,30 @@ class CategoryAttributeSnippet(Snippet):
         else:
             options_xml = False
 
+        if frontend_input == 'image' :
+            image_xml = [
+                            Xmlnode('item',attributes={'name':'uploaderConfig','xsi:type':'array'},nodes=[Xmlnode('item',attributes={'name':'url','xsi:type':'url','path':'catalog/category_image/upload'})]),
+                            Xmlnode('item',attributes={'name':'elementTmpl','xsi:type':'string'},node_text='ui/form/element/uploader/uploader'),
+                            Xmlnode('item',attributes={'name':'previewTmpl','xsi:type':'string'},node_text='Magento_Catalog/image-preview')
+                        ]
+        
+        else:
+            image_xml = []    
+
         required_value = 'true' if required else 'false'
         required_xml = Xmlnode('item',attributes={'name':'required','xsi:type':'boolean'},node_text=required_value)
         required_entry_xml = Xmlnode('item',attributes={'name':'validation','xsi:type':'array'},nodes=[Xmlnode('item',attributes={'name':'required-entry','xsi:type':'boolean'},node_text=required_value)])
+
+        item_xml = [
+                    required_xml,
+                    required_entry_xml,
+                    Xmlnode('item',attributes={'name':'sortOrder','xsi:type':'number',},node_text=sort_order),
+                    Xmlnode('item',attributes={'name':'dataType','xsi:type':'string'},node_text='string'),
+                    Xmlnode('item',attributes={'name':'formElement','xsi:type':'string'},node_text=form_element),
+                    Xmlnode('item',attributes={'name':'label','xsi:type':'string','translate':'true'},node_text=attribute_label)
+                ]
+
+        item_xml.extend(image_xml)        
 
         category_form_xml = Xmlnode('form',attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Ui:etc/ui_configuration.xsd"},nodes=[
             Xmlnode('fieldset',attributes={'name':'general'},nodes=[
@@ -190,14 +214,7 @@ class CategoryAttributeSnippet(Snippet):
                 Xmlnode('field',attributes={'name':attribute_code},nodes=[
                     Xmlnode('argument',attributes={'name':'data','xsi:type':'array'},nodes=[
                  		options_xml,                  
-                        Xmlnode('item',attributes={'name':'config','xsi:type':'array'},nodes=[
-                            required_xml,
-                            required_entry_xml,
-                            Xmlnode('item',attributes={'name':'sortOrder','xsi:type':'number',},node_text=sort_order),
-                            Xmlnode('item',attributes={'name':'dataType','xsi:type':'string'},node_text='string'),
-                            Xmlnode('item',attributes={'name':'formElement','xsi:type':'string'},node_text=form_element),
-                            Xmlnode('item',attributes={'name':'label','xsi:type':'string','translate':'true'},node_text=attribute_label),
-                        ])
+                        Xmlnode('item',attributes={'name':'config','xsi:type':'array'},nodes=item_xml)
                     ])
                 ])
             ])

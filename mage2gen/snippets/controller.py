@@ -58,7 +58,8 @@ class ControllerSnippet(Snippet):
 		controller_class.append(section)
 		controller_class.append(action)
 
-		controller = Phpclass('\\'.join(controller_class), '\Magento\Framework\App\Action\Action')
+		controller_extend = '\Magento\Backend\App\Action' if  adminhtml else '\Magento\Framework\App\Action\Action' 
+		controller = Phpclass('\\'.join(controller_class), controller_extend)
 		controller.attributes.append('protected $resultPageFactory;')
 
 		if ajax:
