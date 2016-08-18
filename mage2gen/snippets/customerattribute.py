@@ -101,8 +101,8 @@ class CustomerAttributeSnippet(Snippet):
 			if not source_model:    
 				source_model = "Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Country"
 		elif frontend_input != 'multiselect' and frontend_input != 'select':
-			source_model = 'Null'
-			backend_model = 'Null'
+			source_model = ''
+			backend_model = ''
 
 		# customer source model
 		if source_model == 'custom' and source_model_options and frontend_input == 'select' or frontend_input == 'multiselect':
@@ -116,7 +116,7 @@ class CustomerAttributeSnippet(Snippet):
 			if frontend_input == 'select':
 				to_option_array = "[\n{}\n]".format(',\n'.join("['value' => '{1}', 'label' => __('{0}')]".format(o.strip(),source_model_options.index(o)+1) for o in source_model_options))
 			else:
-				to_option_array = "[\n{}\n]".format(',\n'.join("['value' => '{0}', 'label' => __('{0}')]".format(o.strip()) for o in source_model_options))
+				to_option_array = "[\n{}\n]".format(',\n'.join("['value' => (string) '{0}', 'label' => __('{0}')]".format(o.strip()) for o in source_model_options))
 
 			source_model_class.attributes.append('protected $_optionsData;')
 			source_model_class.add_method(Phpmethod('__construct',params=['array $options'],body="$this->_optionsData = $options;")) 
