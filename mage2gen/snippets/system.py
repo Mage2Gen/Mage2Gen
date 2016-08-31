@@ -119,7 +119,7 @@ class SystemSnippet(Snippet):
 					'id':tab,
 					'translate':'label',
 					'sortOrder':extra_params.get('tab_sortOrder',999) or 10},nodes=[
-				Xmlnode('label',node_text=extra_params.get('tab_label',tab))	
+				Xmlnode('label',node_text=extra_params.get('tab_label',tab) or tab)	
 			 ])
 		else:
 			tabxml = False
@@ -144,7 +144,7 @@ class SystemSnippet(Snippet):
 							'showInStore':1 if extra_params.get('section_show_in_store',True) else 0,
 							'showInDefault': 1 if extra_params.get('section_show_in_default',True) else 0,
 							'translate':'label'},match_attributes={'id'},nodes=[
-						Xmlnode('label',node_text=extra_params.get('section_label',section)),
+						Xmlnode('label',node_text=extra_params.get('section_label',section) or section),
 						Xmlnode('tab',node_text=tab),
 						Xmlnode('resource',node_text=resource_id),
 						Xmlnode('group', attributes={
@@ -153,6 +153,7 @@ class SystemSnippet(Snippet):
 								'showInStore': 1 if extra_params.get('group_show_in_store',True) else 0,
 								'showInDefault': 1 if extra_params.get('group_show_in_default',True) else 0,
 								'translate':'label'},match_attributes={'id'},nodes=[
+							Xmlnode('label',node_text=extra_params.get('group_label',group) or group),
 							Xmlnode('field', attributes={
 									'id':field,
 									'type':field_type,
@@ -161,7 +162,7 @@ class SystemSnippet(Snippet):
 									'showInStore': 1 if extra_params.get('field_show_in_store',True) else 0,
 									'showInDefault': 1 if extra_params.get('field_show_in_default',True) else 0,
 									'translate':'label'},match_attributes={'id'},nodes=[
-								Xmlnode('label',node_text=extra_params.get('field_label',field)),
+								Xmlnode('label',node_text=extra_params.get('field_label',field) or field),
 								Xmlnode('comment',node_text=extra_params.get('field_comment')),
 								source_model_xml,
 								backend_model_xml
@@ -286,6 +287,7 @@ class SystemSnippet(Snippet):
 				default=True,
 				yes_no=True),
 			'Group',
+			SnippetParam(name='group_label'),
 			SnippetParam(
 				name='group_sortorder',
 				regex_validator= r'^\d+$',
