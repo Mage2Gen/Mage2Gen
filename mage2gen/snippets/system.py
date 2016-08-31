@@ -118,7 +118,7 @@ class SystemSnippet(Snippet):
 			tabxml = Xmlnode('tab',attributes={
 					'id':tab,
 					'translate':'label',
-					'sortOrder':extra_params.get('tab_sortOrder',999)},nodes=[
+					'sortOrder':extra_params.get('tab_sortOrder',999) or 10},nodes=[
 				Xmlnode('label',node_text=extra_params.get('tab_label',tab))	
 			 ])
 		else:
@@ -139,7 +139,7 @@ class SystemSnippet(Snippet):
 					tabxml,
 					Xmlnode('section',attributes={
 							'id':section,
-							'sortOrder':extra_params.get('section_sortorder',10),
+							'sortOrder': extra_params.get('section_sortorder',10) or 10,
 							'showInWebsite':1 if extra_params.get('section_show_in_website',True) else 0,
 							'showInStore':1 if extra_params.get('section_show_in_store',True) else 0,
 							'showInDefault': 1 if extra_params.get('section_show_in_default',True) else 0,
@@ -148,7 +148,7 @@ class SystemSnippet(Snippet):
 						Xmlnode('tab',node_text=tab),
 						Xmlnode('resource',node_text=resource_id),
 						Xmlnode('group', attributes={
-								'id':group,'sortOrder':extra_params.get('group_sortorder',10),
+								'id':group,'sortOrder':extra_params.get('group_sortorder',10) or 10,
 								'showInWebsite': 1 if extra_params.get('group_show_in_website',True) else 0,
 								'showInStore': 1 if extra_params.get('group_show_in_store',True) else 0,
 								'showInDefault': 1 if extra_params.get('group_show_in_default',True) else 0,
@@ -156,7 +156,7 @@ class SystemSnippet(Snippet):
 							Xmlnode('field', attributes={
 									'id':field,
 									'type':field_type,
-									'sortOrder':extra_params.get('field_sortorder',10),
+									'sortOrder':extra_params.get('field_sortorder',10) or 10,
 									'showInWebsite': 1 if extra_params.get('field_show_in_website',True) else 0,
 									'showInStore': 1 if extra_params.get('field_show_in_store',True) else 0,
 									'showInDefault': 1 if extra_params.get('field_show_in_default',True) else 0,
