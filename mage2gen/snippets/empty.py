@@ -7,14 +7,14 @@ class EmptySnippet(Snippet):
 
 	description = """
 
-    """
+	"""
 
-	def add(self):
+	def add(self,extra_params=None):
 
 	@classmethod	
 	def params(cls):
 		return []
 
 	@classmethod
-    def extra_params(cls):
-    	return []	
+	def extra_params(cls):
+		return []	

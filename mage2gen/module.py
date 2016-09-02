@@ -122,6 +122,7 @@ class Phpmethod:
 		self.name = name
 		self.access = kwargs.get('access', self.PUBLIC)
 		self.params = kwargs.get('params', [])
+		self.docstring = kwargs.get('docstring',[])
 		self.body = [kwargs.get('body', '')]
 		self.end_body = [kwargs.get('end_body', '')]
 		self.body_return = kwargs.get('body_return', '')
@@ -148,6 +149,18 @@ class Phpmethod:
 		else:
 			return ', '.join(self.params)
 
+	def docstring_code(self):
+		if not self.docstring:
+			return '';
+
+		docstring = '/**'
+		for line in self.docstring:
+			if line:
+				docstring += format('\n\t * {}'.format(line))
+		docstring += '\n\t */'
+		return docstring			
+
+
 	def add_body_code(self,code):
 		if code not in self.body:
 			self.append(code)
@@ -171,6 +184,7 @@ class Phpmethod:
 		return template.format(
 			method=self.name,
 			access=self.access,
+			docstring=self.docstring_code(),
 			params=self.params_code(),
 			body=self.body_code()
 		)
