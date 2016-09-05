@@ -154,9 +154,7 @@ class Phpmethod:
 			return '';
 
 		docstring = '/**'
-		for line in self.docstring:
-			if line:
-				docstring += format('\n\t * {}'.format(line))
+		docstring +=  '\n\t *' + '\n\t *'.join(line for line in self.docstring)
 		docstring += '\n\t */'
 		return docstring			
 
