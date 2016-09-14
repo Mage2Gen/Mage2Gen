@@ -32,13 +32,14 @@ class Phpclass:
 
 	template_file = os.path.join(TEMPLATE_DIR,'class.tmpl')
 
-	def __init__(self, class_namespace, extends=None, implements=None, attributes=None, dependencies=None):
+	def __init__(self, class_namespace, extends=None, implements=None, attributes=None, dependencies=None, abstract=False):
 		self.class_namespace = self.upper_class_namespace(class_namespace)
 		self.methods = []
 		self.extends = extends
 		self.implements = implements if implements else []
 		self.attributes = attributes if attributes else []
 		self.dependencies = dependencies if dependencies else []
+		self.abstract = abstract
 		self.license = None
 
 	def __eq__(self, other):
@@ -91,7 +92,8 @@ class Phpclass:
 			'extends': ' extends {}'.format(self.extends) if self.extends else '',
 			'implements': ' implements {}'.format(', '.join(self.implements)) if self.implements else '',
 			'attributes': attributes,
-			'dependencies': dependencies
+			'dependencies': dependencies,
+			'abstract': 'abstract ' if self.abstract else '',
 		}
 
 	def generate(self):
