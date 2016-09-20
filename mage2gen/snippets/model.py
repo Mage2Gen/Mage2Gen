@@ -51,7 +51,12 @@ class ModelSnippet(Snippet):
 		('blob', 'Blob'),
 	]
 
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.count = 0
+
 	def add(self, model_name, field_name, field_type='text', adminhtml_grid=False, adminhtml_form=False, extra_params=False):
+		self.count += 1
 		extra_params = extra_params if extra_params else {}
 		
 		model_table = '{}_{}'.format(self._module.package.lower(), model_name.lower())
@@ -750,7 +755,7 @@ class ModelSnippet(Snippet):
 							Xmlnode('item', attributes={'name': 'label', 'xsi:type': 'string', 'translate': 'true'}, node_text=field_name),
 							Xmlnode('item', attributes={'name': 'formElement', 'xsi:type': 'string'}, node_text=field_element_type),
 							Xmlnode('item', attributes={'name': 'source', 'xsi:type': 'string'}, node_text=model_name),
-							Xmlnode('item', attributes={'name': 'sortOrder', 'xsi:type': 'number'}, node_text='10'),
+							Xmlnode('item', attributes={'name': 'sortOrder', 'xsi:type': 'number'}, node_text=str(10 * self.count)),
 							Xmlnode('item', attributes={'name': 'dataScope', 'xsi:type': 'string'}, node_text=field_name),
 							Xmlnode('item', attributes={'name': 'validation', 'xsi:type': 'array'}, nodes=[
 								Xmlnode('item', attributes={'name': 'required-entry', 'xsi:type': 'boolean'}, node_text= 'true' if required else 'false'),
