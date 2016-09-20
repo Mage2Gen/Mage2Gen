@@ -153,7 +153,7 @@ class ModelSnippet(Snippet):
 		data_source_id = '{}_grid_data_source'.format(model_table) 
 		
 		# create controller
-		index_controller_class = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '\\') + '\\Index', extends='\\Magento\\Backend\\App\\Action',
+		index_controller_class = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Index', extends='\\Magento\\Backend\\App\\Action',
 				attributes=['protected $resultPageFactory;'])
 		
 		index_controller_class.add_method(Phpmethod('__construct', 
@@ -168,20 +168,20 @@ class ModelSnippet(Snippet):
 		self.add_xml('etc/adminhtml/menu.xml', Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:module:Magento_Backend:etc/menu.xsd"}, nodes=[
 			Xmlnode('menu', nodes=[
 				Xmlnode('add', attributes={
-					'id': "{}::top_level".format(self.module_name),
+					'id': "{}::top_level".format(self._module.package),
 					'title': self._module.package,
 					'module': self.module_name,
 					'sortOrder': 9999,
 					'resource': 'Magento_Backend::content',
 				}),
 				Xmlnode('add', attributes={
-					'id': "{}::{}".format(self.module_name, model_table),
+					'id': "{}::{}".format(self._module.package, model_table),
 					'title': model_name.replace('_', ' '),
 					'module': self.module_name,
 					'sortOrder': 9999,
 					'resource': 'Magento_Backend::content',
-					'parent': '{}::top_level'.format(self.module_name),
-					'action': '{}/{}/index'.format(frontname, model_name.lower().replace('_', '\\'))
+					'parent': '{}::top_level'.format(self._module.package),
+					'action': '{}/{}/index'.format(frontname, model_name.lower().replace('_', ''))
 				})
 			])	
 		]))
@@ -216,7 +216,7 @@ class ModelSnippet(Snippet):
 		]))
 
 		# create layout.xml
-		self.add_xml('view/adminhtml/layout/{}_{}_index.xml'.format(frontname, model_name.lower()), 
+		self.add_xml('view/adminhtml/layout/{}_{}_index.xml'.format(frontname, model_name.replace('_', '').lower()), 
 			Xmlnode('page', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:framework:View/Layout/etc/page_configuration.xsd"}, nodes=[
 				Xmlnode('update', attributes={'handle': 'styles'}),
 				Xmlnode('body', nodes=[
@@ -682,7 +682,7 @@ class ModelSnippet(Snippet):
 		self.add_class(actions)
 
 		# Edit layout
-		self.add_xml('view/adminhtml/layout/{}_{}_edit.xml'.format(frontname, model_name.lower()), 
+		self.add_xml('view/adminhtml/layout/{}_{}_edit.xml'.format(frontname, model_name.replace('_', '').lower()), 
 			Xmlnode('page', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:framework:View/Layout/etc/page_configuration.xsd"}, nodes=[
 				Xmlnode('update', attributes={'handle': 'styles'}),
 				Xmlnode('body', nodes=[
@@ -693,7 +693,7 @@ class ModelSnippet(Snippet):
 			]))
 
 		# New layout
-		self.add_xml('view/adminhtml/layout/{}_{}_new.xml'.format(frontname, model_name.lower()), 
+		self.add_xml('view/adminhtml/layout/{}_{}_new.xml'.format(frontname, model_name.replace('_', '').lower()), 
 			Xmlnode('page', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:framework:View/Layout/etc/page_configuration.xsd"}, nodes=[
 				Xmlnode('update', attributes={'handle': '{}_{}_edit'.format(frontname, model_name.lower())})
 			]))
@@ -783,7 +783,7 @@ class ModelSnippet(Snippet):
 							Xmlnode('item', attributes={'name': 'enabled', 'xsi:type': 'boolean'}, node_text='true'),
 							Xmlnode('item', attributes={'name': 'indexField', 'xsi:type': 'string'}, node_text=model_id),
 							Xmlnode('item', attributes={'name': 'clientConfig', 'xsi:type': 'array'}, nodes=[
-								Xmlnode('item', attributes={'name': 'saveUrl', 'xsi:type': 'url', 'path': '{}/{}/inlineEdit'.format(frontname, model_name.replace('_', '/'))}),
+								Xmlnode('item', attributes={'name': 'saveUrl', 'xsi:type': 'url', 'path': '{}/{}/inlineEdit'.format(frontname, model_name.replace('_', ''))}),
 								Xmlnode('item', attributes={'name': 'validateBeforeSave', 'xsi:type': 'boolean'}, node_text='false'),
 							]),
 						]),
