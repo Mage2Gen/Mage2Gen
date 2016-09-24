@@ -87,7 +87,8 @@ class CategoryAttributeSnippet(Snippet):
     def add(self,attribute_label, frontend_input='text', scope=1, required=False, source_model=False, source_model_options=False, extra_params=None):
         extra_params = extra_params if extra_params else {}
         
-        value_type = self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int');
+        value_type = self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int')
+        value_type = value_type if value_type != 'date' else 'datetime'
 
         form_element = self.FRONTEND_FORM_ELEMENT.get(frontend_input,'input')
 

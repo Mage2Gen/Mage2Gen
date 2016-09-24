@@ -129,7 +129,8 @@ class CustomerAttributeSnippet(Snippet):
 
 			source_model = source_model_class.class_namespace
 
-		value_type = static_field_type if frontend_input=='static' else self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int');
+		value_type = static_field_type if frontend_input=='static' else self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int')
+		value_type = value_type if value_type != 'date' else 'datetime'
 
 		forms_array = customer_forms if customer_entity == 'customer' else customer_address_forms
 		forms_array = forms_array if forms_array else []

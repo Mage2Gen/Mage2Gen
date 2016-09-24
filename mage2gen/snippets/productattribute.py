@@ -85,7 +85,8 @@ class ProductAttributeSnippet(Snippet):
         except:
             apply_to = ''
         
-        value_type = self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int');
+        value_type = self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int')
+        value_type = value_type if value_type != 'date' else 'datetime'
         user_defined = 'true'
         options = options.split(',') if options else []
         options_php_array = '"'+'","'.join(x.strip() for x in options) + '"'
