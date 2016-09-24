@@ -63,13 +63,13 @@ class ProductAttributeSnippet(Snippet):
         ("2","SCOPE_WEBSITE")
     ]
 
-    # APPLY_TO_CHOICES = [
-    #     ("0","All Product Types"),
-    #     ("simple","Simple Products"),
-    #     ("grouped","Grouped Products"),
-    #     ("bundle","Bundled Products"),
-    #     ("configurable","Configurable Products")
-    # ]
+    APPLY_TO_CHOICES = [
+        ("-1","All Product Types"),
+        ("simple","Simple Products"),
+        ("grouped","Grouped Products"),
+        ("bundle","Bundled Products"),
+        ("configurable","Configurable Products")
+    ]
 
     description = """
         Install Magento 2 product attributes programmatically. 
@@ -79,6 +79,11 @@ class ProductAttributeSnippet(Snippet):
     
     def add(self, attribute_label, frontend_input='text', scope=1, required=False, options=None, extra_params=None):
         extra_params = extra_params if extra_params else {}
+        apply_to = extra_params.get('apply_to', [])
+        try:
+            apply_to = ','.join(x for x in apply_to if x != '-1')
+        except:
+            apply_to = ''
         
         value_type = self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int');
         user_defined = 'true'
@@ -111,7 +116,8 @@ class ProductAttributeSnippet(Snippet):
             used_in_product_listing = extra_params.get('used_in_product_listing','false'),
             unique = extra_params.get('unique','false'),
             default = 'null',
-            is_visible_in_advanced_search = extra_params.get('is_visible_in_advanced_search','0')
+            is_visible_in_advanced_search = extra_params.get('is_visible_in_advanced_search','0'),
+            apply_to=apply_to
         )
 
         install_data = Phpclass('Setup\\InstallData',implements=['InstallDataInterface'],dependencies=['Magento\\Framework\\Setup\\InstallDataInterface','Magento\\Framework\\Setup\\ModuleContextInterface','Magento\\Framework\\Setup\\ModuleDataSetupInterface','Magento\\Eav\\Setup\\EavSetup','Magento\\Eav\\Setup\\EavSetupFactory'])
@@ -167,7 +173,13 @@ class ProductAttributeSnippet(Snippet):
                 name='attribute_code', 
                 regex_validator= r'^[a-zA-Z]{1}\w{0,29}$',
                 error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character. And can\'t be longer then 30 characters'),
-             SnippetParam(
+            SnippetParam(
+                 name='apply_to',
+                 required=False,  
+                 default='',
+                 choises=cls.APPLY_TO_CHOICES,
+                 multiple_choices=True),
+            SnippetParam(
                  name='searchable',
                  required=True,  
                  default=False,
