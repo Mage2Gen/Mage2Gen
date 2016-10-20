@@ -66,11 +66,12 @@ class ControllerSnippet(Snippet):
 			controller.attributes.append('protected $jsonHelper;')
 
 		# generate construct
+		context_class = '\Magento\\' + ('Backend' if adminhtml else 'Framework') +'\App\Action\Context'
 		if ajax:
 			controller.add_method(Phpmethod(
 				'__construct',
 				params=[
-					'\Magento\Framework\App\Action\Context $context',
+					context_class + ' $context',
 					'\Magento\Framework\View\Result\PageFactory $resultPageFactory',
 					'\Magento\Framework\Json\Helper\Data $jsonHelper',
 				],
@@ -83,7 +84,7 @@ class ControllerSnippet(Snippet):
 			controller.add_method(Phpmethod(
 				'__construct',
 				params=[
-					'\Magento\Framework\App\Action\Context $context',
+					context_class + ' $context',
 					'\Magento\Framework\View\Result\PageFactory $resultPageFactory'
 				],
 				body="""$this->resultPageFactory = $resultPageFactory;

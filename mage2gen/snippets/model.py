@@ -162,7 +162,7 @@ class ModelSnippet(Snippet):
 				attributes=['protected $resultPageFactory;'])
 		
 		index_controller_class.add_method(Phpmethod('__construct', 
-			params=['\\Magento\\Framework\\App\\Action\\Context $context', '\\Magento\\Framework\\View\\Result\\PageFactory $resultPageFactory'],
+			params=['\\Magento\\Backend\\App\\Action\\Context $context', '\\Magento\\Framework\\View\\Result\\PageFactory $resultPageFactory'],
 			body='$this->resultPageFactory = $resultPageFactory;\nparent::__construct($context);'))
 		
 		index_controller_class.add_method(Phpmethod('execute', body_return='return $this->resultPageFactory->create();'))
