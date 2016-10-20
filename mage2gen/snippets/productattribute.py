@@ -118,7 +118,8 @@ class ProductAttributeSnippet(Snippet):
             unique = extra_params.get('unique','false'),
             default = 'null',
             is_visible_in_advanced_search = extra_params.get('is_visible_in_advanced_search','0'),
-            apply_to=apply_to
+            apply_to = apply_to,
+            backend = 'Magento\Eav\Model\Entity\Attribute\Backend\ArrayBackend' if frontend_input == 'multiselect' else ''
         )
 
         install_data = Phpclass('Setup\\InstallData',implements=['InstallDataInterface'],dependencies=['Magento\\Framework\\Setup\\InstallDataInterface','Magento\\Framework\\Setup\\ModuleContextInterface','Magento\\Framework\\Setup\\ModuleDataSetupInterface','Magento\\Eav\\Setup\\EavSetup','Magento\\Eav\\Setup\\EavSetupFactory'])
