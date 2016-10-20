@@ -34,7 +34,7 @@ class SnippetParam:
 	def __init__(
 		self, name, description='', required=False, default=None, 
 		choises=None, yes_no=False, regex_validator='', error_message='',
-		depend=None, label=None, multiple_choices=False
+		depend=None, label=None, multiple_choices=False, repeat=False
 	):
 		self.name = name
 		self.description = description
@@ -47,6 +47,7 @@ class SnippetParam:
 		self.depend = depend
 		self.label = label if label else upperfirst(name.replace('_', ' '))
 		self.multiple_choices = multiple_choices
+		self.repeat = repeat
 
 	def name_label(self):
 		return upperfirst(self.name.replace('_', ' '))

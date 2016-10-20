@@ -213,10 +213,11 @@ class CustomerAttributeSnippet(Snippet):
 	def params(cls):
 		return [
              SnippetParam(
-                 name='customer_entity', 
-                 choises=cls.CUSTOMER_ENTITY,
-                 required=True,  
-                 default='customer'),
+                name='customer_entity', 
+                choises=cls.CUSTOMER_ENTITY,
+                required=True,  
+                default='customer',
+				repeat=True),
              SnippetParam(
                 name='attribute_label', 
                 required=True, 
