@@ -156,7 +156,7 @@ class Phpmethod:
 			return '';
 
 		docstring = '/**'
-		docstring +=  '\n\t *' + '\n\t *'.join(line for line in self.docstring)
+		docstring +=  '\n\t * ' + '\n\t * '.join(line for line in self.docstring)
 		docstring += '\n\t */'
 		return docstring			
 
