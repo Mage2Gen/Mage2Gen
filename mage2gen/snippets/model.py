@@ -65,7 +65,7 @@ class ModelSnippet(Snippet):
 		super().__init__(*args, **kwargs)
 		self.count = 0
 
-	def add(self, model_name, field_name, field_type='text', adminhtml_grid=False, adminhtml_form=False, extra_params=False):
+	def add(self, model_name, field_name, field_type='text', adminhtml_grid=False, adminhtml_form=False,web_api=False, extra_params=False):
 		self.count += 1
 		extra_params = extra_params if extra_params else {}
 		
@@ -80,6 +80,10 @@ class ModelSnippet(Snippet):
 		split_model_name = model_name.split('_')
 		model_name_capitalized = ''.join(upperfirst(item) for item in split_model_name)
 		model_name_capitalized_after = model_name_capitalized[0].lower() + model_name_capitalized[1:]
+
+		split_model_id = model_id.split('_')
+		model_id_capitalized = ''.join(upperfirst(item) for item in split_model_id)
+		model_id_capitalized_after = model_id_capitalized[0].lower() + model_id_capitalized[1:]
 
 		if field_type == 'boolean':
 			field_element_type = 'checkbox'
@@ -152,12 +156,22 @@ class ModelSnippet(Snippet):
 		self.add_class(resource_model_class)
 
 		# Create api data interface class
-		api_data_class =  InterfaceClass('Api\\Data\\' + model_name_capitalized.replace('_', '\\') + 'Interface',attributes=["const {} = '{}';".format(field_name.upper(),field_name)])
+		api_data_class =  InterfaceClass('Api\\Data\\' + model_name_capitalized.replace('_', '\\') + 'Interface',attributes=["const {} = '{}';".format(field_name.upper(),field_name),"const {} = '{}';".format(model_id.upper(),model_id)])
+
+		api_data_class.add_method(InterfaceMethod('get'+model_id_capitalized,docstring=['Get {}'.format(model_id),'@return {}'.format('string|null')]))
+		self.add_class(api_data_class)
+
+		api_data_class.add_method(InterfaceMethod('set'+model_id_capitalized,params=['${}'.format(model_id_capitalized_after)],docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id),'@return {}'.format(api_data_class.class_namespace)]))
+		self.add_class(api_data_class)
+
 		api_data_class.add_method(InterfaceMethod('get'+field_name_capitalized,docstring=['Get {}'.format(field_name),'@return {}'.format('string|null')]))
 		self.add_class(api_data_class)
 
 		api_data_class.add_method(InterfaceMethod('set'+field_name_capitalized,params=['${}'.format(field_name)],docstring=['Set {}'.format(field_name),'@param string ${}'.format(field_name),'@return {}'.format(api_data_class.class_namespace)]))
 		self.add_class(api_data_class)
+
+
+
 
 		# Create api data interface class
 		api_data_search_class =  InterfaceClass('Api\\Data\\' + model_name_capitalized.replace('_', '\\') + 'SearchResultsInterface',extends='\Magento\Framework\Api\SearchResultsInterface')
@@ -166,17 +180,21 @@ class ModelSnippet(Snippet):
 		self.add_class(api_data_search_class)
 
 		# Create api data interface class
-		api_repository_class =  InterfaceClass('Api\\' + model_name_capitalized.replace('_', '\\') + 'RepositoryInterface')
-		api_repository_class.add_method(InterfaceMethod('save',params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],docstring=['Save {}'.format(model_name),'@return string']))
-		api_repository_class.add_method(InterfaceMethod('getById',params=['${}'.format(model_name_capitalized_after)],docstring=['Retrieve {}'.format(model_name),'@return string']))
+		api_repository_class =  InterfaceClass('Api\\' + model_name_capitalized.replace('_', '\\') + 'RepositoryInterface',dependencies=['Magento\Framework\Api\SearchCriteriaInterface'])
+		api_repository_class.add_method(InterfaceMethod('save',params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],docstring=['Save {}'.format(model_name),'@param \{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after),'@return \{}'.format(api_data_class.class_namespace),'@throws \Magento\Framework\Exception\LocalizedException']))
+		api_repository_class.add_method(InterfaceMethod('getById',params=['${}'.format(model_id_capitalized_after)],docstring=['Retrieve {}'.format(model_name),'@param string ${}'.format(model_id_capitalized_after),'@return \{}'.format(api_data_class.class_namespace),'@throws \Magento\Framework\Exception\LocalizedException']))
 		api_repository_class.add_method(InterfaceMethod('getList',params= ['\Magento\Framework\Api\SearchCriteriaInterface $searchCriteria'], docstring=['Retrieve {} matching the specified criteria.'.format(model_name),'@param \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria','@return \{}'.format(api_data_search_class.class_namespace),'@throws \Magento\Framework\Exception\LocalizedException']))
-		api_repository_class.add_method(InterfaceMethod('delete',params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],docstring=['Delete {} by ID'.format(model_name),'@return string']))
-		api_repository_class.add_method(InterfaceMethod('deleteById',params=['${}'.format(model_name_capitalized_after)],docstring=['Delete {}'.format(model_name),'@return string']))
+		api_repository_class.add_method(InterfaceMethod('delete',params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],docstring=['Delete {}'.format(model_name),'@param \{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after),'@return bool true on success','@throws \Magento\Framework\Exception\LocalizedException']))
+		api_repository_class.add_method(InterfaceMethod('deleteById',params=['${}'.format(model_id_capitalized_after)],docstring=['Delete {} by ID'.format(model_name),'@param string ${}'.format(model_id_capitalized_after),'@return bool true on success','@throws \\Magento\\Framework\\Exception\\NoSuchEntityException','@throws \\Magento\\Framework\\Exception\\LocalizedException']))
 		self.add_class(api_repository_class)
 
 		# Create model class
 		model_class = Phpclass('Model\\' + model_name_capitalized.replace('_', '\\'), dependencies=[api_data_class.class_namespace], extends='\\Magento\\Framework\\Model\\AbstractModel', implements=[model_name_capitalized.replace('_', '\\') + 'Interface'])
 		model_class.add_method(Phpmethod('_construct', access=Phpmethod.PROTECTED, body="$this->_init('{}');".format(resource_model_class.class_namespace)))
+
+		model_class.add_method(Phpmethod('get'+model_id_capitalized, docstring=['Get {}'.format(model_id),'@return string'], access=Phpmethod.PUBLIC, body="return $this->getData({});".format('self::'+model_id.upper())))
+		model_class.add_method(Phpmethod('set'+model_id_capitalized, docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id_capitalized_after),'@return {}'.format(api_data_class.class_namespace)], params=['${}'.format(model_id_capitalized_after)], access=Phpmethod.PUBLIC, body="return $this->setData({},${});".format('self::'+model_id.upper(),model_id_capitalized_after)))
+
 		model_class.add_method(Phpmethod('get'+field_name_capitalized, docstring=['Get {}'.format(field_name),'@return string'], access=Phpmethod.PUBLIC, body="return $this->getData({});".format('self::'+field_name.upper())))
 		model_class.add_method(Phpmethod('set'+field_name_capitalized, docstring=['Set {}'.format(field_name),'@param string ${}'.format(field_name),'@return {}'.format(api_data_class.class_namespace)], params=['${}'.format(field_name)], access=Phpmethod.PUBLIC, body="return $this->setData({},${});".format('self::'+field_name.upper(),field_name)))
 		self.add_class(model_class)
@@ -192,8 +210,8 @@ class ModelSnippet(Snippet):
 		model_repository_class = Phpclass('Model\\' + model_name_capitalized.replace('_', '\\') + 'Repository', 
 			dependencies=[
 				api_repository_class.class_namespace,
-				api_data_search_class.class_namespace,
-				api_data_class.class_namespace,
+				api_data_search_class.class_namespace + 'Factory',
+				api_data_class.class_namespace + 'Factory',
 				'Magento\\Framework\\Api\\DataObjectHelper',
 				'Magento\\Framework\\Api\\SortOrder',
 				'Magento\\Framework\\Exception\\CouldNotDeleteException',
@@ -336,6 +354,9 @@ class ModelSnippet(Snippet):
 
 		if adminhtml_form:
 			self.add_adminhtml_form(model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type)
+
+		if web_api:
+			self.add_web_api(model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type, api_data_class, api_repository_class, api_data_search_class, model_repository_class,model_id_capitalized_after)	
 
 	def add_adminhtml_grid(self, model_name, field_name, model_table, model_id, collection_model_class, field_element_type):
 		frontname = self.module_name.lower()
@@ -1012,6 +1033,55 @@ class ModelSnippet(Snippet):
 
 		self.add_xml('view/adminhtml/ui_component/{}_index.xml'.format(model_table), ui_index)
 
+	def add_web_api(self, model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type, api_data_class, api_repository_class, api_data_search_class, model_repository_class, model_id_capitalized_after):
+
+		resource = 'anonymous'
+		api_url = '/V1/{}-{}/'.format(self._module.package.lower(),self._module.name.lower())
+
+		di_xml = Xmlnode('config', attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:framework:ObjectManager/etc/config.xsd"}, nodes=[
+			Xmlnode('preference', attributes={'for': api_repository_class.class_namespace, 'type': model_repository_class.class_namespace}, match_attributes=['for','type']),
+			Xmlnode('preference', attributes={'for': api_data_class.class_namespace, 'type': model_class.class_namespace}, match_attributes=['for','type']),
+			Xmlnode('preference', attributes={'for': api_data_search_class.class_namespace, 'type': "Magento\Framework\Api\SearchResults"}, match_attributes=['for','type'])
+		])
+
+		self.add_xml('etc/di.xml', di_xml)
+
+		webapi_xml = Xmlnode('routes', attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Webapi:etc/webapi.xsd"}, nodes=[
+			Xmlnode('route', attributes={'url': api_url + model_name.lower(), 'method': 'POST'},match_attributes={'url','method'},nodes=[
+				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'save'}),
+		 		Xmlnode('resources',nodes=[
+		 			Xmlnode('resource', attributes={'ref':resource})
+				])
+			]),
+			Xmlnode('route', attributes={'url': api_url + 'search', 'method': 'GET'},match_attributes={'url','method'},nodes=[
+				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'getList'}),
+		 		Xmlnode('resources',nodes=[
+		 			Xmlnode('resource', attributes={'ref':resource})
+				])
+			]),
+			Xmlnode('route', attributes={'url': api_url + ':' + model_id_capitalized_after, 'method': 'GET'},match_attributes={'url','method'},nodes=[
+				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'getById'}),
+		 		Xmlnode('resources',nodes=[
+		 			Xmlnode('resource', attributes={'ref':resource})
+				])
+			]),
+			Xmlnode('route', attributes={'url': api_url + ':' + model_id_capitalized_after, 'method': 'PUT'},match_attributes={'url','method'},nodes=[
+				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'save'}),
+		 		Xmlnode('resources',nodes=[
+		 			Xmlnode('resource', attributes={'ref':resource})
+				])
+			]),
+			Xmlnode('route', attributes={'url': api_url + ':' + model_id_capitalized_after, 'method': 'DELETE'},match_attributes={'url','method'},nodes=[
+				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'deleteById'}),
+		 		Xmlnode('resources',nodes=[
+		 			Xmlnode('resource', attributes={'ref':resource})
+				])
+			])
+		])
+
+		self.add_xml('etc/webapi.xml', webapi_xml)
+		
+
 	@classmethod
 	def params(cls):
 		return [
@@ -1034,6 +1104,7 @@ class ModelSnippet(Snippet):
 			),
 			SnippetParam(name='adminhtml_grid', yes_no=True),
 			SnippetParam(name='adminhtml_form', yes_no=True),
+			SnippetParam(name='web_api', yes_no=True),
 		]
 
 	@classmethod
