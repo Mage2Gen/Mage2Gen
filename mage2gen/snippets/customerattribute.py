@@ -93,7 +93,7 @@ class CustomerAttributeSnippet(Snippet):
 		backend_model = ''
 		
 		if not attribute_code:
-			attribute_code = attribute_label.lower().replace(' ','_')
+			attribute_code = attribute_label.lower().replace(' ','_')[:30]
 		if frontend_input == 'select' and not source_model:
 			source_model = "Magento\Customer\Model\ResourceModel\Address\Attribute\Source\Country"
 		elif frontend_input == 'multiselect':
@@ -129,7 +129,8 @@ class CustomerAttributeSnippet(Snippet):
 
 			source_model = source_model_class.class_namespace
 
-		value_type = static_field_type if frontend_input=='static' else self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int');
+		value_type = static_field_type if frontend_input=='static' else self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int')
+		value_type = value_type if value_type != 'date' else 'datetime'
 
 		forms_array = customer_forms if customer_entity == 'customer' else customer_address_forms
 		forms_array = forms_array if forms_array else []
@@ -212,10 +213,11 @@ class CustomerAttributeSnippet(Snippet):
 	def params(cls):
 		return [
              SnippetParam(
-                 name='customer_entity', 
-                 choises=cls.CUSTOMER_ENTITY,
-                 required=True,  
-                 default='customer'),
+                name='customer_entity', 
+                choises=cls.CUSTOMER_ENTITY,
+                required=True,  
+                default='customer',
+				repeat=True),
              SnippetParam(
                 name='attribute_label', 
                 required=True, 
@@ -270,8 +272,8 @@ class CustomerAttributeSnippet(Snippet):
 		return [
 			SnippetParam(
 				name='attribute_code', 
-				regex_validator= r'^[a-zA-Z]{1}\w+$',
-				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
+				regex_validator= r'^[a-zA-Z]{1}\w{0,29}$',
+				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character. And can\'t be longer then 30 characters'),
 			SnippetParam(
 				name='sort_order',
 				regex_validator= r'^\d+$',

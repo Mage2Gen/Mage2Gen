@@ -66,11 +66,12 @@ class ControllerSnippet(Snippet):
 			controller.attributes.append('protected $jsonHelper;')
 
 		# generate construct
+		context_class = '\Magento\\' + ('Backend' if adminhtml else 'Framework') +'\App\Action\Context'
 		if ajax:
 			controller.add_method(Phpmethod(
 				'__construct',
 				params=[
-					'\Magento\Framework\App\Action\Context $context',
+					context_class + ' $context',
 					'\Magento\Framework\View\Result\PageFactory $resultPageFactory',
 					'\Magento\Framework\Json\Helper\Data $jsonHelper',
 				],
@@ -83,7 +84,7 @@ class ControllerSnippet(Snippet):
 			controller.add_method(Phpmethod(
 				'__construct',
 				params=[
-					'\Magento\Framework\App\Action\Context $context',
+					context_class + ' $context',
 					'\Magento\Framework\View\Result\PageFactory $resultPageFactory'
 				],
 				body="""$this->resultPageFactory = $resultPageFactory;
@@ -161,10 +162,12 @@ class ControllerSnippet(Snippet):
 		return [
 			SnippetParam(name='frontname', required=False, description='When empty it will use the Module name in lower case',
 				regex_validator= r'^[a-zA-Z]{1}\w+$',
-				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
+				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.',
+				repeat=True),
 			SnippetParam(name='section', required=True, default='index',
 				regex_validator= r'^[a-zA-Z]{1}\w+$',
-				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
+				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.',
+				repeat=True),
 			SnippetParam(name='action', required=True, default='index',
 				regex_validator= r'^[a-zA-Z]{1}\w+$',
 				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),

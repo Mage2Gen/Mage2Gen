@@ -320,7 +320,7 @@ class Module:
 		self._composer['authors'] = [
 				{
 					'name': 'Mage2Gen',
-					'email': 'mail@mage2gen'
+					'email': 'info@mage2gen.com'
 				}
 			]
 		self._composer['minimum-stability'] = 'dev'
