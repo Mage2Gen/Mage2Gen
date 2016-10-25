@@ -354,9 +354,13 @@ class ModelSnippet(Snippet):
 
 		if adminhtml_form:
 			self.add_adminhtml_form(model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type)
+			self.add_acl(model_name)
 
 		if web_api:
 			self.add_web_api(model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type, api_data_class, api_repository_class, api_data_search_class, model_repository_class,model_id_capitalized_after)	
+		
+		if web_api | adminhtml_form | adminhtml_grid:
+			self.add_acl(model_name)
 
 	def add_adminhtml_grid(self, model_name, field_name, model_table, model_id, collection_model_class, field_element_type):
 		frontname = self.module_name.lower()
@@ -1035,7 +1039,7 @@ class ModelSnippet(Snippet):
 
 	def add_web_api(self, model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type, api_data_class, api_repository_class, api_data_search_class, model_repository_class, model_id_capitalized_after):
 
-		resource = 'anonymous'
+		resource = '{}_{}::{}_'.format(self._module.package,self._module.name,model_name);
 		api_url = '/V1/{}-{}/'.format(self._module.package.lower(),self._module.name.lower())
 
 		di_xml = Xmlnode('config', attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:framework:ObjectManager/etc/config.xsd"}, nodes=[
@@ -1050,36 +1054,58 @@ class ModelSnippet(Snippet):
 			Xmlnode('route', attributes={'url': api_url + model_name.lower(), 'method': 'POST'},match_attributes={'url','method'},nodes=[
 				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'save'}),
 		 		Xmlnode('resources',nodes=[
-		 			Xmlnode('resource', attributes={'ref':resource})
+		 			Xmlnode('resource', attributes={'ref':resource + 'save'})
 				])
 			]),
 			Xmlnode('route', attributes={'url': api_url + 'search', 'method': 'GET'},match_attributes={'url','method'},nodes=[
 				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'getList'}),
 		 		Xmlnode('resources',nodes=[
-		 			Xmlnode('resource', attributes={'ref':resource})
+		 			Xmlnode('resource', attributes={'ref':resource + 'view'})
 				])
 			]),
 			Xmlnode('route', attributes={'url': api_url + ':' + model_id_capitalized_after, 'method': 'GET'},match_attributes={'url','method'},nodes=[
 				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'getById'}),
 		 		Xmlnode('resources',nodes=[
-		 			Xmlnode('resource', attributes={'ref':resource})
+		 			Xmlnode('resource', attributes={'ref':resource + 'view'})
 				])
 			]),
 			Xmlnode('route', attributes={'url': api_url + ':' + model_id_capitalized_after, 'method': 'PUT'},match_attributes={'url','method'},nodes=[
 				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'save'}),
 		 		Xmlnode('resources',nodes=[
-		 			Xmlnode('resource', attributes={'ref':resource})
+		 			Xmlnode('resource', attributes={'ref':resource + 'update'})
 				])
 			]),
 			Xmlnode('route', attributes={'url': api_url + ':' + model_id_capitalized_after, 'method': 'DELETE'},match_attributes={'url','method'},nodes=[
 				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'deleteById'}),
 		 		Xmlnode('resources',nodes=[
-		 			Xmlnode('resource', attributes={'ref':resource})
+		 			Xmlnode('resource', attributes={'ref':resource + 'delete'})
 				])
 			])
 		])
 
 		self.add_xml('etc/webapi.xml', webapi_xml)
+
+
+	def add_acl(self,model_name):
+		
+		namespace = '{}_{}'.format(self._module.package,self._module.name)
+
+		acl_xml = Xmlnode('config', attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:framework:Acl/etc/acl.xsd"}, nodes=[
+			Xmlnode('acl',nodes=[
+				Xmlnode('resources',nodes=[
+					Xmlnode('resource',attributes={'id':'Magento_Backend::admin'},nodes=[
+						Xmlnode('resource',attributes={'id':'{}::{}'.format(namespace,model_name),'title':'{}'.format(model_name),'sortOrder':"10"}, nodes=[
+							Xmlnode('resource',attributes={'id':'{}::{}_{}'.format(namespace,model_name,'save'),'title':'Save {}'.format(model_name),'sortOrder':"10"}),
+							Xmlnode('resource',attributes={'id':'{}::{}_{}'.format(namespace,model_name,'delete'),'title':'Delete {}'.format(model_name),'sortOrder':"20"}),
+							Xmlnode('resource',attributes={'id':'{}::{}_{}'.format(namespace,model_name,'update'),'title':'Update {}'.format(model_name),'sortOrder':"30"}),
+							Xmlnode('resource',attributes={'id':'{}::{}_{}'.format(namespace,model_name,'view'),'title':'View {}'.format(model_name),'sortOrder':"40"})
+						])
+					])
+				])
+			])
+		])
+
+		self.add_xml('etc/acl.xml', acl_xml)
 		
 
 	@classmethod

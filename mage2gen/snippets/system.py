@@ -184,7 +184,7 @@ class SystemSnippet(Snippet):
 						Xmlnode('resource',attributes={'id':'Magento_Backend::stores'},nodes=[
 							Xmlnode('resource',attributes={'id':'Magento_Backend::stores_settings'},match_attributes={'id'},nodes=[
 								Xmlnode('resource',attributes={'id':'Magento_Config::config'},match_attributes={'id'},nodes=[
-									Xmlnode('resource',attributes={'id':resource_id},match_attributes={'id'})
+									Xmlnode('resource',attributes={'id':resource_id,'title':section},match_attributes={'id'})
 								])
 							])
 						])
