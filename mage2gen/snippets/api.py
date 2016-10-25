@@ -18,7 +18,9 @@ class ApiSnippet(Snippet):
 	snippet_label = 'Api'
 
 	description = """
-		Create your own api. Test is with the build in api tester in your magento 2 installation. http://yourmagento2website/swagger 
+		Create your own api. Test is with the build in api tester in your magento 2 installation. http://<yourmagento2website>/swagger 
+
+		WARNING. This api is public. Acl will be added soon.
 	"""
 	API_METHOD_CHOISES = [
 		('POST', 'POST'),
