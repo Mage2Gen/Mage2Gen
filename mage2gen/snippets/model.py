@@ -216,6 +216,7 @@ class ModelSnippet(Snippet):
 				'Magento\\Framework\\Api\\SortOrder',
 				'Magento\\Framework\\Exception\\CouldNotDeleteException',
 				'Magento\\Framework\\Exception\\NoSuchEntityException',
+				'Magento\\Framework\\Exception\\CouldNotSaveException',
 				'Magento\\Framework\\Reflection\\DataObjectProcessor',
 				resource_model_class.class_namespace + ' as Resource' + model_name_capitalized,
 				collection_model_class.class_namespace + 'Factory as '+ model_name_capitalized +'CollectionFactory',
@@ -757,7 +758,7 @@ class ModelSnippet(Snippet):
 		self.add_class(new_controller)
 
 		# Save Controller
-		new_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Save', extends='\\Magento\\Backend\\App\\Action', 
+		new_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Save', dependencies=['Magento\Framework\Exception\LocalizedException'], extends='\\Magento\\Backend\\App\\Action', 
 			attributes=['protected $dataPersistor;'])
 		new_controller.add_method(Phpmethod('__construct',
 			params=['\\Magento\\Backend\\App\\Action\\Context $context',
