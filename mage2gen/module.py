@@ -77,8 +77,10 @@ class Phpclass:
 			methods = '\n' + methods
 
 		attributes = '\n\t'.join(self.attributes)
-		if attributes:
+		if self.attributes:
 			attributes = '\n\t' + attributes
+		else:
+			attributes = ''
 
 		dependencies = ';\n'.join("use %s" %(dependency) for dependency in self.dependencies)
 		if dependencies:
@@ -157,7 +159,7 @@ class Phpmethod:
 
 		docstring = '/**'
 		docstring +=  '\n\t * ' + '\n\t * '.join(line for line in self.docstring)
-		docstring += '\n\t */'
+		docstring += '\n\t */\n\t'
 		return docstring			
 
 
