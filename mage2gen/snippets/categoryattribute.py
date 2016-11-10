@@ -19,256 +19,303 @@ import os, locale
 from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 class CategoryAttributeSnippet(Snippet):
-    snippet_label = 'Category Attribute'
+	snippet_label = 'Category Attribute'
 
-    FRONTEND_INPUT_TYPE = [
-        ("text","Text Field"),
-        ("textarea","Text Area"),
-        ("date","Date"),
-        ("boolean","Yes/No"),
-        ("multiselect","Multiple Select"),
-        ("select","Dropdown"),
-        ("price","Price"),
-        ("static","Static"),
-        ##("image","Image")
-    ]
-
-    STATIC_FIELD_TYPES = [
-        ("varchar","Varchar"),
-        ("text","Text"),
-        ("int","Int"),
-        ("decimal","Decimal")
-    ]
-
-    FRONTEND_INPUT_VALUE_TYPE = {
-        "text":"varchar",
-        "textarea":"text",
-        "date":"date",
-        "boolean":"int",
-        "multiselect":"varchar",
-        "select":"int",
-        "price":"decimal",
-        "image":"varchar"
-    }
-
-    FRONTEND_FORM_ELEMENT = {
-    	"text":"input",
-    	"textarea":"textarea",
-    	"checkbox":"checkbox",
-    	"select":"select",
-    	"multiselect":"multiselect",
-    	"date":"date",
-    	"image":"fileUploader"
-    }
-
-    SCOPE_CHOICES = [
-        ("0","SCOPE_STORE"),
-        ("1","SCOPE_GLOBAL"),
-        ("2","SCOPE_WEBSITE")
-    ]
-
-    CATEGORY_SOURCE_MODELS = [
-        ('Magento\Eav\Model\Entity\Attribute\Source\Boolean','Magento\Eav\Model\Entity\Attribute\Source\Boolean'),
-        ('Magento\Catalog\Model\Category\Attribute\Source\Page','Magento\Catalog\Model\Category\Attribute\Source\Page'),
-        ('Magento\Catalog\Model\Category\Attribute\Source\Mode','Magento\Catalog\Model\Category\Attribute\Source\Mode'),
-        ('Magento\Catalog\Model\Category\Attribute\Source\Sortby','Magento\Catalog\Model\Category\Attribute\Source\Sortby'),
-        ('','------------------'),
-        ('custom','Create Your own')
+	FRONTEND_INPUT_TYPE = [
+		("text","Text Field"),
+		("textarea","Text Area"),
+		("date","Date"),
+		("boolean","Yes/No"),
+		("multiselect","Multiple Select"),
+		("select","Dropdown"),
+		("price","Price"),
+		("static","Static"),
+		##("image","Image")
 	]
 
-    CATEGORY_BACKEND_MODELS = [
-        ('Magento\Catalog\Model\Category\Attribute\Backend\Image','Magento\Catalog\Model\Category\Attribute\Backend\Image')
-    ]
+	STATIC_FIELD_TYPES = [
+		("varchar","Varchar"),
+		("text","Text"),
+		("int","Int"),
+		("decimal","Decimal")
+	]
 
-    description = """
-        Install Magento 2 category attributes programmatically. 
-    """
-    
-    def add(self,attribute_label, frontend_input='text', scope=1, required=False, source_model=False, source_model_options=False, extra_params=None):
-        extra_params = extra_params if extra_params else {}
-        
-        value_type = self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int')
-        value_type = value_type if value_type != 'date' else 'datetime'
+	FRONTEND_INPUT_VALUE_TYPE = {
+		"text":"varchar",
+		"textarea":"text",
+		"date":"date",
+		"boolean":"int",
+		"multiselect":"varchar",
+		"select":"int",
+		"price":"decimal",
+		"image":"varchar"
+	}
 
-        form_element = self.FRONTEND_FORM_ELEMENT.get(frontend_input,'input')
+	FRONTEND_FORM_ELEMENT = {
+		"text":"input",
+		"textarea":"textarea",
+		"checkbox":"checkbox",
+		"select":"select",
+		"multiselect":"multiselect",
+		"date":"date",
+		"image":"fileUploader"
+	}
 
-        user_defined = 'false'
-        backend_model = ''
+	SCOPE_CHOICES = [
+		("0","SCOPE_STORE"),
+		("1","SCOPE_GLOBAL"),
+		("2","SCOPE_WEBSITE")
+	]
 
-        attribute_code = extra_params.get('attribute_code', None)
-        if not attribute_code:
-            attribute_code = attribute_label.lower().replace(' ','_')[:30]
-        if frontend_input == 'select' and not source_model:
-            source_model = "Magento\Eav\Model\Entity\Attribute\Source\Boolean"
-        elif frontend_input == 'multiselect':
-            backend_model = "Magento\Eav\Model\Entity\Attribute\Backend\ArrayBackend"
-            if not source_model:    
-                source_model = "Magento\Catalog\Model\Category\Attribute\Source\Page"
-        elif frontend_input == "image":
-            source_model = ''
-            backend_model = "Magento\Catalog\Model\Category\Attribute\Backend\Image"
-        elif frontend_input != 'multiselect' and frontend_input != 'select':
-            source_model = ''
-            backend_model = ''
+	CATEGORY_SOURCE_MODELS = [
+		('Magento\Eav\Model\Entity\Attribute\Source\Boolean','Magento\Eav\Model\Entity\Attribute\Source\Boolean'),
+		('Magento\Catalog\Model\Category\Attribute\Source\Page','Magento\Catalog\Model\Category\Attribute\Source\Page'),
+		('Magento\Catalog\Model\Category\Attribute\Source\Mode','Magento\Catalog\Model\Category\Attribute\Source\Mode'),
+		('Magento\Catalog\Model\Category\Attribute\Source\Sortby','Magento\Catalog\Model\Category\Attribute\Source\Sortby'),
+		('','------------------'),
+		('custom','Create Your own')
+	]
 
-        # customer source model
-        if source_model == 'custom' and source_model_options and frontend_input == 'select' or frontend_input == 'multiselect':
+	CATEGORY_BACKEND_MODELS = [
+		('Magento\Catalog\Model\Category\Attribute\Backend\Image','Magento\Catalog\Model\Category\Attribute\Backend\Image')
+	]
 
-            source_model_class = Phpclass(
-                'Model\\Category\\Attribute\\Source\\'+ attribute_code.capitalize(),
-                extends='\Magento\Eav\Model\Entity\Attribute\Source\AbstractSource'
-            )
-            source_model_options = source_model_options.split(',')
+	description = """
+		Install Magento 2 category attributes programmatically. 
+	"""
+	
+	def add(self,attribute_label, frontend_input='text', scope=1, required=False, source_model=False, source_model_options=False, extra_params=None):
+		extra_params = extra_params if extra_params else {}
+		
+		value_type = self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int')
+		value_type = value_type if value_type != 'date' else 'datetime'
 
-            if frontend_input == 'select':
-                to_option_array = "[\n{}\n]".format(',\n'.join("['value' => '{1}', 'label' => __('{0}')]".format(o.strip(),source_model_options.index(o)+1) for o in source_model_options))
-            else:
-                to_option_array = "[\n{}\n]".format(',\n'.join("['value' => (string) '{0}', 'label' => __('{0}')]".format(o.strip()) for o in source_model_options))
+		form_element = self.FRONTEND_FORM_ELEMENT.get(frontend_input,'input')
 
-            source_model_class.attributes.append('protected $_optionsData;')
-            source_model_class.add_method(Phpmethod('__construct',params=['array $options'],body="$this->_optionsData = $options;")) 
+		user_defined = 'false'
+		backend_model = ''
 
-            get_all_options_array = "\t$this->_options = {};".format(to_option_array)
+		attribute_code = extra_params.get('attribute_code', None)
+		if not attribute_code:
+			attribute_code = attribute_label.lower().replace(' ','_')[:30]
+		if frontend_input == 'select' and not source_model:
+			source_model = "Magento\Eav\Model\Entity\Attribute\Source\Boolean"
+		elif frontend_input == 'multiselect':
+			backend_model = "Magento\Eav\Model\Entity\Attribute\Backend\ArrayBackend"
+			if not source_model:    
+				source_model = "Magento\Catalog\Model\Category\Attribute\Source\Page"
+		elif frontend_input == "image":
+			source_model = ''
+			backend_model = "Magento\Catalog\Model\Category\Attribute\Backend\Image"
+		elif frontend_input != 'multiselect' and frontend_input != 'select':
+			source_model = ''
+			backend_model = ''
 
-            source_model_class.add_method(Phpmethod('getAllOptions',body="if ($this->_options === null) { \n " + get_all_options_array + "\n}\nreturn $this->_options;"))
+		# customer source model
+		if source_model == 'custom' and source_model_options and frontend_input == 'select' or frontend_input == 'multiselect':
+			source_model_class = Phpclass(
+				'Model\\Category\\Attribute\\Source\\'+ attribute_code.capitalize(),
+				extends='\Magento\Eav\Model\Entity\Attribute\Source\AbstractSource',
+				attributes=[
+					'/**',
+				' * @var array',
+				' */',
+				'protected $_optionsData;'
+				]   
+			)
 
-            self.add_class(source_model_class)
+			source_model_class.add_method(Phpmethod('__construct',
+				params=['array $options'],
+				body="$this->_optionsData = $options;",
+				docstring=[
+					'Constructor',
+					'',
+					'@param array $options',
+				]
+			))
 
-            source_model = source_model_class.class_namespace
+			if frontend_input == 'select':
+				to_option_array = "[\n        {}\n    ]".format(',\n        '.join(
+					"['value' => '{1}', 'label' => __('{0}')]".format(value.strip(),index + 1) for index, value in enumerate(source_model_options.split(',')))
+				)
+			else:
+				to_option_array = "[\n        {}\n    ]".format(',\n        '.join(
+					"['value' => (string) '{0}', 'label' => __('{0}')]".format(value.strip()) for value in source_model_options.split(','))
+				)
+			
 
-        sort_order = extra_params.get('sort_order','333') if extra_params.get('sort_order','333') else '333'
+			source_model_class.add_method(Phpmethod('getAllOptions',
+				body="""
+				if ($this->_options === null) {{
+				    $this->_options = {options}
+				}}
+				return $this->_options;
+				""".format(options=to_option_array),
+				docstring=[
+					'getAllOptions',
+					'',
+					'@return array',
+				]
+			))
+			self.add_class(source_model_class)
 
-        templatePath = os.path.join(os.path.dirname(__file__), '../templates/attributes/categoryattribute.tmpl')
+			source_model = source_model_class.class_namespace
 
-        with open(templatePath, 'rb') as tmpl:
-            template = tmpl.read().decode('utf-8')
+		sort_order = extra_params.get('sort_order','333') if extra_params.get('sort_order','333') else '333'
 
-        methodBody = template.format(
-            attribute_code=attribute_code,
-            attribute_label=attribute_label,
-            value_type=value_type,
-            frontend_input=frontend_input,
-            user_defined = user_defined,
-            scope = scope,
-            required = required,
-            default = 'null',
-            sort_order = sort_order,
-            source_model = source_model,
-            backend_model = backend_model
-        )
+		templatePath = os.path.join(os.path.dirname(__file__), '../templates/attributes/categoryattribute.tmpl')
 
-        install_data = Phpclass('Setup\\InstallData',implements=['InstallDataInterface'],dependencies=['Magento\\Framework\\Setup\\InstallDataInterface','Magento\\Framework\\Setup\\ModuleContextInterface','Magento\\Framework\\Setup\\ModuleDataSetupInterface','Magento\\Eav\\Setup\\EavSetup','Magento\\Eav\\Setup\\EavSetupFactory'])
-        install_data.attributes.append('private $eavSetupFactory;')
-        install_data.add_method(Phpmethod(
-            '__construct',
-            params=[
-                'EavSetupFactory $eavSetupFactory',
-            ],
-            body="$this->eavSetupFactory = $eavSetupFactory;"
-        )) 
-        install_data.add_method(Phpmethod('install',params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],body="$eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);"))
-        install_data.add_method(Phpmethod('install',params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],body=methodBody))
-    
-        self.add_class(install_data)
+		with open(templatePath, 'rb') as tmpl:
+			template = tmpl.read().decode('utf-8')
 
-        category_form_file = 'view/adminhtml/ui_component/category_form.xml'
+		methodBody = template.format(
+			attribute_code=attribute_code,
+			attribute_label=attribute_label,
+			value_type=value_type,
+			frontend_input=frontend_input,
+			user_defined = user_defined,
+			scope = scope,
+			required = required,
+			default = 'null',
+			sort_order = sort_order,
+			source_model = source_model,
+			backend_model = backend_model
+		)
 
-        if frontend_input=='select' or frontend_input == 'multiselect':
-            options_xml = Xmlnode('item',attributes={'name':'options','xsi:type':'object'},node_text=source_model)
-        else:
-            options_xml = False
+		install_data = Phpclass('Setup\\InstallData',
+			implements=['InstallDataInterface'],
+			dependencies=[
+				'Magento\\Framework\\Setup\\InstallDataInterface',
+				'Magento\\Framework\\Setup\\ModuleContextInterface',
+				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
+				'Magento\\Eav\\Setup\\EavSetup',
+				'Magento\\Eav\\Setup\\EavSetupFactory'],
+			attributes=[
+				'/**',
+				' * @var \\Magento\\Eav\\Setup\\EavSetupFactory',
+				' */',
+				'private $eavSetupFactory;'
+			])
 
-        if frontend_input == 'image' :
-            image_xml = [
-                            Xmlnode('item',attributes={'name':'uploaderConfig','xsi:type':'array'},nodes=[Xmlnode('item',attributes={'name':'url','xsi:type':'url','path':'catalog/category_image/upload'})]),
-                            Xmlnode('item',attributes={'name':'elementTmpl','xsi:type':'string'},node_text='ui/form/element/uploader/uploader'),
-                            Xmlnode('item',attributes={'name':'previewTmpl','xsi:type':'string'},node_text='Magento_Catalog/image-preview')
-                        ]
-        
-        else:
-            image_xml = []    
+		install_data.add_method(Phpmethod(
+			'__construct',
+			params=['EavSetupFactory $eavSetupFactory'],
+			body="$this->eavSetupFactory = $eavSetupFactory;",
+			docstring=[
+				'Constructor',
+				'',
+				'@param \\Magento\\Eav\\Setup\\EavSetupFactory $eavSetupFactory'
+			]
+		)) 
+		
+		install_data.add_method(Phpmethod('install',
+			params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
+			body="$eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);",
+			docstring=['{@inheritdoc}']))
+		install_data.add_method(Phpmethod('install',
+			params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
+			body=methodBody))
+	
+		self.add_class(install_data)
 
-        required_value = 'true' if required else 'false'
-        required_xml = Xmlnode('item',attributes={'name':'required','xsi:type':'boolean'},node_text=required_value)
-        required_entry_xml = Xmlnode('item',attributes={'name':'validation','xsi:type':'array'},nodes=[Xmlnode('item',attributes={'name':'required-entry','xsi:type':'boolean'},node_text=required_value)])
+		category_form_file = 'view/adminhtml/ui_component/category_form.xml'
 
-        item_xml = [
-                    required_xml,
-                    required_entry_xml,
-                    Xmlnode('item',attributes={'name':'sortOrder','xsi:type':'number',},node_text=sort_order),
-                    Xmlnode('item',attributes={'name':'dataType','xsi:type':'string'},node_text='string'),
-                    Xmlnode('item',attributes={'name':'formElement','xsi:type':'string'},node_text=form_element),
-                    Xmlnode('item',attributes={'name':'label','xsi:type':'string','translate':'true'},node_text=attribute_label)
-                ]
+		if frontend_input=='select' or frontend_input == 'multiselect':
+			options_xml = Xmlnode('item',attributes={'name':'options','xsi:type':'object'},node_text=source_model)
+		else:
+			options_xml = False
 
-        item_xml.extend(image_xml)        
+		if frontend_input == 'image' :
+			image_xml = [
+							Xmlnode('item',attributes={'name':'uploaderConfig','xsi:type':'array'},nodes=[Xmlnode('item',attributes={'name':'url','xsi:type':'url','path':'catalog/category_image/upload'})]),
+							Xmlnode('item',attributes={'name':'elementTmpl','xsi:type':'string'},node_text='ui/form/element/uploader/uploader'),
+							Xmlnode('item',attributes={'name':'previewTmpl','xsi:type':'string'},node_text='Magento_Catalog/image-preview')
+						]
+		
+		else:
+			image_xml = []    
 
-        category_form_xml = Xmlnode('form',attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Ui:etc/ui_configuration.xsd"},nodes=[
-            Xmlnode('fieldset',attributes={'name':'general'},nodes=[
-                # Xmlnode('argument',attributes={'name':'data','xsi:type':'array'},nodes=[
-                #     Xmlnode('item',attributes={'name':'config','xsi:type':'array'},nodes=[
-                #         Xmlnode('item',attributes={'name':'label','xsi:type':'string','translate':'true'},node_text='test'),
-                #         Xmlnode('item',attributes={'name':'collapsible','xsi:type':'boolean'},node_text='true'),
-                #         Xmlnode('item',attributes={'name':'sortOrder','xsi:type':'number'},node_text='100'),
-                #     ])
-                # ]),
-                Xmlnode('field',attributes={'name':attribute_code},nodes=[
-                    Xmlnode('argument',attributes={'name':'data','xsi:type':'array'},nodes=[
-                 		options_xml,                  
-                        Xmlnode('item',attributes={'name':'config','xsi:type':'array'},nodes=item_xml)
-                    ])
-                ])
-            ])
-        ])
+		required_value = 'true' if required else 'false'
+		required_xml = Xmlnode('item',attributes={'name':'required','xsi:type':'boolean'},node_text=required_value)
+		required_entry_xml = Xmlnode('item',attributes={'name':'validation','xsi:type':'array'},nodes=[Xmlnode('item',attributes={'name':'required-entry','xsi:type':'boolean'},node_text=required_value)])
 
-        self.add_xml(category_form_file, category_form_xml)
-    
-    @classmethod
-    def params(cls):
-         return [
-             SnippetParam(
-                name='attribute_label', 
-                required=True, 
-                description='Tab code. Example: catalog',
-                regex_validator= r'^[a-zA-Z\d\-_\s]+$',
-                error_message='Only alphanumeric'),
-             SnippetParam(
-                 name='frontend_input', 
-                 choises=cls.FRONTEND_INPUT_TYPE,
-                 required=True,  
-                 default='text'),
-             SnippetParam(
-                name='source_model', 
-                choises=cls.CATEGORY_SOURCE_MODELS,
-                depend= {'frontend_input': r'select|multiselect'}, 
-                default='Magento\Eav\Model\Entity\Attribute\Source\Boolean'),
-             SnippetParam(
-                name='source_model_options',
-                required=True,
-                depend= {'source_model': r'custom'},
-                description='Dropdown or Multiselect options comma seperated',
-                error_message='Only alphanumeric'),
+		item_xml = [
+					required_xml,
+					required_entry_xml,
+					Xmlnode('item',attributes={'name':'sortOrder','xsi:type':'number',},node_text=sort_order),
+					Xmlnode('item',attributes={'name':'dataType','xsi:type':'string'},node_text='string'),
+					Xmlnode('item',attributes={'name':'formElement','xsi:type':'string'},node_text=form_element),
+					Xmlnode('item',attributes={'name':'label','xsi:type':'string','translate':'true'},node_text=attribute_label)
+				]
+
+		item_xml.extend(image_xml)        
+
+		category_form_xml = Xmlnode('form',attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Ui:etc/ui_configuration.xsd"},nodes=[
+			Xmlnode('fieldset',attributes={'name':'general'},nodes=[
+				# Xmlnode('argument',attributes={'name':'data','xsi:type':'array'},nodes=[
+				#     Xmlnode('item',attributes={'name':'config','xsi:type':'array'},nodes=[
+				#         Xmlnode('item',attributes={'name':'label','xsi:type':'string','translate':'true'},node_text='test'),
+				#         Xmlnode('item',attributes={'name':'collapsible','xsi:type':'boolean'},node_text='true'),
+				#         Xmlnode('item',attributes={'name':'sortOrder','xsi:type':'number'},node_text='100'),
+				#     ])
+				# ]),
+				Xmlnode('field',attributes={'name':attribute_code},nodes=[
+					Xmlnode('argument',attributes={'name':'data','xsi:type':'array'},nodes=[
+						options_xml,                  
+						Xmlnode('item',attributes={'name':'config','xsi:type':'array'},nodes=item_xml)
+					])
+				])
+			])
+		])
+
+		self.add_xml(category_form_file, category_form_xml)
+	
+	@classmethod
+	def params(cls):
+		 return [
 			 SnippetParam(
-                 name='scope',
-                 required=True,  
-                 choises=cls.SCOPE_CHOICES, 
-                 default='1'),
-             SnippetParam(
-                 name='required',
-                 required=True,  
-                 default=True,
-                 yes_no=True),
+				name='attribute_label', 
+				required=True, 
+				description='Tab code. Example: catalog',
+				regex_validator= r'^[a-zA-Z\d\-_\s]+$',
+				error_message='Only alphanumeric'),
+			 SnippetParam(
+				 name='frontend_input', 
+				 choises=cls.FRONTEND_INPUT_TYPE,
+				 required=True,  
+				 default='text'),
+			 SnippetParam(
+				name='source_model', 
+				choises=cls.CATEGORY_SOURCE_MODELS,
+				depend= {'frontend_input': r'select|multiselect'}, 
+				default='Magento\Eav\Model\Entity\Attribute\Source\Boolean'),
+			 SnippetParam(
+				name='source_model_options',
+				required=True,
+				depend= {'source_model': r'custom'},
+				description='Dropdown or Multiselect options comma seperated',
+				error_message='Only alphanumeric'),
+			 SnippetParam(
+				 name='scope',
+				 required=True,  
+				 choises=cls.SCOPE_CHOICES, 
+				 default='1'),
+			 SnippetParam(
+				 name='required',
+				 required=True,  
+				 default=True,
+				 yes_no=True),
 		]
 
-    @classmethod
-    def extra_params(cls):
-         return [
-             SnippetParam(
+	@classmethod
+	def extra_params(cls):
+		 return [
+			 SnippetParam(
 				name='sort_order',
 				regex_validator= r'^\d+$',
 				error_message='Only numeric value'),
-             SnippetParam(
+			 SnippetParam(
 				name='attribute_code', 
 				regex_validator= r'^[a-zA-Z]{1}\w{0,29}$',
 				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character. And can\'t be longer then 30 characters')
-         ]
+		 ]

@@ -38,7 +38,7 @@ class UnitTestSnippet(Snippet):
 			Phpmethod(
 				'setUpBeforeClass',
 				access='static',
-				body='# Is called once before running all test in class'
+				docstring=['Is called once before running all test in class']
 			)
 		)
 
@@ -46,7 +46,7 @@ class UnitTestSnippet(Snippet):
 			Phpmethod(
 				'tearDownAfterClass',
 				access='static',
-				body='# Is called once after running all test in class'
+				docstring=['Is called once after running all test in class']
 			)
 		)
 
@@ -56,7 +56,7 @@ class UnitTestSnippet(Snippet):
 			Phpmethod(
 				'setUp',
 				access='protected',
-				body='# Is called before running a test'
+				docstring=['Is called before running a test']
 			)
 		)
 
@@ -64,7 +64,7 @@ class UnitTestSnippet(Snippet):
 			Phpmethod(
 				'tearDown',
 				access='protected',
-				body='# Is called after running a test'
+				docstring=['Is called after running a test']
 			)
 		)
 
@@ -73,7 +73,8 @@ class UnitTestSnippet(Snippet):
 			Phpmethod(
 				'test{}'.format(upperfirst(test_name)),
 				access='public',
-				body="# The test itself, every test function must start with 'test'\n$this->assertTrue(false);"
+				body='$this->assertTrue(false);',
+				docstring=["The test itself, every test function must start with 'test'"]
 			)
 		)
 
