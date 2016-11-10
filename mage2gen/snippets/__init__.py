@@ -31,3 +31,4 @@ from .cronjob import CronjobSnippet
 from .unittest import UnitTestSnippet
 from .model import ModelSnippet
 from .api import ApiSnippet
+from .widget import WidgetSnippet

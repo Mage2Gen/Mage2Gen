@@ -76,9 +76,10 @@ class Phpclass:
 		if methods:
 			methods = '\n' + methods
 
-		attributes = '\n\t'.join(self.attributes)
-		if attributes:
-			attributes = '\n\t' + attributes
+		if self.attributes:
+			attributes = '\n\t' + '\n\n\t'.join(self.attributes) + '\n'
+		else:
+			attributes = ''
 
 		dependencies = ';\n'.join("use %s" %(dependency) for dependency in self.dependencies)
 		if dependencies:
@@ -157,7 +158,7 @@ class Phpmethod:
 
 		docstring = '/**'
 		docstring +=  '\n\t * ' + '\n\t * '.join(line for line in self.docstring)
-		docstring += '\n\t */'
+		docstring += '\n\t */\n\t'
 		return docstring			
 
 
@@ -270,9 +271,17 @@ class StaticFile:
 		self.file_name = file_name
 		self.template_file = os.path.join(TEMPLATE_DIR, template_file)
 		self._context_data = context_data if context_data else {}
-		self._context_data['body'] = body if body else ''
+		self._context_data['body'] = [body] if body else []
+
+	def __add__(self, other):
+		for code in other._context_data['body']:
+			if code not in self._context_data['body']:
+				self._context_data['body'].append(code)	
+		return self	
 
 	def context_data(self):
+		data = self._context_data
+		data['body'] = "\n\n".join(self._context_data['body'])
 		return self._context_data
 
 	def generate(self):
@@ -397,5 +406,11 @@ class Module:
 
 	def add_static_file(self, path, staticfile):
 		full_name = os.path.join(path, staticfile.file_name)
-		if full_name not in self._static_files:
-			self._static_files[full_name] = staticfile
+
+		current_staticfile = self._static_files.get(full_name)
+		if current_staticfile:
+			current_staticfile += staticfile
+		else:
+			current_staticfile = staticfile
+
+		self._static_files[full_name] = current_staticfile	
