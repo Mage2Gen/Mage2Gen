@@ -77,7 +77,7 @@ class Phpclass:
 			methods = '\n' + methods
 
 		if self.attributes:
-			attributes = '\n\t' + '\n\n\t'.join(self.attributes) + '\n'
+			attributes = '\n\t' + '\n\t'.join(self.attributes) + '\n'
 		else:
 			attributes = ''
 
