@@ -59,11 +59,21 @@ class ControllerSnippet(Snippet):
 		controller_class.append(action)
 
 		controller_extend = '\Magento\Backend\App\Action' if  adminhtml else '\Magento\Framework\App\Action\Action' 
-		controller = Phpclass('\\'.join(controller_class), controller_extend)
-		controller.attributes.append('protected $resultPageFactory;')
+		controller = Phpclass('\\'.join(controller_class), controller_extend, attributes=[
+			'/**',
+			' * @var \\Magento\\Framework\\View\\Result\\PageFactory',
+			' */',
+			'protected $resultPageFactory;'
+		])
 
 		if ajax:
-			controller.attributes.append('protected $jsonHelper;')
+			controller.attributes.extend([
+			'',
+			'/**',
+			' * @var \\Magento\\Framework\\Json\\Helper\\Data',
+			' */',
+			'protected $jsonHelper;'
+		])
 
 		# generate construct
 		context_class = '\Magento\\' + ('Backend' if adminhtml else 'Framework') +'\App\Action\Context'
@@ -78,7 +88,13 @@ class ControllerSnippet(Snippet):
 				body="""$this->resultPageFactory = $resultPageFactory;
 					$this->jsonHelper = $jsonHelper;
 					parent::__construct($context);
-				"""
+				""",
+				docstring=[
+					'Constructor',
+					'',
+					'@param ' + context_class + '  $context',
+					'@param \\Magento\\Framework\\Json\\Helper\\Data $jsonHelper',
+				]
 			))	
 		else: 
 			controller.add_method(Phpmethod(
@@ -89,7 +105,13 @@ class ControllerSnippet(Snippet):
 				],
 				body="""$this->resultPageFactory = $resultPageFactory;
 					parent::__construct($context);
-				"""
+				""",
+				docstring=[
+					'Constructor',
+					'',
+					'@param ' + context_class + '  $context',
+					'@param \\Magento\\Framework\\View\\Result\\PageFactory $resultPageFactory',
+				]
 			))
 
 		# generate execute method
@@ -108,7 +130,12 @@ class ControllerSnippet(Snippet):
 
 		controller.add_method(Phpmethod(
 			'execute',
-			body=execute_body
+			body=execute_body,
+			docstring=[
+				'Execute view action',
+				'',
+				'@return \Magento\Framework\Controller\ResultInterface',
+			]
 		))
 
 		# generate jsonResponse method
@@ -116,9 +143,15 @@ class ControllerSnippet(Snippet):
 			controller.add_method(Phpmethod(
 				'jsonResponse',
 				params=["$response = ''"],
-				body="""return $this->getResponse()->representJson(
-						$this->jsonHelper->jsonEncode($response)
-					);"""
+				body="""
+				return $this->getResponse()->representJson(
+				     $this->jsonHelper->jsonEncode($response)
+				);""",
+				docstring=[
+					'Create json response',
+					'',
+					'@return \Magento\Framework\Controller\ResultInterface',
+				]
 				)
 			)
 

@@ -34,7 +34,19 @@ class PaymentSnippet(Snippet):
 		payment_code = method_name.lower().replace(' ', '_')
 		payment_class_name = method_name
 
-		payment_class = Phpclass('Model\\Payment\\'+payment_class_name,extends='\Magento\Payment\Model\Method\AbstractMethod',attributes=['protected $_code = "'+payment_code+'";','protected $_isOffline = true;'])
+		payment_class = Phpclass('Model\\Payment\\'+payment_class_name,
+			extends='\Magento\Payment\Model\Method\AbstractMethod',
+			attributes=[
+				'/**',
+				' * @var string',
+				' */',
+				'protected $_code = "'+payment_code+'";',
+				'',
+				'/**',
+				' * @var bool',
+				' */',
+				'protected $_isOffline = true;'
+			])
 	
 		self.add_class(payment_class)
 

@@ -98,7 +98,8 @@ class ModelSnippet(Snippet):
 		# Start setup
 		install_method = Phpmethod('install', params=['SchemaSetupInterface $setup','ModuleContextInterface $context'],
 			body='$installer = $setup;\n$installer->startSetup();',
-			body_return='$setup->endSetup();')
+			body_return='$setup->endSetup();',
+			docstring=['{@inheritdoc}'])
 		
 		# Create table
 		install_method.body.append("$table_{0} = $setup->getConnection()->newTable($setup->getTable('{0}'));".format(model_table))
@@ -152,7 +153,14 @@ class ModelSnippet(Snippet):
 		
 		# Create resource class
 		resource_model_class = Phpclass('Model\\ResourceModel\\' + model_name_capitalized.replace('_', '\\'), extends='\\Magento\\Framework\\Model\\ResourceModel\\Db\\AbstractDb')
-		resource_model_class.add_method(Phpmethod('_construct', access=Phpmethod.PROTECTED, body="$this->_init('{}', '{}');".format(model_table, model_id)))
+		resource_model_class.add_method(Phpmethod('_construct', 
+			access=Phpmethod.PROTECTED, 
+			body="$this->_init('{}', '{}');".format(model_table, model_id),
+			docstring=[
+				'Define resource model',
+				'',
+				'@return void',
+				]))
 		self.add_class(resource_model_class)
 
 		# Create api data interface class
@@ -189,8 +197,14 @@ class ModelSnippet(Snippet):
 		self.add_class(api_repository_class)
 
 		# Create model class
-		model_class = Phpclass('Model\\' + model_name_capitalized.replace('_', '\\'), dependencies=[api_data_class.class_namespace], extends='\\Magento\\Framework\\Model\\AbstractModel', implements=[model_name_capitalized.replace('_', '\\') + 'Interface'])
-		model_class.add_method(Phpmethod('_construct', access=Phpmethod.PROTECTED, body="$this->_init('{}');".format(resource_model_class.class_namespace)))
+		model_class = Phpclass('Model\\' + model_name_capitalized.replace('_', '\\'), 
+			dependencies=[api_data_class.class_namespace], 
+			extends='\\Magento\\Framework\\Model\\AbstractModel', 
+			implements=[model_name_capitalized.replace('_', '\\') + 'Interface'])
+		model_class.add_method(Phpmethod('_construct', 
+			access=Phpmethod.PROTECTED, 
+			body="$this->_init('{}');".format(resource_model_class.class_namespace),
+			docstring=['@return void']))
 
 		model_class.add_method(Phpmethod('get'+model_id_capitalized, docstring=['Get {}'.format(model_id),'@return string'], access=Phpmethod.PUBLIC, body="return $this->getData({});".format('self::'+model_id.upper())))
 		model_class.add_method(Phpmethod('set'+model_id_capitalized, docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id_capitalized_after),'@return {}'.format(api_data_class.class_namespace)], params=['${}'.format(model_id_capitalized_after)], access=Phpmethod.PUBLIC, body="return $this->setData({},${});".format('self::'+model_id.upper(),model_id_capitalized_after)))
@@ -202,8 +216,15 @@ class ModelSnippet(Snippet):
 		# Create collection
 		collection_model_class = Phpclass('Model\\ResourceModel\\' + model_name_capitalized.replace('_', '\\') + '\\Collection', 
 				extends='\\Magento\\Framework\\Model\\ResourceModel\\Db\\Collection\\AbstractCollection')
-		collection_model_class.add_method(Phpmethod('_construct', access=Phpmethod.PROTECTED, body="$this->_init(\n  '{}',\n  '{}');".format(
-			model_class.class_namespace ,resource_model_class.class_namespace)))
+		collection_model_class.add_method(Phpmethod('_construct', 
+			access=Phpmethod.PROTECTED, 
+			body="$this->_init(\n  '{}',\n  '{}');".format(
+				model_class.class_namespace ,resource_model_class.class_namespace),
+			docstring=[
+				'Define resource model',
+				'',
+				'@return void',
+				]))
 		self.add_class(collection_model_class)
 
 		# Create Repository Class
@@ -223,14 +244,38 @@ class ModelSnippet(Snippet):
 				'Magento\\Store\\Model\\StoreManagerInterface'
 			], 
 			attributes=[
-				'protected $resource;\n',
-				'protected ${}Factory;\n'.format(model_name),
-				'protected ${}CollectionFactory;\n'.format(model_name),
-    			'protected $searchResultsFactory;\n',
-    			'protected $dataObjectHelper;\n',
-    			'protected $dataObjectProcessor;\n',
-    			'protected $data{}Factory;\n'.format(model_name_capitalized),
-    			'private $storeManager;\n'
+				'/**',
+				' * @var Resource{}'.format(model_name_capitalized),
+				' */',
+				'protected $resource;\n\n',
+				'/**',
+				' * @var {}Factory'.format(model_name_capitalized),
+				' */',
+				'protected ${}Factory;\n\n'.format(model_name),
+				'/**',
+				' * @var {}CollectionFactory'.format(model_name_capitalized),
+				' */',
+				'protected ${}CollectionFactory;\n\n'.format(model_name),
+				'/**',
+				' * @var {}SearchResultsInterfaceFactory'.format(model_name_capitalized),
+				' */',
+    			'protected $searchResultsFactory;\n\n',
+				'/**',
+				' * @var DataObjectHelper',
+				' */',
+    			'protected $dataObjectHelper;\n\n',
+    			'/**',
+				' * @var DataObjectProcessor',
+				' */',
+    			'protected $dataObjectProcessor;\n\n',
+    			'/**',
+				' * @var {}InterfaceFactory'.format(model_name_capitalized),
+				' */',
+    			'protected $data{}Factory;\n\n'.format(model_name_capitalized),
+    			'/**',
+				' * @var StoreManagerInterface',
+				' */',
+    			'private $storeManager;\n\n'
 			],
 			implements=[model_name.replace('_', '\\') + 'RepositoryInterface']
 		)
@@ -253,7 +298,17 @@ class ModelSnippet(Snippet):
 			$this->data{variable_upper}Factory = $data{variable_upper}Factory;
 			$this->dataObjectProcessor = $dataObjectProcessor;
 			$this->storeManager = $storeManager;
-			""".format(variable=model_name_capitalized_after,variable_upper=model_name_capitalized)
+			""".format(variable=model_name_capitalized_after,variable_upper=model_name_capitalized),
+			docstring=[
+				"@param Resource{} $resource".format(model_name_capitalized),
+				"@param {}Factory ${}Factory".format(model_name_capitalized,model_name_capitalized_after),
+				"@param {}InterfaceFactory $data{}Factory".format(model_name_capitalized,model_name_capitalized),
+				"@param {}CollectionFactory ${}CollectionFactory".format(model_name_capitalized,model_name_capitalized_after),
+				"@param {}SearchResultsInterfaceFactory $searchResultsFactory".format(model_name_capitalized),
+				"@param DataObjectHelper $dataObjectHelper",
+				"@param DataObjectProcessor $dataObjectProcessor",
+				"@param StoreManagerInterface $storeManager",
+			]
 		))
 		model_repository_class.add_method(Phpmethod('save', access=Phpmethod.PUBLIC, 
 			params=['\\' + api_data_class.class_namespace + ' $' + model_name_capitalized_after],
@@ -270,7 +325,8 @@ class ModelSnippet(Snippet):
 					    ));
 					}}
 					return ${variable};
-			""".format(variable=model_name_capitalized_after)
+			""".format(variable=model_name_capitalized_after),
+			docstring=['{@inheritdoc}']
 		))
 		model_repository_class.add_method(Phpmethod('getById', access=Phpmethod.PUBLIC, 
 			params=['${}Id'.format(model_name_capitalized_after)],
@@ -280,7 +336,8 @@ class ModelSnippet(Snippet):
 			    throw new NoSuchEntityException(__('{model_name} with id "%1" does not exist.', ${variable}Id));
 			}}
 			return ${variable};
-			""".format(variable=model_name_capitalized_after,model_name=model_name)
+			""".format(variable=model_name_capitalized_after,model_name=model_name),
+			docstring=['{@inheritdoc}']
 		))
 		model_repository_class.add_method(Phpmethod('getList', access=Phpmethod.PUBLIC, 
 			params=['\Magento\Framework\Api\SearchCriteriaInterface $criteria'],
@@ -327,7 +384,8 @@ class ModelSnippet(Snippet):
 					}}
 					$searchResults->setItems($items);
 					return $searchResults;
-			""".format(variable=model_name_capitalized_after,data_interface=api_data_class.class_namespace,variable_upper=model_name_capitalized)
+			""".format(variable=model_name_capitalized_after,data_interface=api_data_class.class_namespace,variable_upper=model_name_capitalized),
+			docstring=['{@inheritdoc}']
 		))
 		model_repository_class.add_method(Phpmethod('delete', access=Phpmethod.PUBLIC, 
 			params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],
@@ -340,12 +398,14 @@ class ModelSnippet(Snippet):
 					    ));
 					}}
 					return true;
-			""".format(variable=model_name_capitalized_after,model_name=model_name)
+			""".format(variable=model_name_capitalized_after,model_name=model_name),
+			docstring=['{@inheritdoc}']
 		))
 		model_repository_class.add_method(Phpmethod('deleteById', access=Phpmethod.PUBLIC, 
 			params=['${}Id'.format(model_name_capitalized_after)],
 			body="""return $this->delete($this->getById(${variable}Id));
-			""".format(variable=model_name_capitalized_after,model_name=model_name)
+			""".format(variable=model_name_capitalized_after,model_name=model_name),
+			docstring=['{@inheritdoc}']
 		))
 		self.add_class(model_repository_class)
 
@@ -369,13 +429,30 @@ class ModelSnippet(Snippet):
 		
 		# create controller
 		index_controller_class = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Index', extends='\\Magento\\Backend\\App\\Action',
-				attributes=['protected $resultPageFactory;'])
+			attributes=[
+			'/**',
+			' * @var \\Magento\\Framework\\View\\Result\\PageFactory',
+			' */',
+			'protected $resultPageFactory;'
+			])
 		
 		index_controller_class.add_method(Phpmethod('__construct', 
 			params=['\\Magento\\Backend\\App\\Action\\Context $context', '\\Magento\\Framework\\View\\Result\\PageFactory $resultPageFactory'],
-			body='$this->resultPageFactory = $resultPageFactory;\nparent::__construct($context);'))
+			body='$this->resultPageFactory = $resultPageFactory;\nparent::__construct($context);',
+			docstring=[
+				'Constructor',
+				'',
+				'@param \\Magento\\Backend\\App\\Action\\Context $context',
+				'@param \\Magento\\Framework\\View\\Result\\PageFactory $resultPageFactory',
+			]))
 		
-		index_controller_class.add_method(Phpmethod('execute', body_return='$resultPage = $this->resultPageFactory->create(); $resultPage->getConfig()->getTitle()->prepend(__("'+model_name+'")); return $resultPage;'))
+		index_controller_class.add_method(Phpmethod('execute', 
+			body_return='$resultPage = $this->resultPageFactory->create(); $resultPage->getConfig()->getTitle()->prepend(__("'+model_name+'")); return $resultPage;',
+			docstring=[
+				'Index action',
+				'',
+				'@return \Magento\Framework\Controller\ResultInterface',
+			]))
 		
 		self.add_class(index_controller_class)
 
@@ -530,9 +607,15 @@ class ModelSnippet(Snippet):
 				    'on_click' => sprintf("location.href = '%s';", $this->getBackUrl()),
 				    'class' => 'back',
 				    'sort_order' => 10
-				];"""))
+				];""",
+			docstring=['@return array']))
 		back_button.add_method(Phpmethod('getBackUrl',
-			body="""return $this->getUrl('*/*/');"""))
+			body="""return $this->getUrl('*/*/');""",
+			docstring=[
+				'Get URL for back (reset) button',
+				'',
+				'@return string'
+			]))
 		self.add_class(back_button)
 
 		# Delete button
@@ -551,23 +634,49 @@ class ModelSnippet(Snippet):
 				        'sort_order' => 20,
 				    ];
 				}}
-				return $data;""".format(model_name.replace('_', ' ').title())))
+				return $data;""".format(model_name.replace('_', ' ').title()),
+			docstring=['@return array']))
 		delete_button.add_method(Phpmethod('getDeleteUrl',
-			body="""return $this->getUrl('*/*/delete', ['{}' => $this->getModelId()]);""".format(model_id)))
+			body="""return $this->getUrl('*/*/delete', ['{}' => $this->getModelId()]);""".format(model_id),
+			docstring=[
+				'Get URL for delete button',
+				'',
+				'@return string'
+			]))
 		self.add_class(delete_button)
 
 		# Generic button
 		generic_button = Phpclass('Block\\Adminhtml\\' + model_name.replace('_', '\\') + '\\Edit\\GenericButton',
-			dependencies=['Magento\\Backend\\Block\Widget\\Context'], attributes=['protected $context;'],
+			dependencies=['Magento\\Backend\\Block\Widget\\Context'], 
+			attributes=[
+				'/**',
+				' * @var \\Magento\\Backend\\Block\Widget\\Context',
+				' */',
+				'protected $context;'
+			],
 			abstract=True)
 		generic_button.add_method(Phpmethod('__construct',
 			params=['Context $context'],
-			body="""$this->context = $context;"""))
+			body="""$this->context = $context;""",
+			docstring=['@param \\Magento\\Backend\\Block\Widget\\Context $context']))
 		
 		generic_button.add_method(Phpmethod('getModelId',
-			body="""return $this->context->getRequest()->getParam('{}');""".format(model_id)))
+			body="""return $this->context->getRequest()->getParam('{}');""".format(model_id),
+			docstring=[
+				'Return model ID',
+				'',
+				'@return int|null'
+			]))
 		generic_button.add_method(Phpmethod('getUrl', params=["$route = ''","$params = []"],
-			body="""return $this->context->getUrlBuilder()->getUrl($route, $params);"""))
+			body="""return $this->context->getUrlBuilder()->getUrl($route, $params);""",
+			docstring=[
+				'Generate url by route and parameters',
+				'',
+				'@param   string $route',
+				'@param   array $params',
+				'@return  string'
+			]
+			))
 		self.add_class(generic_button)
 
 		# Save and continu button
@@ -584,7 +693,10 @@ class ModelSnippet(Snippet):
 				        ],
 				    ],
 				    'sort_order' => 80,
-				];"""))
+				];""",
+			docstring=[
+				'@return array'
+			]))
 		self.add_class(save_continue_button)
 
 
@@ -601,7 +713,10 @@ class ModelSnippet(Snippet):
 				        'form-role' => 'save',
 				    ],
 				    'sort_order' => 90,
-				];""".format(model_name.replace('_', ' ').title())))
+				];""".format(model_name.replace('_', ' ').title()),
+			docstring=[
+				'@return array'
+			]))
 		self.add_class(save_button)
 
 		# Add controllers
@@ -610,11 +725,25 @@ class ModelSnippet(Snippet):
 
 		# link controller
 		link_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', ''), extends='\\Magento\\Backend\\App\\Action', abstract=True,
-			attributes=["const ADMIN_RESOURCE = '{}::top_level';".format(self.module_name),
+			attributes=[
+				'/**',
+				' * Authorization level of a basic admin session',
+				' *',
+				' * @see _isAllowed()',
+				' */',
+				"const ADMIN_RESOURCE = '{}::top_level';".format(self.module_name),
+				'',
+				'/**',
+				' * @var \\Magento\\Framework\\Registry',
+				' */',
 				'protected $_coreRegistry;'])
 		link_controller.add_method(Phpmethod('__construct',
 			params=['\\Magento\\Backend\\App\\Action\\Context $context', '\\Magento\\Framework\\Registry $coreRegistry'],
-			body="""$this->_coreRegistry = $coreRegistry;\nparent::__construct($context);"""))
+			body="""$this->_coreRegistry = $coreRegistry;\nparent::__construct($context);""",
+			docstring=[
+				'@param \\Magento\\Backend\\App\\Action\\Context $context',
+				'@param \\Magento\\Framework\\Registry $coreRegistry'
+			]))
 		link_controller.add_method(Phpmethod('initPage', params=['$resultPage'],
 			body="""$resultPage->setActiveMenu('Experius_Test::top_level')
 				    ->addBreadcrumb(__('{namespace}'), __('{namespace}'))
@@ -622,7 +751,12 @@ class ModelSnippet(Snippet):
 				return $resultPage;""".format(
 					namespace = self._module.package,
 					model_name = model_name.replace('_', ' ').title()
-				)))
+				),
+			docstring=[
+				'Init page',
+				'',
+				'@param \Magento\Backend\Model\View\Result\Page $resultPage'
+			]))
 		self.add_class(link_controller)
 
 		# Delete controller
@@ -655,18 +789,33 @@ class ModelSnippet(Snippet):
 					return $resultRedirect->setPath('*/*/');""".format(
 						model_id = model_id,
 						model_class = model_class.class_namespace,
-						model_name = model_name.replace('_', ' ').title())
+						model_name = model_name.replace('_', ' ').title()),
+			docstring=[
+				'Delete action',
+				'',
+				'@return \Magento\Framework\Controller\ResultInterface',
+			]
 					))
 		self.add_class(delete_controller)
 
 		# Edit controller
 		edit_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Edit', extends= '\\' + link_controller.class_namespace, 
-			attributes=['protected $resultPageFactory;'])
+			attributes=[
+				'/**',
+				' * @var \\Magento\\Framework\\View\\Result\\PageFactory',
+				' */',
+				'protected $resultPageFactory;'
+			])
 		edit_controller.add_method(Phpmethod('__construct',
 			params=['\\Magento\\Backend\\App\\Action\\Context $context',
 				'\\Magento\\Framework\\Registry $coreRegistry',
 				'\\Magento\\Framework\\View\\Result\\PageFactory $resultPageFactory'],
-			body="""$this->resultPageFactory = $resultPageFactory;\nparent::__construct($context, $coreRegistry);"""))
+			body="""$this->resultPageFactory = $resultPageFactory;\nparent::__construct($context, $coreRegistry);""",
+			docstring=[
+				'@param \\Magento\\Backend\\App\\Action\\Context $context',
+				'@param \\Magento\\Framework\\Registry $coreRegistry',
+				'@param \\Magento\\Framework\\View\\Result\\PageFactory $resultPageFactory',
+			]))
 		edit_controller.add_method(Phpmethod('execute',
 			body="""// 1. Get ID and create model
 				$id = $this->getRequest()->getParam('{model_id}');
@@ -698,16 +847,30 @@ class ModelSnippet(Snippet):
 						model_class = model_class.class_namespace,
 						model_name = model_name.replace('_', ' ').title(),
 						register_model = register_model
-					)))
+					),
+			docstring=[
+				'Edit action',
+				'',
+				'@return \Magento\Framework\Controller\ResultInterface',
+			]))
 		self.add_class(edit_controller)
 
 		# Inline Controller
 		inline_edit_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\InlineEdit', extends='\\Magento\\Backend\\App\\Action', 
-			attributes=['protected $jsonFactory;'])
+			attributes=[
+				'/**',
+				' * @var \\Magento\\Framework\\Controller\\Result\\JsonFactory',
+				' */',
+				'protected $jsonFactory;'
+			])
 		inline_edit_controller.add_method(Phpmethod('__construct',
 			params=['\\Magento\\Backend\\App\\Action\\Context $context',
 				'\\Magento\\Framework\\Controller\\Result\\JsonFactory $jsonFactory'],
-			body="""parent::__construct($context);\n$this->jsonFactory = $jsonFactory;"""))
+			body="""parent::__construct($context);\n$this->jsonFactory = $jsonFactory;""",
+			docstring=[
+				'@param \\Magento\\Backend\\App\\Action\\Context $context',
+				'@param \\Magento\\Framework\\Controller\\Result\\JsonFactory $jsonFactory',
+			]))
 		inline_edit_controller.add_method(Phpmethod('execute',
 			body="""/** @var \Magento\Framework\Controller\Result\Json $resultJson */
 					$resultJson = $this->jsonFactory->create();
@@ -740,31 +903,59 @@ class ModelSnippet(Snippet):
 					]);""".format(
 						model_class = model_class.class_namespace,
 						model_name = model_name.replace('_', ' ').title(),
-					)))
+					),
+			docstring=[
+				'Inline edit action',
+				'',
+				'@return \Magento\Framework\Controller\ResultInterface',
+			]))
 		self.add_class(inline_edit_controller)
 
 		# new Controller
 		new_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\NewAction', extends='\\' + link_controller.class_namespace, 
-			attributes=['protected $resultForwardFactory;'])
+			attributes=[
+				'/**',
+				' * @var \\Magento\\Backend\\Model\\View\\Result\\ForwardFactory',
+				' */',
+				'protected $resultForwardFactory;'
+			])
 		new_controller.add_method(Phpmethod('__construct',
 			params=['\\Magento\\Backend\\App\\Action\\Context $context',
 				'\\Magento\\Framework\\Registry $coreRegistry',
 				'\\Magento\\Backend\\Model\\View\\Result\\ForwardFactory $resultForwardFactory'],
-			body="""$this->resultForwardFactory = $resultForwardFactory;\nparent::__construct($context, $coreRegistry);"""))
+			body="""$this->resultForwardFactory = $resultForwardFactory;\nparent::__construct($context, $coreRegistry);""",
+			docstring=[
+				'@param \\Magento\\Backend\\App\\Action\\Context $context',
+				'@param \\Magento\\Framework\\Registry $coreRegistry',
+				'@param \\Magento\\Backend\\Model\\View\\Result\\ForwardFactory $resultForwardFactory',
+			]))
 		new_controller.add_method(Phpmethod('execute',
 			body="""/** @var \Magento\Framework\Controller\Result\Forward $resultForward */
 					$resultForward = $this->resultForwardFactory->create();
-					return $resultForward->forward('edit');"""))
+					return $resultForward->forward('edit');""",
+			docstring=[
+				'New action',
+				'',
+				'@return \Magento\Framework\Controller\ResultInterface',
+			]))
 		self.add_class(new_controller)
 
 		# Save Controller
 		new_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Save', dependencies=['Magento\Framework\Exception\LocalizedException'], extends='\\Magento\\Backend\\App\\Action', 
-			attributes=['protected $dataPersistor;'])
+			attributes=[
+				'/**',
+				' * @var \\Magento\\Framework\\App\\Request\\DataPersistorInterface',
+				' */',
+				'protected $dataPersistor;'])
 		new_controller.add_method(Phpmethod('__construct',
 			params=['\\Magento\\Backend\\App\\Action\\Context $context',
 				'\\Magento\\Framework\\Registry $coreRegistry',
 				'\\Magento\\Framework\\App\\Request\\DataPersistorInterface $dataPersistor'],
-			body="""$this->dataPersistor = $dataPersistor;\nparent::__construct($context, $coreRegistry);"""))
+			body="""$this->dataPersistor = $dataPersistor;\nparent::__construct($context, $coreRegistry);""",
+			docstring=[
+				'@param \\Magento\\Backend\\App\\Action\\Context $context',
+				'@param \\Magento\\Framework\\App\\Request\\DataPersistorInterface $dataPersistor',
+			]))
 		new_controller.add_method(Phpmethod('execute',
 			body="""/** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
 					$resultRedirect = $this->resultRedirectFactory->create();
@@ -803,12 +994,30 @@ class ModelSnippet(Snippet):
 						model_class = model_class.class_namespace,
 						model_name = model_name.replace('_', ' ').title(),
 						register_model = register_model
-					)))
+					),
+			docstring=[
+				'Save action',
+				'',
+				'@return \Magento\Framework\Controller\ResultInterface',
+			]))
 		self.add_class(new_controller)
 
 		# Add model provider
 		data_provider = Phpclass('Model\\' + model_name.replace('_', '') + '\\DataProvider', extends='\\Magento\\Ui\\DataProvider\\AbstractDataProvider', 
-			attributes=['protected $collection;', 'protected $dataPersistor;', 'protected $loadedData;'],
+			attributes=[
+				'/**',
+				' * @var CollectionFactory',
+				' */',
+				'protected $collection;\n',
+				'/**',
+				' * @var DataPersistorInterface',
+				' */',
+				'protected $dataPersistor;\n', 
+				'/**',
+				' * @var array',
+				' */',
+				'protected $loadedData;'
+			],
 			dependencies=[collection_model_class.class_namespace + 'Factory', 'Magento\\Framework\\App\\Request\\DataPersistorInterface'])
 		data_provider.add_method(Phpmethod('__construct',
 			params=['$name',
@@ -820,7 +1029,18 @@ class ModelSnippet(Snippet):
 				'array $data = []'],
 			body="""$this->collection = $collectionFactory->create();
 					$this->dataPersistor = $dataPersistor;
-					parent::__construct($name, $primaryFieldName, $requestFieldName, $meta, $data);"""))
+					parent::__construct($name, $primaryFieldName, $requestFieldName, $meta, $data);""",
+			docstring=[
+				'Constructor',
+				'',
+				'@param string $name',
+				'@param string $primaryFieldName',
+				'@param string $requestFieldName',
+				'@param CollectionFactory $blockCollectionFactory',
+				'@param DataPersistorInterface $dataPersistor',
+				'@param array $meta',
+				'@param array $data'
+			]))
 		data_provider.add_method(Phpmethod('getData',
 			body="""if (isset($this->loadedData)) {{
 					    return $this->loadedData;
@@ -840,16 +1060,28 @@ class ModelSnippet(Snippet):
 
 					return $this->loadedData;""".format(
 						register_model = register_model
-					)))
+					),
+			docstring=[
+				'Get data',
+				'',
+				'@return array',
+			]))
 
 		self.add_class(data_provider)
 
 		# Add model actions
 		actions = Phpclass('Ui\Component\Listing\Column\\' + model_name.replace('_', '') + 'Actions', extends='\\Magento\\Ui\\Component\\Listing\\Columns\Column', 
 			attributes=[
+				'/**',
+				' * Url path',
+				' */',
 				"const URL_PATH_EDIT = '{}/{}/edit';".format(frontname, model_name.replace('_', '').lower()), 
 				"const URL_PATH_DELETE = '{}/{}/delete';".format(frontname, model_name.replace('_', '').lower()),
 				"const URL_PATH_DETAILS = '{}/{}/details';".format(frontname, model_name.replace('_', '').lower()),
+				'',
+				'/**',
+				' * Url UrlInterface',
+				' */',
 				'protected $urlBuilder;',
 			])
 		actions.add_method(Phpmethod('__construct',
@@ -858,7 +1090,14 @@ class ModelSnippet(Snippet):
 				'\\Magento\\Framework\\UrlInterface $urlBuilder',
 				'array $components = []',
 				'array $data = []'],
-			body="""$this->urlBuilder = $urlBuilder;\nparent::__construct($context, $uiComponentFactory, $components, $data);"""))
+			body="""$this->urlBuilder = $urlBuilder;\nparent::__construct($context, $uiComponentFactory, $components, $data);""",
+			docstring=[
+				'@param \\Magento\\Framework\\View\\Element\\UiComponent\\ContextInterface $context',
+				'@param \\Magento\\Framework\\View\\Element\\UiComponentFactory $uiComponentFactory',
+				'@param \\Magento\\Framework\\UrlInterface $urlBuilder',
+				'@param array $components',
+				'@param array $data'
+			]))
 		actions.add_method(Phpmethod('prepareDataSource', params=['array $dataSource'],
 			body="""if (isset($dataSource['data']['items'])) {{
 					foreach ($dataSource['data']['items'] as & $item) {{
@@ -893,7 +1132,13 @@ class ModelSnippet(Snippet):
 
 					return $dataSource;""".format(
 						model_id = model_id
-					)))
+					),
+			docstring=[
+				'Prepare Data Source',
+				'',
+				'@param array $dataSource',
+				'@return array'
+			]))
 		self.add_class(actions)
 
 		# Edit layout

@@ -109,21 +109,48 @@ class CustomerAttributeSnippet(Snippet):
 			source_model_folder = 'Customer' if customer_entity =='customer' else 'Customer\\Address'
 			source_model_class = Phpclass(
 				'Model\\'+source_model_folder+'\\Attribute\\Source\\'+ attribute_code.capitalize(),
-				extends='\Magento\Eav\Model\Entity\Attribute\Source\AbstractSource'
+				extends='\Magento\Eav\Model\Entity\Attribute\Source\AbstractSource',
+				attributes=[
+					'/**',
+					' * @var array',
+					' */',
+				'protected $_optionsData;'
+				]	
 			)
-			source_model_options = source_model_options.split(',')
+
+			source_model_class.add_method(Phpmethod('__construct',
+				params=['array $options'],
+				body="$this->_optionsData = $options;",
+				docstring=[
+					'Constructor',
+					'',
+					'@param array $options',
+				]
+			))
 
 			if frontend_input == 'select':
-				to_option_array = "[\n{}\n]".format(',\n'.join("['value' => '{1}', 'label' => __('{0}')]".format(o.strip(),source_model_options.index(o)+1) for o in source_model_options))
+				to_option_array = "[\n        {}\n    ]".format(',\n        '.join(
+					"['value' => '{1}', 'label' => __('{0}')]".format(value.strip(),index + 1) for index, value in enumerate(source_model_options.split(',')))
+				)
 			else:
-				to_option_array = "[\n{}\n]".format(',\n'.join("['value' => (string) '{0}', 'label' => __('{0}')]".format(o.strip()) for o in source_model_options))
+				to_option_array = "[\n        {}\n    ]".format(',\n        '.join(
+					"['value' => (string) '{0}', 'label' => __('{0}')]".format(value.strip()) for value in source_model_options.split(','))
+				)
+			
 
-			source_model_class.attributes.append('protected $_optionsData;')
-			source_model_class.add_method(Phpmethod('__construct',params=['array $options'],body="$this->_optionsData = $options;")) 
-
-			get_all_options_array = "\t$this->_options = {};".format(to_option_array)
-
-			source_model_class.add_method(Phpmethod('getAllOptions',body="if ($this->_options === null) { \n " + get_all_options_array + "\n}\nreturn $this->_options;"))
+			source_model_class.add_method(Phpmethod('getAllOptions',
+				body="""
+				if ($this->_options === null) {{
+				    $this->_options = {options}
+				}}
+				return $this->_options;
+				""".format(options=to_option_array),
+				docstring=[
+					'getAllOptions',
+					'',
+					'@return array',
+				]
+			))
 
 			self.add_class(source_model_class)
 
@@ -137,7 +164,7 @@ class CustomerAttributeSnippet(Snippet):
 		forms_array = forms_array if isinstance(forms_array, list) else [forms_array]
 
 		if forms_array:
-			forms_php_array = "'" + "','".join(forms_array) + "'"
+			forms_php_array = "\n        '" + "',\n        '".join(forms_array) + "'\n    "
 		elif customer_entity=='customer' and customer_forms==False:
 			forms_php_array = "'adminhtml_customer','adminhtml_checkout','customer_account_create','customer_account_edit'"
 		else :
@@ -170,24 +197,42 @@ class CustomerAttributeSnippet(Snippet):
 				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
 				'Magento\\Customer\\Model\\Customer',
 				'Magento\\Customer\\Setup\\CustomerSetupFactory'
-				]
+				],
+			attributes=[
+				'/**',
+				' * @var \\Magento\\Customer\\Setup\\CustomerSetupFactory',
+				' */',
+				'private $customerSetupFactory;'
+			]
 		)
-
-		install_data.attributes.append('private $customerSetupFactory;')
 		
 		install_data.add_method(Phpmethod(
 			'__construct',
 			params=[
 				'CustomerSetupFactory $customerSetupFactory'
 			],
-			body="$this->customerSetupFactory = $customerSetupFactory;"
+			body="$this->customerSetupFactory = $customerSetupFactory;",
+			docstring=[
+				'Constructor',
+				'',
+				'@param \\Magento\\Customer\\Setup\\CustomerSetupFactory $customerSetupFactory'
+			]
 		))
 
-		install_data.add_method(Phpmethod('install',params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],body="$customerSetup = $this->customerSetupFactory->create(['setup' => $setup]);"))
-		install_data.add_method(Phpmethod('install',params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],body=methodBody))
+		install_data.add_method(Phpmethod('install',
+			params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
+			body="$customerSetup = $this->customerSetupFactory->create(['setup' => $setup]);",
+			docstring=['{@inheritdoc}']))
+		install_data.add_method(Phpmethod('install',
+			params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
+			body=methodBody))
 
 		if forms_php_array:
-			attribute_form_data = "$attribute = $customerSetup->getEavConfig()->getAttribute('"+customer_entity+"', '"+attribute_code+"')->addData(['used_in_forms' => ["+forms_php_array+"]]);\n$attribute->save();"
+			attribute_form_data = """
+			$attribute = $customerSetup->getEavConfig()->getAttribute('{customer_entity}', '{attribute_code}')
+			    ->addData(['used_in_forms' => [{forms_php_array}]]);
+			$attribute->save();
+			""".format(customer_entity=customer_entity, attribute_code=attribute_code, forms_php_array=forms_php_array)
 			install_data.add_method(Phpmethod('install',params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],body=attribute_form_data))
 
 		self.add_class(install_data)	

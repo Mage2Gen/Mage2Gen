@@ -59,16 +59,33 @@ class CronjobSnippet(Snippet):
 
 		method= "execute"
 
-		crontab_class = Phpclass('Cron\\'+class_name)
-		crontab_class.attributes.append('protected $logger;')
+		crontab_class = Phpclass('Cron\\'+class_name, attributes=[
+			'/**',
+			' * @var \\Psr\\Log\\LoggerInterface',
+			' */',
+			'protected $logger;'
+		])
+
 		crontab_class.add_method(Phpmethod(
             '__construct',
             params=[
                 '\Psr\Log\LoggerInterface $logger',
             ],
-            body="$this->logger = $logger;"
+            body="$this->logger = $logger;",
+            docstring=[
+            	'Constructor',
+            	'',
+            	'@param \\Psr\\Log\\LoggerInterface $logger',
+            ]
         ))
-		crontab_class.add_method(Phpmethod('execute',body='$this->logger->addInfo("Cronjob '+cronjob_name+' is executed.");'))
+		crontab_class.add_method(Phpmethod('execute',
+			body='$this->logger->addInfo("Cronjob '+cronjob_name+' is executed.");',
+			docstring=[
+            	'Execute the cron',
+            	'',
+            	'@return void',
+            ]
+		))
 	
 		self.add_class(crontab_class)
 

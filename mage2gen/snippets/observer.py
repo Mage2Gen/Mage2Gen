@@ -60,7 +60,13 @@ class ObserverSnippet(Snippet):
 			implements=['\Magento\Framework\Event\ObserverInterface'])
 		observer.add_method(Phpmethod(
 			'execute',
-			params=['\Magento\Framework\Event\Observer $observer']
+			params=['\\Magento\\Framework\\Event\\Observer $observer'],
+			docstring=[
+				'Execute observer',
+				'',
+				'@param \\Magento\\Framework\\Event\\Observer $observer',
+				'@return void'
+			]
 		))
 
 		self.add_class(observer)	
