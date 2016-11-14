@@ -46,14 +46,7 @@ class ConsoleSnippet(Snippet):
 			'Symfony\Component\Console\Output\OutputInterface'
 			],
 			attributes = [
-				'/**',
-				' * @var string',
-				' */',
 				'const NAME_ARGUMENT = "name";',
-				'',
-				'/**',
-				' * @var string',
-				' */',
 				'const NAME_OPTION = "option";'
 			]
 		)

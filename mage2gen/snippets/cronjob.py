@@ -60,9 +60,6 @@ class CronjobSnippet(Snippet):
 		method= "execute"
 
 		crontab_class = Phpclass('Cron\\'+class_name, attributes=[
-			'/**',
-			' * @var \\Psr\\Log\\LoggerInterface',
-			' */',
 			'protected $logger;'
 		])
 

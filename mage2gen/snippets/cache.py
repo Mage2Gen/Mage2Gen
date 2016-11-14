@@ -28,14 +28,7 @@ class CacheSnippet(Snippet):
 		
 		# Add cache class
 		cache_class = Phpclass('Model\\Cache\\{}'.format(name), extends='\\Magento\\Framework\\Cache\\Frontend\\Decorator\\TagScope', attributes=[
-			'/**',
-			' * Cache type code unique among all cache types',
-			' */',
 			"const TYPE_IDENTIFIER = '{}';".format(cache_id),
-			'',
-			'/**',
-			' * Cache tag used to distinguish the cache type from all other cache',
-			' */',
 			"const CACHE_TAG = 'PRODUCT_FINDER_CACHE_TAG';".format(cache_id.upper())
 		])
 

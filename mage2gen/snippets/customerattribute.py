@@ -111,9 +111,6 @@ class CustomerAttributeSnippet(Snippet):
 				'Model\\'+source_model_folder+'\\Attribute\\Source\\'+ attribute_code.capitalize(),
 				extends='\Magento\Eav\Model\Entity\Attribute\Source\AbstractSource',
 				attributes=[
-					'/**',
-					' * @var array',
-					' */',
 				'protected $_optionsData;'
 				]	
 			)
@@ -199,9 +196,6 @@ class CustomerAttributeSnippet(Snippet):
 				'Magento\\Customer\\Setup\\CustomerSetupFactory'
 				],
 			attributes=[
-				'/**',
-				' * @var \\Magento\\Customer\\Setup\\CustomerSetupFactory',
-				' */',
 				'private $customerSetupFactory;'
 			]
 		)

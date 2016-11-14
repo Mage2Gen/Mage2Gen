@@ -60,18 +60,11 @@ class ControllerSnippet(Snippet):
 
 		controller_extend = '\Magento\Backend\App\Action' if  adminhtml else '\Magento\Framework\App\Action\Action' 
 		controller = Phpclass('\\'.join(controller_class), controller_extend, attributes=[
-			'/**',
-			' * @var \\Magento\\Framework\\View\\Result\\PageFactory',
-			' */',
 			'protected $resultPageFactory;'
 		])
 
 		if ajax:
 			controller.attributes.extend([
-			'',
-			'/**',
-			' * @var \\Magento\\Framework\\Json\\Helper\\Data',
-			' */',
 			'protected $jsonHelper;'
 		])
 

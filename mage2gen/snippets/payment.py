@@ -37,14 +37,7 @@ class PaymentSnippet(Snippet):
 		payment_class = Phpclass('Model\\Payment\\'+payment_class_name,
 			extends='\Magento\Payment\Model\Method\AbstractMethod',
 			attributes=[
-				'/**',
-				' * @var string',
-				' */',
 				'protected $_code = "'+payment_code+'";',
-				'',
-				'/**',
-				' * @var bool',
-				' */',
 				'protected $_isOffline = true;'
 			])
 	

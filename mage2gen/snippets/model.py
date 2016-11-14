@@ -244,38 +244,14 @@ class ModelSnippet(Snippet):
 				'Magento\\Store\\Model\\StoreManagerInterface'
 			], 
 			attributes=[
-				'/**',
-				' * @var Resource{}'.format(model_name_capitalized),
-				' */',
-				'protected $resource;\n\n',
-				'/**',
-				' * @var {}Factory'.format(model_name_capitalized),
-				' */',
-				'protected ${}Factory;\n\n'.format(model_name),
-				'/**',
-				' * @var {}CollectionFactory'.format(model_name_capitalized),
-				' */',
-				'protected ${}CollectionFactory;\n\n'.format(model_name),
-				'/**',
-				' * @var {}SearchResultsInterfaceFactory'.format(model_name_capitalized),
-				' */',
-    			'protected $searchResultsFactory;\n\n',
-				'/**',
-				' * @var DataObjectHelper',
-				' */',
-    			'protected $dataObjectHelper;\n\n',
-    			'/**',
-				' * @var DataObjectProcessor',
-				' */',
-    			'protected $dataObjectProcessor;\n\n',
-    			'/**',
-				' * @var {}InterfaceFactory'.format(model_name_capitalized),
-				' */',
-    			'protected $data{}Factory;\n\n'.format(model_name_capitalized),
-    			'/**',
-				' * @var StoreManagerInterface',
-				' */',
-    			'private $storeManager;\n\n'
+				'protected $resource;\n',
+				'protected ${}Factory;\n'.format(model_name),
+				'protected ${}CollectionFactory;\n'.format(model_name),
+    			'protected $searchResultsFactory;\n',
+    			'protected $dataObjectHelper;\n',
+    			'protected $dataObjectProcessor;\n',
+    			'protected $data{}Factory;\n'.format(model_name_capitalized),
+    			'private $storeManager;\n'
 			],
 			implements=[model_name.replace('_', '\\') + 'RepositoryInterface']
 		)
@@ -430,9 +406,6 @@ class ModelSnippet(Snippet):
 		# create controller
 		index_controller_class = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Index', extends='\\Magento\\Backend\\App\\Action',
 			attributes=[
-			'/**',
-			' * @var \\Magento\\Framework\\View\\Result\\PageFactory',
-			' */',
 			'protected $resultPageFactory;'
 			])
 		
@@ -649,9 +622,6 @@ class ModelSnippet(Snippet):
 		generic_button = Phpclass('Block\\Adminhtml\\' + model_name.replace('_', '\\') + '\\Edit\\GenericButton',
 			dependencies=['Magento\\Backend\\Block\Widget\\Context'], 
 			attributes=[
-				'/**',
-				' * @var \\Magento\\Backend\\Block\Widget\\Context',
-				' */',
 				'protected $context;'
 			],
 			abstract=True)
@@ -726,16 +696,7 @@ class ModelSnippet(Snippet):
 		# link controller
 		link_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', ''), extends='\\Magento\\Backend\\App\\Action', abstract=True,
 			attributes=[
-				'/**',
-				' * Authorization level of a basic admin session',
-				' *',
-				' * @see _isAllowed()',
-				' */',
 				"const ADMIN_RESOURCE = '{}::top_level';".format(self.module_name),
-				'',
-				'/**',
-				' * @var \\Magento\\Framework\\Registry',
-				' */',
 				'protected $_coreRegistry;'])
 		link_controller.add_method(Phpmethod('__construct',
 			params=['\\Magento\\Backend\\App\\Action\\Context $context', '\\Magento\\Framework\\Registry $coreRegistry'],
@@ -801,9 +762,6 @@ class ModelSnippet(Snippet):
 		# Edit controller
 		edit_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Edit', extends= '\\' + link_controller.class_namespace, 
 			attributes=[
-				'/**',
-				' * @var \\Magento\\Framework\\View\\Result\\PageFactory',
-				' */',
 				'protected $resultPageFactory;'
 			])
 		edit_controller.add_method(Phpmethod('__construct',
@@ -858,9 +816,6 @@ class ModelSnippet(Snippet):
 		# Inline Controller
 		inline_edit_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\InlineEdit', extends='\\Magento\\Backend\\App\\Action', 
 			attributes=[
-				'/**',
-				' * @var \\Magento\\Framework\\Controller\\Result\\JsonFactory',
-				' */',
 				'protected $jsonFactory;'
 			])
 		inline_edit_controller.add_method(Phpmethod('__construct',
@@ -914,9 +869,6 @@ class ModelSnippet(Snippet):
 		# new Controller
 		new_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\NewAction', extends='\\' + link_controller.class_namespace, 
 			attributes=[
-				'/**',
-				' * @var \\Magento\\Backend\\Model\\View\\Result\\ForwardFactory',
-				' */',
 				'protected $resultForwardFactory;'
 			])
 		new_controller.add_method(Phpmethod('__construct',
@@ -943,9 +895,6 @@ class ModelSnippet(Snippet):
 		# Save Controller
 		new_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Save', dependencies=['Magento\Framework\Exception\LocalizedException'], extends='\\Magento\\Backend\\App\\Action', 
 			attributes=[
-				'/**',
-				' * @var \\Magento\\Framework\\App\\Request\\DataPersistorInterface',
-				' */',
 				'protected $dataPersistor;'])
 		new_controller.add_method(Phpmethod('__construct',
 			params=['\\Magento\\Backend\\App\\Action\\Context $context',
@@ -1005,17 +954,8 @@ class ModelSnippet(Snippet):
 		# Add model provider
 		data_provider = Phpclass('Model\\' + model_name.replace('_', '') + '\\DataProvider', extends='\\Magento\\Ui\\DataProvider\\AbstractDataProvider', 
 			attributes=[
-				'/**',
-				' * @var CollectionFactory',
-				' */',
 				'protected $collection;\n',
-				'/**',
-				' * @var DataPersistorInterface',
-				' */',
-				'protected $dataPersistor;\n', 
-				'/**',
-				' * @var array',
-				' */',
+				'protected $dataPersistor;\n',
 				'protected $loadedData;'
 			],
 			dependencies=[collection_model_class.class_namespace + 'Factory', 'Magento\\Framework\\App\\Request\\DataPersistorInterface'])
@@ -1072,16 +1012,9 @@ class ModelSnippet(Snippet):
 		# Add model actions
 		actions = Phpclass('Ui\Component\Listing\Column\\' + model_name.replace('_', '') + 'Actions', extends='\\Magento\\Ui\\Component\\Listing\\Columns\Column', 
 			attributes=[
-				'/**',
-				' * Url path',
-				' */',
 				"const URL_PATH_EDIT = '{}/{}/edit';".format(frontname, model_name.replace('_', '').lower()), 
 				"const URL_PATH_DELETE = '{}/{}/delete';".format(frontname, model_name.replace('_', '').lower()),
 				"const URL_PATH_DETAILS = '{}/{}/details';".format(frontname, model_name.replace('_', '').lower()),
-				'',
-				'/**',
-				' * Url UrlInterface',
-				' */',
 				'protected $urlBuilder;',
 			])
 		actions.add_method(Phpmethod('__construct',
