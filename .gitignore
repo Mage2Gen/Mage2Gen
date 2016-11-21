@@ -7,4 +7,5 @@ dist/
 *.egg-info/
 *.swp
 *.iml
+phpcs.phar
 generated/
