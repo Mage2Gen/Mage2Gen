@@ -4,14 +4,13 @@ addons:
   apt:
     packages:
     - php5-cli
-    - php-pear
 
 python:
   - 3.4
   - 3.5
 
 before_install:
-  - "pear install PHP_CodeSniffer"
+  - "curl -OL https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar"
 
 script: 
   - "cd tests && python -m unittest discover;"
