@@ -1,8 +1,17 @@
 language: python
 
+addons:
+  apt:
+    packages:
+    - php5-cli
+    - php-pear
+
 python:
   - 3.4
   - 3.5
+
+before_install:
+  - "pear install PHP_CodeSniffer"
 
 script: 
   - "cd tests && python -m unittest discover;"
