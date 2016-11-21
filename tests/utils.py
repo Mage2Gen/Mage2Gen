@@ -53,7 +53,7 @@ class CodeSniffer:
 
 	@staticmethod
 	def test(*args):
-		json_encoded, errors = CodeSniffer.execute('--report=json', *args)
+		json_encoded, errors = CodeSniffer.execute('--report=json', '--standard=PSR2', *args)
 
 		# Parse JSON
 		output = json.loads(json_encoded.decode())
@@ -64,7 +64,7 @@ class CodeSniffer:
 				totals = value
 
 		if totals and totals['errors'] > 0:
-			nice_format, _ = CodeSniffer.execute('--report=full', *args)
+			nice_format, _ = CodeSniffer.execute('--report=full', '--standard=PSR2', *args)
 			raise CodeSniffer.CodeStyleException(
 				nice_format.decode()
 			)
