@@ -6,15 +6,15 @@ from mage2gen.snippets import ApiSnippet
 from tests import utils
 
 
-class TestSampleOutput(unittest.TestCase):
+class TestSnippetApi(unittest.TestCase):
 
-	def test_simple_api(self):
+	def test_snippet(self):
 		module = Module(package='Package', name='Name', description='Description')
 		snippet = ApiSnippet(module)
 		sample_output = snippet.add(api_name='SampleAPI', api_method='GET')
 
-		exitcode = utils.CodeSniffer.generate_and_test(module)
-		print(exitcode)
+		result = utils.CodeSniffer.generate_and_test(module)
+		self.assertTrue(result)
 
 	def tearDown(self):
 		utils.CodeSniffer.cleanup()

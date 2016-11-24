@@ -105,7 +105,15 @@ class ModelSnippet(Snippet):
 		install_method.body.append("$table_{0} = $setup->getConnection()->newTable($setup->getTable('{0}'));".format(model_table))
 		
 		# add model id field
-		install_method.body.append("$table_{table}->addColumn(\n  '{field}',\n  {type},\n  {size},\n  {options},\n  '{comment}'\n);".format(
+		install_method.body.append("""
+			$table_{table}->addColumn(
+			    '{field}',
+			    {type},
+			    {size},
+			    {options},
+			    '{comment}'
+			);
+			""".format(
 			table=model_table,
 			field=model_id,
 			type='\\Magento\\Framework\\DB\\Ddl\\Table::TYPE_INTEGER',
@@ -136,7 +144,15 @@ class ModelSnippet(Snippet):
 		options = "[{}]".format(','.join("'{}' => {}".format(key, value) for key, value in options.items()))
 
 		# Add field
-		install_method.body.append("$table_{table}->addColumn(\n  '{field}',\n  {type},\n  {size},\n  {options},\n  '{comment}'\n);".format(
+		install_method.body.append("""
+			$table_{table}->addColumn(
+			    '{field}',
+			    {type},
+			    {size},
+			    {options},
+			    '{comment}'
+			);
+			""".format(
 			table=model_table,
 			field=field_name,
 			type='\\Magento\\Framework\\DB\\Ddl\\Table::TYPE_{}'.format(field_type.upper()),
@@ -207,10 +223,10 @@ class ModelSnippet(Snippet):
 			docstring=['@return void']))
 
 		model_class.add_method(Phpmethod('get'+model_id_capitalized, docstring=['Get {}'.format(model_id),'@return string'], access=Phpmethod.PUBLIC, body="return $this->getData({});".format('self::'+model_id.upper())))
-		model_class.add_method(Phpmethod('set'+model_id_capitalized, docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id_capitalized_after),'@return {}'.format(api_data_class.class_namespace)], params=['${}'.format(model_id_capitalized_after)], access=Phpmethod.PUBLIC, body="return $this->setData({},${});".format('self::'+model_id.upper(),model_id_capitalized_after)))
+		model_class.add_method(Phpmethod('set'+model_id_capitalized, docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id_capitalized_after),'@return {}'.format(api_data_class.class_namespace)], params=['${}'.format(model_id_capitalized_after)], access=Phpmethod.PUBLIC, body="return $this->setData({}, ${});".format('self::'+model_id.upper(),model_id_capitalized_after)))
 
 		model_class.add_method(Phpmethod('get'+field_name_capitalized, docstring=['Get {}'.format(field_name),'@return string'], access=Phpmethod.PUBLIC, body="return $this->getData({});".format('self::'+field_name.upper())))
-		model_class.add_method(Phpmethod('set'+field_name_capitalized, docstring=['Set {}'.format(field_name),'@param string ${}'.format(field_name),'@return {}'.format(api_data_class.class_namespace)], params=['${}'.format(field_name)], access=Phpmethod.PUBLIC, body="return $this->setData({},${});".format('self::'+field_name.upper(),field_name)))
+		model_class.add_method(Phpmethod('set'+field_name_capitalized, docstring=['Set {}'.format(field_name),'@param string ${}'.format(field_name),'@return {}'.format(api_data_class.class_namespace)], params=['${}'.format(field_name)], access=Phpmethod.PUBLIC, body="return $this->setData({}, ${});".format('self::'+field_name.upper(),field_name)))
 		self.add_class(model_class)
 
 		# Create collection
@@ -218,7 +234,7 @@ class ModelSnippet(Snippet):
 				extends='\\Magento\\Framework\\Model\\ResourceModel\\Db\\Collection\\AbstractCollection')
 		collection_model_class.add_method(Phpmethod('_construct', 
 			access=Phpmethod.PROTECTED, 
-			body="$this->_init(\n  '{}',\n  '{}');".format(
+			body="$this->_init(\n    '{}',\n    '{}'\n);".format(
 				model_class.class_namespace ,resource_model_class.class_namespace),
 			docstring=[
 				'Define resource model',
@@ -366,7 +382,7 @@ class ModelSnippet(Snippet):
 		model_repository_class.add_method(Phpmethod('delete', access=Phpmethod.PUBLIC, 
 			params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],
 			body="""try {{
-						$this->resource->delete(${variable});
+					    $this->resource->delete(${variable});
 					}} catch (\Exception $exception) {{
 					    throw new CouldNotDeleteException(__(
 					        'Could not delete the {model_name}: %1',
@@ -420,7 +436,11 @@ class ModelSnippet(Snippet):
 			]))
 		
 		index_controller_class.add_method(Phpmethod('execute', 
-			body_return='$resultPage = $this->resultPageFactory->create(); $resultPage->getConfig()->getTitle()->prepend(__("'+model_name+'")); return $resultPage;',
+			body_return="""
+			$resultPage = $this->resultPageFactory->create();
+			$resultPage->getConfig()->getTitle()->prepend(__("'+model_name+'"));
+			return $resultPage;
+			""",
 			docstring=[
 				'Index action',
 				'',
@@ -1033,34 +1053,34 @@ class ModelSnippet(Snippet):
 			]))
 		actions.add_method(Phpmethod('prepareDataSource', params=['array $dataSource'],
 			body="""if (isset($dataSource['data']['items'])) {{
-					foreach ($dataSource['data']['items'] as & $item) {{
-					    if (isset($item['{model_id}'])) {{
-					        $item[$this->getData('name')] = [
-					            'edit' => [
-					                'href' => $this->urlBuilder->getUrl(
-					                    static::URL_PATH_EDIT,
-					                    [
-					                        '{model_id}' => $item['{model_id}']
+					    foreach ($dataSource['data']['items'] as & $item) {{
+					        if (isset($item['{model_id}'])) {{
+					            $item[$this->getData('name')] = [
+					                'edit' => [
+					                    'href' => $this->urlBuilder->getUrl(
+					                        static::URL_PATH_EDIT,
+					                        [
+					                            '{model_id}' => $item['{model_id}']
+					                        ]
+					                    ),
+					                    'label' => __('Edit')
+					                ],
+					                'delete' => [
+					                    'href' => $this->urlBuilder->getUrl(
+					                        static::URL_PATH_DELETE,
+					                        [
+					                            '{model_id}' => $item['{model_id}']
+					                        ]
+					                    ),
+					                    'label' => __('Delete'),
+					                    'confirm' => [
+					                        'title' => __('Delete "${{ $.$data.title }}"'),
+					                        'message' => __('Are you sure you wan\\\'t to delete a "${{ $.$data.title }}" record?')
 					                    ]
-					                ),
-					                'label' => __('Edit')
-					            ],
-					            'delete' => [
-					                'href' => $this->urlBuilder->getUrl(
-					                    static::URL_PATH_DELETE,
-					                    [
-					                        '{model_id}' => $item['{model_id}']
-					                    ]
-					                ),
-					                'label' => __('Delete'),
-					                'confirm' => [
-					                    'title' => __('Delete "${{ $.$data.title }}"'),
-					                    'message' => __('Are you sure you wan\\\'t to delete a "${{ $.$data.title }}" record?')
 					                ]
-					            ]
-					        ];
+					            ];
+					        }}
 					    }}
-					}}
 					}}
 
 					return $dataSource;""".format(

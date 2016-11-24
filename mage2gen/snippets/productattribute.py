@@ -108,7 +108,7 @@ class ProductAttributeSnippet(Snippet):
 			frontend_input=frontend_input,
 			user_defined = user_defined,
 			scope = scope,
-			required = required,
+			required = str(required).lower(),
 			options = options_php_array_string,
 			searchable = extra_params.get('searchable','false'),
 			filterable = extra_params.get('filterable','false'),

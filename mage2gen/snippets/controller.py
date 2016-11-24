@@ -138,7 +138,7 @@ class ControllerSnippet(Snippet):
 				params=["$response = ''"],
 				body="""
 				return $this->getResponse()->representJson(
-				     $this->jsonHelper->jsonEncode($response)
+				    $this->jsonHelper->jsonEncode($response)
 				);""",
 				docstring=[
 					'Create json response',

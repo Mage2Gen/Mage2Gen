@@ -57,16 +57,20 @@ class CodeSniffer:
 
 		# Parse JSON
 		output = json.loads(json_encoded.decode())
-
-		totals = None
-		for key, value in output.items():
-			if key == 'totals':
-				totals = value
-
-		if totals and totals['errors'] > 0:
-			nice_format, _ = CodeSniffer.execute('--report=full', '--standard=PSR2', *args)
-			raise CodeSniffer.CodeStyleException(
-				nice_format.decode()
-			)
+		total_errors = output.get('totals', {}).get('errors', 0)
+		if total_errors:
+			exception_message = "\n"
+			for file_name, file in output.get('files', {}).items():
+				
+				file_errors = ""
+				for message in file.get('messages', []):
+					if message['type'] == 'ERROR':
+						file_errors += "{message[line]: <5} {message[message]}\n".format(message=message)
+				
+				if file_errors:
+					exception_message += "FILE: {}\n".format(file_name)
+					exception_message += file_errors
+					exception_message += "\n"
+			raise CodeSniffer.CodeStyleException(exception_message)
 
 		return True

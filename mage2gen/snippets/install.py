@@ -58,6 +58,7 @@ class InstallSnippet(Snippet):
 			'Magento\\Framework\\Setup\\ModuleDataSetupInterface'])
 		install_data.add_method(Phpmethod('install',
 			params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
+			body='//Your install script',
 			docstring=['{@inheritdoc}']))
 	
 		self.add_class(install_data)
@@ -67,7 +68,7 @@ class InstallSnippet(Snippet):
 			'Magento\\Framework\\Setup\\ModuleContextInterface',
 			'Magento\\Framework\\Setup\\SchemaSetupInterface'])
 		update_schema.add_method(Phpmethod('upgrade',params=['SchemaSetupInterface $setup','ModuleContextInterface $context'],
-			body='$setup->startSetup();\nif(version_compare($context->getVersion(), "'+from_version+'", "<")){\n//Your upgrade script\n}\n$setup->endSetup();\n',
+			body='$setup->startSetup();\nif (version_compare($context->getVersion(), "'+from_version+'", "<")) {\n//Your upgrade script\n}\n$setup->endSetup();\n',
 			docstring=['{@inheritdoc}']))
 	
 		self.add_class(update_schema)
@@ -77,7 +78,7 @@ class InstallSnippet(Snippet):
 			'Magento\\Framework\\Setup\\ModuleContextInterface',
 			'Magento\\Framework\\Setup\\ModuleDataSetupInterface'])
 		update_data.add_method(Phpmethod('upgrade',params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
-			body='$setup->startSetup();\nif(version_compare($context->getVersion(), "'+from_version+'", "<")){\n//Your upgrade script\n}\n$setup->endSetup();\n',
+			body='$setup->startSetup();\nif (version_compare($context->getVersion(), "'+from_version+'", "<")) {\n//Your upgrade script\n}\n$setup->endSetup();\n',
 			docstring=['{@inheritdoc}']))
 		
 		self.add_class(update_data)		

@@ -178,7 +178,7 @@ class CustomerAttributeSnippet(Snippet):
 			attribute_label=attribute_label,
 			value_type=value_type,
 			frontend_input=frontend_input,
-			required = required,
+			required = str(required).lower(),
 			sort_order = extra_params.get('sort_order','333') if extra_params.get('sort_order','333') else '333',
 			visible =  extra_params.get('visible','true'),
 			source_model = source_model,

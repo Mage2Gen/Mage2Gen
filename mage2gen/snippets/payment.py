@@ -40,6 +40,14 @@ class PaymentSnippet(Snippet):
 				'protected $_code = "'+payment_code+'";',
 				'protected $_isOffline = true;'
 			])
+
+		payment_class.add_method(Phpmethod(
+			'isAvailable',
+			params=[
+				'\\Magento\\Quote\\Api\\Data\\CartInterface $quote = null'
+			],
+			body="return parent::isAvailable($quote)"
+		))
 	
 		self.add_class(payment_class)
 

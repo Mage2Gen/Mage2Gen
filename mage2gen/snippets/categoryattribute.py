@@ -175,7 +175,7 @@ class CategoryAttributeSnippet(Snippet):
 			frontend_input=frontend_input,
 			user_defined = user_defined,
 			scope = scope,
-			required = required,
+			required = str(required).lower(),
 			default = 'null',
 			sort_order = sort_order,
 			source_model = source_model,

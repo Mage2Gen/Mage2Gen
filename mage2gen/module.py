@@ -83,7 +83,7 @@ class Phpclass:
 
 		dependencies = ';\n'.join("use %s" %(dependency) for dependency in self.dependencies)
 		if dependencies:
-			dependencies = '\n' + dependencies + ';'	
+			dependencies = '\n' + dependencies + ';\n'	
 
 		return {
 			'license': self.license.get_php_docstring() if self.license else '',
@@ -103,7 +103,7 @@ class Phpclass:
 
 		return template.format(
 			**self.context_data()
-		)
+		).replace('\t', '    ') # Make generated code PSR2 compliant
 
 	def save(self, root_location):
 		path = os.path.join(root_location, self.class_namespace.replace('\\', '/') + '.php')
@@ -157,7 +157,7 @@ class Phpmethod:
 			return '';
 
 		docstring = '/**'
-		docstring +=  '\n\t * ' + '\n\t * '.join(line for line in self.docstring)
+		docstring +=  '\n\t *' + '\n\t *'.join(" {}".format(line.strip()) if len(line.strip()) else '' for line in self.docstring)
 		docstring += '\n\t */\n\t'
 		return docstring			
 
@@ -187,8 +187,9 @@ class Phpmethod:
 			access=self.access,
 			docstring=self.docstring_code(),
 			params=self.params_code(),
-			body=self.body_code()
-		)
+			body=self.body_code(),
+			brace_break= ' ' if len(self.params_code()) > 40 else '\n\t'
+		).replace('\t', '    ') # Make generated code PSR2 compliant
 
 ###############################################################################
 # XML

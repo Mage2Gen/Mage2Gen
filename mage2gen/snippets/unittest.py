@@ -37,7 +37,8 @@ class UnitTestSnippet(Snippet):
 		unittest_class.add_method(
 			Phpmethod(
 				'setUpBeforeClass',
-				access='static',
+				access='public static',
+				body="//setup",
 				docstring=['Is called once before running all test in class']
 			)
 		)
@@ -45,7 +46,8 @@ class UnitTestSnippet(Snippet):
 		unittest_class.add_method(
 			Phpmethod(
 				'tearDownAfterClass',
-				access='static',
+				access='public static',
+				body="//teardown",
 				docstring=['Is called once after running all test in class']
 			)
 		)
@@ -56,6 +58,7 @@ class UnitTestSnippet(Snippet):
 			Phpmethod(
 				'setUp',
 				access='protected',
+				body="//setup",
 				docstring=['Is called before running a test']
 			)
 		)
@@ -64,6 +67,7 @@ class UnitTestSnippet(Snippet):
 			Phpmethod(
 				'tearDown',
 				access='protected',
+				body="//teardown",
 				docstring=['Is called after running a test']
 			)
 		)

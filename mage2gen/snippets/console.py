@@ -57,7 +57,8 @@ class ConsoleSnippet(Snippet):
 			access='protected',
 			params=['InputInterface $input','OutputInterface $output'],
 			body="""
-			$name = $input->getArgument(self::NAME_ARGUMENT); $option = $input->getOption(self::NAME_OPTION);
+			$name = $input->getArgument(self::NAME_ARGUMENT);
+			$option = $input->getOption(self::NAME_OPTION);
 			$output->writeln("Hello " . $name);
 			""",
 			docstring=['{@inheritdoc}']
@@ -72,8 +73,8 @@ class ConsoleSnippet(Snippet):
 				$this->setName("{module_name}:{action_name}");
 				$this->setDescription("{short_description}");
 				$this->setDefinition([
-				    new InputArgument(self::NAME_ARGUMENT,InputArgument::OPTIONAL,"Name"),
-				    new InputOption(self::NAME_OPTION,"-a",InputOption::VALUE_NONE,"Option functionality")
+				    new InputArgument(self::NAME_ARGUMENT, InputArgument::OPTIONAL, "Name"),
+				    new InputOption(self::NAME_OPTION, "-a", InputOption::VALUE_NONE, "Option functionality")
 				]);
 				parent::configure();
 				""".format(

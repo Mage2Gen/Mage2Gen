@@ -71,6 +71,7 @@ class PluginSnippet(Snippet):
 
 		plugin.add_method(Phpmethod(
 			plugintype + methodname[0].capitalize() + methodname[1:],
+			body="//Your plugin code",
 			params=[
 				'\\' + classname + ' $subject',
 				variable
