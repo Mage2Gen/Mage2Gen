@@ -552,7 +552,6 @@ class ModelSnippet(Snippet):
 				Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
 					Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
 						Xmlnode('item', attributes={'name': 'filter', 'xsi:type': 'string'}, node_text='text'),	
-						Xmlnode('item', attributes={'name': 'sorting', 'xsi:type': 'string'}, node_text='asc'),	
 						Xmlnode('item', attributes={'name': 'label', 'xsi:type': 'string', 'translate': 'true'}, node_text=field_name),	
 					])
 				])		
