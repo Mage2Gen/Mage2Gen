@@ -180,7 +180,7 @@ class CustomerAttributeSnippet(Snippet):
 			frontend_input=frontend_input,
 			required = str(required).lower(),
 			sort_order = extra_params.get('sort_order','333') if extra_params.get('sort_order','333') else '333',
-			visible =  extra_params.get('visible','true'),
+			visible =  'true' if extra_params.get('visible', True) else 'false',
 			source_model = source_model,
 			backend_model = backend_model
 		)

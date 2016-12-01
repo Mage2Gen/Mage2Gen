@@ -131,11 +131,11 @@ class ModelSnippet(Snippet):
 			options['nullable'] = extra_params.get('nullable')
 			required = not options['nullable']
 		if extra_params.get('identity'):
-			options['identity'] = True
+			options['identity'] = 'true'
 		if extra_params.get('auto_increment'):
-			options['auto_increment'] = True
+			options['auto_increment'] = 'true'
 		if extra_params.get('unsigned'):
-			options['unsigned'] = True
+			options['unsigned'] = 'true'
 		if extra_params.get('precision'):
 			options['precision'] = extra_params.get('precision')
 		if extra_params.get('scale'):
