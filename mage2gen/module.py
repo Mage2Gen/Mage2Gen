@@ -325,8 +325,9 @@ class Module:
 
 		self.add_static_file('.', StaticFile('registration.php', template_file='registration.tmpl', context_data={'module_name':self.module_name}))
 		self._composer = OrderedDict()
-		self._composer['name'] = '{}/{}'.format(self.package.lower(), self.name.lower())
+		self._composer['name'] = '{}/module-{}'.format(self.package.lower(), self.name.lower())
 		self._composer['description'] = self.description
+		self._composer['license'] = 'proprietary'
 		self._composer['authors'] = [
 				{
 					'name': 'Mage2Gen',
@@ -365,6 +366,7 @@ class Module:
 			pass
 
 		if self.license:
+			self._composer['license'] = self.license.identifier
 			self.add_static_file('', StaticFile('LICENSE.txt', body=self.license.get_text()))
 
 		# Add composer as static file

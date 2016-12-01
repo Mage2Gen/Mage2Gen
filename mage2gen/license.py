@@ -21,6 +21,8 @@ from mage2gen.utils import DefaultFormatter
 LICENCE_DIR = os.path.join(os.path.dirname(__file__), 'licenses')
 
 class License:
+	identifier = 'proprietary'
+
 	def __init__(self, copyright='', module_name='', description='', license_text='', short_license_text=''):
 		self.license_text = license_text
 		self.short_license_text = short_license_text
@@ -62,8 +64,10 @@ class FileLicense(License):
 class GPLV3(FileLicense):
 	template_license = 'gplv3.txt'
 	template_short_license = 'gplv3_short.txt'
+	identifier = 'GPL-3.0'
 
 
 class OSLV3(FileLicense):
 	template_license = 'oslv3.txt'
 	template_short_license = 'oslv3_short.txt'
+	identifier = 'OSL-3.0'
