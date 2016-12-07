@@ -46,7 +46,7 @@ class PaymentSnippet(Snippet):
 			params=[
 				'\\Magento\\Quote\\Api\\Data\\CartInterface $quote = null'
 			],
-			body="return parent::isAvailable($quote)"
+			body="return parent::isAvailable($quote);"
 		))
 	
 		self.add_class(payment_class)
