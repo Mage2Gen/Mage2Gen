@@ -95,14 +95,14 @@ class PaymentSnippet(Snippet):
 						Xmlnode('group', attributes={'id':payment_code,'sortOrder':10,'showInWebsite':1,'showInStore':1,'showInDefault':1,'translate':'label'},match_attributes={'id'},nodes=[
 							Xmlnode('label',node_text=method_name),
 							Xmlnode('field', attributes={'id':'active','type':'select','sortOrder':10,'showInWebsite':1,'showInStore':1,'showInDefault':1,'translate':'label'},match_attributes={'id'},nodes=[
-								Xmlnode('label',node_text='New Order Status'),
+								Xmlnode('label',node_text='Enabled'),
 								Xmlnode('source_model',node_text='Magento\\Config\\Model\\Config\\Source\\Yesno'),
 							]),
 							Xmlnode('field', attributes={'id':'title','type':'text','sortOrder':20,'showInWebsite':1,'showInStore':1,'showInDefault':1,'translate':'label'},match_attributes={'id'},nodes=[
 								Xmlnode('label',node_text='Title'),
 							]),
 							Xmlnode('field', attributes={'id':'order_status','type':'select','sortOrder':30,'showInWebsite':1,'showInStore':1,'showInDefault':1,'translate':'label'},match_attributes={'id'},nodes=[
-								Xmlnode('label',node_text='Enabled'),
+								Xmlnode('label',node_text='New Order Status'),
 								Xmlnode('source_model',node_text='Magento\\Sales\\Model\\Config\\Source\\Order\\Status\\NewStatus'),
 							]),
 							Xmlnode('field', attributes={'id':'allowspecific','type':'select','sortOrder':40,'showInWebsite':1,'showInStore':1,'showInDefault':1,'translate':'label'},match_attributes={'id'},nodes=[
