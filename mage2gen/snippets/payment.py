@@ -105,11 +105,11 @@ class PaymentSnippet(Snippet):
 								Xmlnode('label',node_text='New Order Status'),
 								Xmlnode('source_model',node_text='Magento\\Sales\\Model\\Config\\Source\\Order\\Status\\NewStatus'),
 							]),
-							Xmlnode('field', attributes={'id':'allowspecific','type':'select','sortOrder':40,'showInWebsite':1,'showInStore':1,'showInDefault':1,'translate':'label'},match_attributes={'id'},nodes=[
+							Xmlnode('field', attributes={'id':'allowspecific','type':'allowspecific','sortOrder':40,'showInWebsite':1,'showInStore':1,'showInDefault':1,'translate':'label'},match_attributes={'id'},nodes=[
 								Xmlnode('label',node_text='Payment from Applicable Countries'),
 								Xmlnode('source_model',node_text='Magento\\Payment\\Model\Config\\Source\\Allspecificcountries'),
 							]),
-							Xmlnode('field', attributes={'id':'specificcountry','type':'select','sortOrder':50,'showInWebsite':1,'showInStore':1,'showInDefault':1,'translate':'label'},match_attributes={'id'},nodes=[
+							Xmlnode('field', attributes={'id':'specificcountry','type':'multiselect','sortOrder':50,'showInWebsite':1,'showInStore':1,'showInDefault':1,'translate':'label'},match_attributes={'id'},nodes=[
 								Xmlnode('label',node_text='Payment from Applicable Countries'),
 								Xmlnode('source_model',node_text='Magento\\Directory\\Model\\Config\\Source\\Country'),
 								Xmlnode('can_be_empty',node_text='1'),
