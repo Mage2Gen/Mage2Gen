@@ -140,6 +140,10 @@ class Phpmethod:
 		for code in other.end_body:
 			if code not in self.end_body:
 				self.end_body.insert(0, code)
+
+		for param in other.params:
+			if param not in self.params:
+				self.params.append(param)
 		return self
 
 	def __hash__(self):
