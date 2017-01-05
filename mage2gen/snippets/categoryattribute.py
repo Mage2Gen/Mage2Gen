@@ -114,13 +114,10 @@ class CategoryAttributeSnippet(Snippet):
 		# customer source model
 		if source_model == 'custom' and source_model_options and frontend_input == 'select' or frontend_input == 'multiselect':
 			source_model_class = Phpclass(
-				'Model\\Category\\Attribute\\Source\\'+ attribute_code.capitalize(),
+				'Model\\Category\\Attribute\\Source\\' + ''.join(n.capitalize() for n in attribute_code.split('_')),
 				extends='\Magento\Eav\Model\Entity\Attribute\Source\AbstractSource',
 				attributes=[
-					'/**',
-				' * @var array',
-				' */',
-				'protected $_optionsData;'
+					'protected $_optionsData;'
 				]   
 			)
 
@@ -147,7 +144,7 @@ class CategoryAttributeSnippet(Snippet):
 			source_model_class.add_method(Phpmethod('getAllOptions',
 				body="""
 				if ($this->_options === null) {{
-				    $this->_options = {options}
+				    $this->_options = {options};
 				}}
 				return $this->_options;
 				""".format(options=to_option_array),
@@ -191,9 +188,6 @@ class CategoryAttributeSnippet(Snippet):
 				'Magento\\Eav\\Setup\\EavSetup',
 				'Magento\\Eav\\Setup\\EavSetupFactory'],
 			attributes=[
-				'/**',
-				' * @var \\Magento\\Eav\\Setup\\EavSetupFactory',
-				' */',
 				'private $eavSetupFactory;'
 			])
 

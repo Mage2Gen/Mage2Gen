@@ -108,7 +108,7 @@ class CustomerAttributeSnippet(Snippet):
 		if source_model == 'custom' and source_model_options and frontend_input == 'select' or frontend_input == 'multiselect':
 			source_model_folder = 'Customer' if customer_entity =='customer' else 'Customer\\Address'
 			source_model_class = Phpclass(
-				'Model\\'+source_model_folder+'\\Attribute\\Source\\'+ attribute_code.capitalize(),
+				'Model\\'+source_model_folder+'\\Attribute\\Source\\' + ''.join(n.capitalize() for n in attribute_code.split('_')),
 				extends='\Magento\Eav\Model\Entity\Attribute\Source\AbstractSource',
 				attributes=[
 				'protected $_optionsData;'
