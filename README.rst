@@ -5,7 +5,7 @@
 Mage2Gen
 ========
 Mage2Gen is a python library for generating Magento 2 modules. It is
-build to be extandeble with snippets for creating more complex Magento 2
+build to be extendable with snippets for creating more complex Magento 2
 modules based on simple input.
 
 Installation
@@ -17,8 +17,8 @@ To install the Python library and the command line utility, run:
 Interactive command line
 ========================
 With the mage2gen command line tool you can interactively create and generate Magento 2 modules.
-If you have installed mage2gen for you whole system you can start it by running *mage2gen*.
-You will be asked to give the module package name, name and description:
+If you have installed mage2gen for your whole system you can start it by running *mage2gen*.
+You will be asked to give the module a package name, name and description:
 
 .. code:: bash
 
@@ -32,7 +32,7 @@ You will be asked to give the module package name, name and description:
 
 Help
 ~~~~
-You can use *help* or *?* to show available commands and *help <command>* to show command help description: 
+You can use *help* or *?* to show all available commands and *help <command>* to show command specific help descriptions: 
 
 .. code:: bash
 
@@ -47,11 +47,11 @@ You can use *help* or *?* to show available commands and *help <command>* to sho
     EOF
     
     (Mage2Gen) help add
-    Add a snippet to module
+    Add a snippet to the module
 
 List snippets
 ~~~~~~~~~~~~~
-With the *list* command you get a list of all the available snippets you can add to you module:
+With the *list* command you get a list of all the available snippets you can add to your module:
 
 .. code:: bash
 
@@ -96,7 +96,7 @@ When you want to remove an added snippet you can use the *remove <snippet name> 
 
 Generate module
 ~~~~~~~~~~~~~~~
-When you are ready with you module and added the snippets you wanted to use you can generate the module with the *generate* command. If you are inside a Magento 2 project directory it will select the default path for the module:
+When you are ready with your module and added the snippets you want to use, you can generate the module with the *generate* command. If you are inside a Magento 2 project directory, it will select the default path for the module:
 
 .. code:: bash
 
@@ -122,12 +122,12 @@ Snippets
 ========
 
 Mage2Gen has core classes for creating and merging PHP classes, XML
-files and static files. For generating a module you dont want to define
+files and static files. For generating a module you don't want to define
 your PHP class or XML file for basic module concepts like observers,
-plugins or controllers. This is where snippets comes in, witch add these
+plugins or controllers. This is where snippets come in, which add these
 concepts based on simple input. The currently supported snippets are
-listed below. If you like to add a snippet to Mage2Gen, simply fork this
-project add you snippet or other improvements and create a pull request.
+listed below. If you would like to add a snippet to Mage2Gen, simply fork this
+project. Add your snippet or other improvements and create a pull request afterwards.
 
 Controller
 ~~~~~~~~~~
@@ -158,10 +158,10 @@ Creates a plugin for a public method, link to Magento 2 `docs`_
 
 Params:
 -------
-- **(str) classname:** full class namespace of class withmethod 
+- **(str) classname:** full class namespace of class with method 
 - **(str) methodname:** method name of class 
-- **(str) plugintype:** type fo plugin (before, after or around) 
-- **(bool) sortorder [10]:** the order the plugin is executed in relation withother plugins. 
+- **(str) plugintype:** type for plugin (before, after or around) 
+- **(bool) sortorder [10]:** the order the plugin is executed in respect to other plugins. 
 - **(bool) disabled [False]:** disable a plugin
 
 Example:
@@ -195,9 +195,9 @@ Example:
 Create a Snippet
 ================
 
-You can create you own snippets. If you like to add a snippet to
-Mage2Gen, simply fork this project add you snippet or other improvements
-and create a pull request.
+You can create your own snippets. If you would like to add a snippet to
+Mage2Gen, simply fork this project. Add you snippet or other improvements
+and create a pull request afterwards.
 
 Base snippet
 ~~~~~~~~~~~~
@@ -218,11 +218,11 @@ Base snippet
             # one class with all the methods and attributes).
             self.add_class(PhpClassObject)
             
-            # Add xml to module (Same as with the PHP class, you can add multiple
-            # XML nodes for the same file !importend root node must be the same.
-            # A XML node will be merge when the node name and the XML attributes 
-            # name or id  are the same. When creating node you can say witch attributes
-            # make the node unique, default is name and id).
+            # Add XML to module (Same as with the PHP class, you can add multiple
+            # XML nodes for the same file !important root node must be the same.
+            # An XML node will be merged when the node name and the XML attributes 
+            # name or id  are the same. When creating a node you can define which
+            # attributes make the node unique, default is name and id).
             self.add_xml('full/path/to/xml/with/file/name', XmlNodeObject)
             
             # Add static file
