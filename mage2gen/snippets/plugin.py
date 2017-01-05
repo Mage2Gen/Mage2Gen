@@ -99,10 +99,11 @@ class PluginSnippet(Snippet):
 	def params(cls):
 		return [
 			SnippetParam(name='classname', required=True,
-				description='This must be the full class path, example: Magento\Catalog\Model\Product',
+				description='Example: Magento\Catalog\Model\Product',
 				regex_validator=r'^[\w\\]+$',
 				error_message='Only alphanumeric, underscore and backslash characters are allowed'),
 			SnippetParam(name='methodname', required=True,
+				description='Example: getPrice',
 				regex_validator= r'^\w+$',
 				error_message='Only alphanumeric and underscore characters are allowed'),
 			SnippetParam(name='plugintype', choises=cls.SCOPE_CHOISES, default=cls.TYPE_AFTER),

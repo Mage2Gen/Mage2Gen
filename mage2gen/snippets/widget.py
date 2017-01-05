@@ -74,16 +74,16 @@ class WidgetSnippet(Snippet):
 	def params(cls):
 		return [
 			SnippetParam(
-				name='name', 
-				required=True, 
-				description='',
+				name='name',
+				description='Example: productStock',
+				required=True,
 				regex_validator= r'^[a-zA-Z]{1}\w+$',
 				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.',
 				repeat=True),
 			SnippetParam(
 				name='field', 
 				required=True, 
-				description='Field code. Example: out of stock label ',
+				description='Example: product_id',
 				regex_validator= r'^[a-zA-Z]{1}\w+$',
 				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
 			SnippetParam(

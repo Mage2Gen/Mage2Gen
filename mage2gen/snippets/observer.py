@@ -98,7 +98,7 @@ class ObserverSnippet(Snippet):
 			SnippetParam(
 				name='event', 
 				required=True, 
-				description='Magento event name, example: catalog_product_save_after',
+				description='Example: catalog_product_save_after',
 				regex_validator= r'^[a-zA-Z]{1}\w+$',
 				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
 			SnippetParam(name='scope', choises=cls.SCOPE_CHOISES, default=cls.SCOPE_ALL)

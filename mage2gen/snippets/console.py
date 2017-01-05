@@ -117,13 +117,13 @@ class ConsoleSnippet(Snippet):
 			SnippetParam(
 				name='action_name', 
 				required=True, 
-				description='Console action name. Example: Backup, Import',
+				description='Example: Backup, Import',
 				regex_validator= r'^[a-zA-Z]{1}\w+$',
 				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
 			SnippetParam(
 				name='short_description', 
 				required=True, 
-				description='Console action description. Example: Backups magento enviroment, Starts product import'),
+				description='Example: Backups magento enviroment, Starts product import'),
 		]
 
 

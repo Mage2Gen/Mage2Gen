@@ -23,7 +23,9 @@ class CacheSnippet(Snippet):
 	Custom Cache snippet
 	"""
 
-	def add(self, name, description, extra_params=None):
+	def add(self, name='', description='', extra_params=None):
+		if not name:
+			name = self._module.name
 		cache_id = '{}_cache_tag'.format(name.lower())
 		
 		# Add cache class
@@ -58,9 +60,16 @@ class CacheSnippet(Snippet):
 	@classmethod
 	def params(cls):
 		return [
-			SnippetParam(name='name', required=True,
+			SnippetParam(
+				name='name',
+				description='When empty uses module name',
+				required=False,
 				regex_validator= r'^[a-zA-Z]{1}\w+$',
 				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
-			SnippetParam(name='description', required=False)
+			SnippetParam(
+				name='description',
+				description='Short description about the cache',
+				required=False
+			)
 		]
 		

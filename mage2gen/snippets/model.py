@@ -1310,14 +1310,16 @@ class ModelSnippet(Snippet):
 	def params(cls):
 		return [
 			SnippetParam(
-				name='model_name', 
+				name='model_name',
+				description='Example: Blog',
 				required=True, 
 				regex_validator= r'^[a-zA-Z]{1}\w+$',
 				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.',
 				repeat=True
 			),
 			SnippetParam(
-				name='field_name', 
+				name='field_name',
+				description='Example: content',
 				required=True, 
 				regex_validator= r'^[a-zA-Z]{1}\w+$',
 				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'
@@ -1335,14 +1337,15 @@ class ModelSnippet(Snippet):
 	@classmethod
 	def extra_params(cls):
 		return [
-			SnippetParam('comment', required=False),
-			SnippetParam('default', required=False),
+			SnippetParam('comment', required=False, description='Description of database field'),
+			SnippetParam('default', required=False, description='Default value of field'),
 			SnippetParam('nullable', yes_no=True, default=True),
 			SnippetParam('identity', yes_no=True),
 			SnippetParam('auto_increment', yes_no=True),
 			'Extra',
 			SnippetParam(
-				name='field_size', 
+				name='field_size',
+				description='Size of field, Example: 512 for max chars',
 				required=False, 
 				regex_validator= r'^\d+$',
 				error_message='Only numeric value allowed.',

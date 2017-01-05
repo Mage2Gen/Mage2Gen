@@ -270,7 +270,7 @@ class CategoryAttributeSnippet(Snippet):
 			 SnippetParam(
 				name='attribute_label', 
 				required=True, 
-				description='Tab code. Example: catalog',
+				description='Example: short_description',
 				regex_validator= r'^[a-zA-Z\d\-_\s]+$',
 				error_message='Only alphanumeric'),
 			 SnippetParam(
@@ -304,12 +304,16 @@ class CategoryAttributeSnippet(Snippet):
 	@classmethod
 	def extra_params(cls):
 		 return [
-			 SnippetParam(
-				name='sort_order',
-				regex_validator= r'^\d+$',
-				error_message='Only numeric value'),
-			 SnippetParam(
-				name='attribute_code', 
+			SnippetParam(
+				name='attribute_code',
+				description='Default to lowercase of label',
 				regex_validator= r'^[a-zA-Z]{1}\w{0,29}$',
-				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character. And can\'t be longer then 30 characters')
+				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character. And can\'t be longer then 30 characters'
+			),
+			SnippetParam(
+				name='sort_order',
+				description='333',
+				regex_validator= r'^\d+$',
+				error_message='Only numeric value'
+			)
 		 ]

@@ -186,7 +186,7 @@ class ControllerSnippet(Snippet):
 	@classmethod
 	def params(cls):
 		return [
-			SnippetParam(name='frontname', required=False, description='When empty it will use the Module name in lower case',
+			SnippetParam(name='frontname', required=False, description='On empty uses module name in lower case',
 				regex_validator= r'^[a-zA-Z]{1}\w+$',
 				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.',
 				repeat=True),

@@ -118,7 +118,7 @@ class SystemSnippet(Snippet):
 			tabxml = Xmlnode('tab',attributes={
 					'id':tab,
 					'translate':'label',
-					'sortOrder':extra_params.get('tab_sortOrder',999) or 10},nodes=[
+					'sortOrder':extra_params.get('tab_sortOrder',999) or 999},nodes=[
 				Xmlnode('label',node_text=extra_params.get('tab_label',tab) or tab)	
 			 ])
 		else:
@@ -216,7 +216,7 @@ class SystemSnippet(Snippet):
 			SnippetParam(
 				name='tab', 
 				required=True, 
-				description='Tab code. Example: catalog',
+				description='Example: catalog',
 				regex_validator= r'^[a-z]{1}[a-z0-9_]+$',
 				error_message='Only lowercase alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.',
 				repeat=True),
@@ -228,21 +228,21 @@ class SystemSnippet(Snippet):
 			SnippetParam(
 				name='section', 
 				required=True, 
-				description='Section code. Example: inventory',
+				description='Example: inventory',
 				regex_validator= r'^[a-z]{1}[a-z0-9_]+$',
 				error_message='Only lowercase alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.',
 				repeat=True),
 			SnippetParam(
 				name='group', 
 				required=True, 
-				description='Group code. Example: options',
+				description='Example: options',
 				regex_validator= r'^[a-z]{1}[a-z0-9_]+$',
 				error_message='Only lowercase alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.',
 				repeat=True),
 			SnippetParam(
 				name='field', 
 				required=True, 
-				description='Field code. Example: out of stock label ',
+				description='Example: out of stock label ',
 				regex_validator= r'^[a-z]{1}[a-z0-9_]+$',
 				error_message='Only lowercase alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
 			SnippetParam(
@@ -258,7 +258,7 @@ class SystemSnippet(Snippet):
 				name='source_model_options',
 				required=True,
 				depend= {'source_model': r'custom'},
-				description='Dropdown or Multiselect options comma seperated',
+				description='comma seperated options. Example: yes,no.maybe',
 				error_message='Only alphanumeric')
 
 		]
@@ -267,16 +267,18 @@ class SystemSnippet(Snippet):
 	def extra_params(cls):
 		return [
 			'Tab',
-			SnippetParam(name='tab_label', repeat=True),
+			SnippetParam(name='tab_label', repeat=True, description='Default uses tab value'),
 			SnippetParam(
 				name='tab_sortOrder',
+				description='999',
 				regex_validator= r'^\d+$',
 				error_message='Only numeric value',
 				repeat=True),
 			'Section',
-			SnippetParam(name='section_label', repeat=True),
+			SnippetParam(name='section_label', repeat=True, description='Default uses section value'),
 			SnippetParam(
 				name='section_sortorder',
+				description='10',
 				regex_validator= r'^\d+$',
 				error_message='Only numeric value',
 				repeat=True),
@@ -296,9 +298,10 @@ class SystemSnippet(Snippet):
 				yes_no=True,
 				repeat=True),
 			'Group',
-			SnippetParam(name='group_label', repeat=True),
+			SnippetParam(name='group_label', repeat=True, description='Default uses group value'),
 			SnippetParam(
 				name='group_sortorder',
+				description='10',
 				regex_validator= r'^\d+$',
 				error_message='Only numeric value',
 				repeat=True),
@@ -318,11 +321,12 @@ class SystemSnippet(Snippet):
 				yes_no=True,
 				repeat=True),
 			'Field',
-			SnippetParam(name='field_label'),
-			SnippetParam(name='field_comment'),
-			SnippetParam(name='field_default'),
+			SnippetParam(name='field_label', description='Default uses field value'),
+			SnippetParam(name='field_comment', description='Example: Label used to display out of stock status'),
+			SnippetParam(name='field_default', description='Default value of field'),
 			SnippetParam(
 				name='field_sortorder',
+				description='10',
 				regex_validator= r'^\d+$',
 				error_message='Only numeric value'),
 			SnippetParam(
