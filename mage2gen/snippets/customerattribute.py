@@ -138,7 +138,7 @@ class CustomerAttributeSnippet(Snippet):
 			source_model_class.add_method(Phpmethod('getAllOptions',
 				body="""
 				if ($this->_options === null) {{
-				    $this->_options = {options}
+				    $this->_options = {options};
 				}}
 				return $this->_options;
 				""".format(options=to_option_array),
