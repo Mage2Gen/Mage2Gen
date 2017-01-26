@@ -438,9 +438,9 @@ class ModelSnippet(Snippet):
 		index_controller_class.add_method(Phpmethod('execute', 
 			body_return="""
 			$resultPage = $this->resultPageFactory->create();
-			$resultPage->getConfig()->getTitle()->prepend(__("'+model_name+'"));
+			$resultPage->getConfig()->getTitle()->prepend(__("{model_name}"));
 			return $resultPage;
-			""",
+			""".format(model_name=model_name),
 			docstring=[
 				'Index action',
 				'',
