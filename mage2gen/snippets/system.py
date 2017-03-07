@@ -96,7 +96,7 @@ class SystemSnippet(Snippet):
 		if source_model == 'custom' and source_model_options and field_type == 'select' or field_type == 'multiselect':
 
 			source_model_class = Phpclass(
-				'Model\\Config\\Source\\'+ field_code.capitalize(),
+				'Model\\Config\\Source\\'+ ''.join(f.capitalize() for f in field_code.split('_')),
 				implements=['\Magento\Framework\Option\ArrayInterface']
 			)
 			source_model_options = source_model_options.split(',')
