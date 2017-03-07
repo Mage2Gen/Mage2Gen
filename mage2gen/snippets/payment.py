@@ -160,7 +160,7 @@ class PaymentSnippet(Snippet):
 			])
 		])
 
-		layout_base = Xmlnode('pagepage', attributes={'xmlns:xsi':"http://www.w3.org/2001/XMLSchema-instance",'layout':'1column', 'xsi:noNamespaceSchemaLocation':'urn:magento:framework:View/Layout/etc/page_configuration.xsd'}, nodes=[
+		layout_base = Xmlnode('page', attributes={'xmlns:xsi':"http://www.w3.org/2001/XMLSchema-instance",'layout':'1column', 'xsi:noNamespaceSchemaLocation':'urn:magento:framework:View/Layout/etc/page_configuration.xsd'}, nodes=[
 			Xmlnode('body',nodes=[
 				Xmlnode('referenceBlock',attributes={'name':'checkout.root'},nodes=[
 					Xmlnode('arguments',nodes=[
