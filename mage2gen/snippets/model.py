@@ -1181,7 +1181,7 @@ class ModelSnippet(Snippet):
 				Xmlnode('item', attributes={'name': 'buttons', 'xsi:type': 'array'}, nodes=[
 					Xmlnode('item', attributes={'name': 'add', 'xsi:type': 'array'}, nodes=[
 						Xmlnode('item', attributes={'name': 'name', 'xsi:type': 'string'}, node_text='add'),
-						Xmlnode('item', attributes={'name': 'label', 'xsi:type': 'string', 'translate', 'true'}, node_text='Add new {}'.format(model_name)),
+						Xmlnode('item', attributes={'name': 'label', 'xsi:type': 'string', 'translate': 'true'}, node_text='Add new {}'.format(model_name)),
 						Xmlnode('item', attributes={'name': 'class', 'xsi:type': 'string'}, node_text='primary'),
 						Xmlnode('item', attributes={'name': 'url', 'xsi:type': 'string'}, node_text='*/*/new'),
 					]),
