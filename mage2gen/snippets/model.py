@@ -725,7 +725,7 @@ class ModelSnippet(Snippet):
 				'@param \\Magento\\Framework\\Registry $coreRegistry'
 			]))
 		link_controller.add_method(Phpmethod('initPage', params=['$resultPage'],
-			body="""$resultPage->setActiveMenu('Experius_Test::top_level')
+			body="""$resultPage->setActiveMenu(self::ADMIN_RESOURCE)
 				    ->addBreadcrumb(__('{namespace}'), __('{namespace}'))
 				    ->addBreadcrumb(__('{model_name}'), __('{model_name}'));
 				return $resultPage;""".format(
