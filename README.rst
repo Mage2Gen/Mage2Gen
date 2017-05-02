@@ -197,7 +197,7 @@ Create a Snippet
 
 You can create your own snippets. If you would like to add a snippet to
 Mage2Gen, simply fork this project. Add you snippet or other improvements
-and create a pull request afterwards.
+and create a pull request afterwards. You can read this `blog`_ post for an how to guide on creating a snippet.
 
 Base snippet
 ~~~~~~~~~~~~
@@ -260,3 +260,4 @@ Example implementation:
 
 .. _docs: http://devdocs.magento.com/guides/v2.0/extension-dev-guide/plugins.html
 .. _mage2gen: http://mage2gen.com
+.. _blog: http://martens.me/programming/how-to-make-a-mage2gen-snippet.html
