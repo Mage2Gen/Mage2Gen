@@ -917,9 +917,8 @@ class ModelSnippet(Snippet):
 				'protected $dataPersistor;'])
 		new_controller.add_method(Phpmethod('__construct',
 			params=['\\Magento\\Backend\\App\\Action\\Context $context',
-				'\\Magento\\Framework\\Registry $coreRegistry',
 				'\\Magento\\Framework\\App\\Request\\DataPersistorInterface $dataPersistor'],
-			body="""$this->dataPersistor = $dataPersistor;\nparent::__construct($context, $coreRegistry);""",
+			body="""$this->dataPersistor = $dataPersistor;\nparent::__construct($context);""",
 			docstring=[
 				'@param \\Magento\\Backend\\App\\Action\\Context $context',
 				'@param \\Magento\\Framework\\App\\Request\\DataPersistorInterface $dataPersistor',
