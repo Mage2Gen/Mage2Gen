@@ -492,20 +492,17 @@ class ModelSnippet(Snippet):
 				])	
 			]),
 			Xmlnode('preference', attributes={
-				'for': "{}\\{}\\Api\\{}RepositoryInterface".format(self._module.package, model_name, model_name),
-				'type': 'Magento\\Framework\\View\\Element\\UiComponent\\DataProvider\\SearchResult',
-				})
-			]),
+                'for': "{}\\{}\\Api\\{}RepositoryInterface".format(self._module.package, model_name, model_name),
+                'type': 'Magento\\Framework\\View\\Element\\UiComponent\\DataProvider\\SearchResult',
+            }),
 			Xmlnode('preference', attributes={
-				'for': "{}\\{}\\Api\\Data\\{}Interface".format(self._module.package, model_name, model_name),
-				'type': "{}\\{}\\Model\\{}".format(self._module.package, model_name, model_name),
-				})
-			]),
+                'for': "{}\\{}\\Api\\Data\\{}Interface".format(self._module.package, model_name, model_name),
+                'type': "{}\\{}\\Model\\{}".format(self._module.package, model_name, model_name),
+            }),
 			Xmlnode('preference', attributes={
-				'for': "{}\\{}\\Api\\Data\\{}SearchResultsInterface".format(self._module.package, model_name, model_name),
-				'type': 'Magento\Framework\Api\SearchResults',
-				})
-			]),
+                'for': "{}\\{}\\Api\\Data\\{}SearchResultsInterface".format(self._module.package, model_name, model_name),
+                'type': 'Magento\Framework\Api\SearchResults',
+            }),
 			Xmlnode('type', attributes={'name': 'Magento\\Framework\\View\\Element\\UiComponent\\DataProvider\\CollectionFactory'}, nodes=[
 				Xmlnode('arguments', nodes=[
 					Xmlnode('argument', attributes={'name': 'collections', 'xsi:type': 'array'}, nodes=[
