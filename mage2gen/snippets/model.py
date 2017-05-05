@@ -309,7 +309,7 @@ class ModelSnippet(Snippet):
 					    ${variable}->setStoreId($storeId);
 					}} */
 					try {{
-					    $this->resource->save(${variable});
+					    ${variable}->getResource()->save(${variable});
 					}} catch (\Exception $exception) {{
 					    throw new CouldNotSaveException(__(
 					        'Could not save the {variable}: %1',
@@ -323,7 +323,7 @@ class ModelSnippet(Snippet):
 		model_repository_class.add_method(Phpmethod('getById', access=Phpmethod.PUBLIC, 
 			params=['${}Id'.format(model_name_capitalized_after)],
 			body="""${variable} = $this->{variable}Factory->create();
-			${variable}->load(${variable}Id);
+			${variable}->getResource()->load(${variable}, ${variable}Id);
 			if (!${variable}->getId()) {{
 			    throw new NoSuchEntityException(__('{model_name} with id "%1" does not exist.', ${variable}Id));
 			}}
@@ -382,7 +382,7 @@ class ModelSnippet(Snippet):
 		model_repository_class.add_method(Phpmethod('delete', access=Phpmethod.PUBLIC, 
 			params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],
 			body="""try {{
-					    $this->resource->delete(${variable});
+					    ${variable}->getResource()->delete(${variable});
 					}} catch (\Exception $exception) {{
 					    throw new CouldNotDeleteException(__(
 					        'Could not delete the {model_name}: %1',
