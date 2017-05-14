@@ -401,6 +401,22 @@ class ModelSnippet(Snippet):
 		))
 		self.add_class(model_repository_class)
 
+		# Create di.xml preferences
+        self.add_xml('etc/di.xml', Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:framework:ObjectManager/etc/config.xsd"}, nodes=[
+            Xmlnode('preference', attributes={
+                'for': "{}\\{}\\Api\\{}RepositoryInterface".format(self._module.package, model_name, model_name),
+                'type': 'Magento\\Framework\\View\\Element\\UiComponent\\DataProvider\\SearchResult'
+            }),
+            Xmlnode('preference', attributes={
+                'for': "{}\\{}\\Api\\Data\\{}Interface".format(self._module.package, model_name, model_name),
+                'type': "{}\\{}\\Model\\{}".format(self._module.package, model_name, model_name)
+            }),
+            Xmlnode('preference', attributes={
+                'for': "{}\\{}\\Api\\Data\\{}SearchResultsInterface".format(self._module.package, model_name, model_name),
+                'type': 'Magento\Framework\Api\SearchResults'
+            })
+        ]))
+
 		# add grid 
 		if adminhtml_grid:
 			self.add_adminhtml_grid(model_name, field_name, model_table, model_id, collection_model_class, field_element_type)
@@ -491,18 +507,6 @@ class ModelSnippet(Snippet):
 					Xmlnode('argument', attributes={'name': 'resourceModel', 'xsi:type': 'string'}, node_text= collection_model_class.class_namespace),
 				])	
 			]),
-			Xmlnode('preference', attributes={
-                'for': "{}\\{}\\Api\\{}RepositoryInterface".format(self._module.package, model_name, model_name),
-                'type': 'Magento\\Framework\\View\\Element\\UiComponent\\DataProvider\\SearchResult',
-            }),
-			Xmlnode('preference', attributes={
-                'for': "{}\\{}\\Api\\Data\\{}Interface".format(self._module.package, model_name, model_name),
-                'type': "{}\\{}\\Model\\{}".format(self._module.package, model_name, model_name),
-            }),
-			Xmlnode('preference', attributes={
-                'for': "{}\\{}\\Api\\Data\\{}SearchResultsInterface".format(self._module.package, model_name, model_name),
-                'type': 'Magento\Framework\Api\SearchResults',
-            }),
 			Xmlnode('type', attributes={'name': 'Magento\\Framework\\View\\Element\\UiComponent\\DataProvider\\CollectionFactory'}, nodes=[
 				Xmlnode('arguments', nodes=[
 					Xmlnode('argument', attributes={'name': 'collections', 'xsi:type': 'array'}, nodes=[
