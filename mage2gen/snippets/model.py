@@ -753,18 +753,18 @@ class ModelSnippet(Snippet):
 					        $model->load($id);
 					        $model->delete();
 					        // display success message
-					        $this->messageManager->addSuccess(__('You deleted the {model_name}.'));
+					        $this->messageManager->addSuccessMessage(__('You deleted the {model_name}.'));
 					        // go to grid
 					        return $resultRedirect->setPath('*/*/');
 					    }} catch (\Exception $e) {{
 					        // display error message
-					        $this->messageManager->addError($e->getMessage());
+					        $this->messageManager->addErrorMessage($e->getMessage());
 					        // go back to edit form
 					        return $resultRedirect->setPath('*/*/edit', ['{model_id}' => $id]);
 					    }}
 					}}
 					// display error message
-					$this->messageManager->addError(__('We can\\\'t find a {model_name} to delete.'));
+					$this->messageManager->addErrorMessage(__('We can\\\'t find a {model_name} to delete.'));
 					// go to grid
 					return $resultRedirect->setPath('*/*/');""".format(
 						model_id = model_id,
@@ -802,7 +802,7 @@ class ModelSnippet(Snippet):
 				if ($id) {{
 				    $model->load($id);
 				    if (!$model->getId()) {{
-				        $this->messageManager->addError(__('This {model_name} no longer exists.'));
+				        $this->messageManager->addErrorMessage(__('This {model_name} no longer exists.'));
 				        /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
 				        $resultRedirect = $this->resultRedirectFactory->create();
 				        return $resultRedirect->setPath('*/*/');
@@ -932,7 +932,7 @@ class ModelSnippet(Snippet):
 
 					    $model = $this->_objectManager->create('{model_class}')->load($id);
 					    if (!$model->getId() && $id) {{
-					        $this->messageManager->addError(__('This {model_name} no longer exists.'));
+					        $this->messageManager->addErrorMessage(__('This {model_name} no longer exists.'));
 					        return $resultRedirect->setPath('*/*/');
 					    }}
 									
@@ -940,7 +940,7 @@ class ModelSnippet(Snippet):
 
 					    try {{
 					        $model->save();
-					        $this->messageManager->addSuccess(__('You saved the {model_name}.'));
+					        $this->messageManager->addSuccessMessage(__('You saved the {model_name}.'));
 					        $this->dataPersistor->clear('{register_model}');
 
 					        if ($this->getRequest()->getParam('back')) {{
@@ -948,9 +948,9 @@ class ModelSnippet(Snippet):
 					        }}
 					        return $resultRedirect->setPath('*/*/');
 					    }} catch (LocalizedException $e) {{
-					        $this->messageManager->addError($e->getMessage());
+					        $this->messageManager->addErrorMessage($e->getMessage());
 					    }} catch (\Exception $e) {{
-					        $this->messageManager->addException($e, __('Something went wrong while saving the {model_name}.'));
+					        $this->messageManager->addExceptionMessage($e, __('Something went wrong while saving the {model_name}.'));
 					    }}
 
 					    $this->dataPersistor->set('{register_model}', $data);
