@@ -389,20 +389,20 @@ class ModelSnippet(Snippet):
 		self.add_class(model_repository_class)
 
 		# Create di.xml preferences
-        self.add_xml('etc/di.xml', Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:framework:ObjectManager/etc/config.xsd"}, nodes=[
-            Xmlnode('preference', attributes={
-                'for': "{}\\{}\\Api\\{}RepositoryInterface".format(self._module.package, model_name, model_name),
-                'type': 'Magento\\Framework\\View\\Element\\UiComponent\\DataProvider\\SearchResult'
-            }),
-            Xmlnode('preference', attributes={
-                'for': "{}\\{}\\Api\\Data\\{}Interface".format(self._module.package, model_name, model_name),
-                'type': "{}\\{}\\Model\\{}".format(self._module.package, model_name, model_name)
-            }),
-            Xmlnode('preference', attributes={
-                'for': "{}\\{}\\Api\\Data\\{}SearchResultsInterface".format(self._module.package, model_name, model_name),
-                'type': 'Magento\Framework\Api\SearchResults'
-            })
-        ]))
+		self.add_xml('etc/di.xml', Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:framework:ObjectManager/etc/config.xsd"}, nodes=[
+		    Xmlnode('preference', attributes={
+		        'for': "{}\\{}\\Api\\{}RepositoryInterface".format(self._module.package, model_name, model_name),
+		        'type': model_repository_class.class_namespace
+		    }),
+		    Xmlnode('preference', attributes={
+		        'for': "{}\\{}\\Api\\Data\\{}Interface".format(self._module.package, model_name, model_name),
+		        'type': "{}\\{}\\Model\\{}".format(self._module.package, model_name, model_name)
+		    }),
+		    Xmlnode('preference', attributes={
+		        'for': "{}\\{}\\Api\\Data\\{}SearchResultsInterface".format(self._module.package, model_name, model_name),
+		        'type': 'Magento\Framework\Api\SearchResults'
+		    })
+		]))
 
 		# add grid 
 		if adminhtml_grid:
@@ -413,7 +413,7 @@ class ModelSnippet(Snippet):
 			self.add_acl(model_name)
 
 		if web_api:
-			self.add_web_api(model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type, api_data_class, api_repository_class, api_data_search_class, model_repository_class,model_id_capitalized_after)	
+			self.add_web_api(model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type, api_repository_class, model_id_capitalized_after)	
 		
 		if web_api | adminhtml_form | adminhtml_grid:
 			self.add_acl(model_name)
@@ -1237,18 +1237,10 @@ class ModelSnippet(Snippet):
 
 		self.add_xml('view/adminhtml/ui_component/{}_index.xml'.format(model_table), ui_index)
 
-	def add_web_api(self, model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type, api_data_class, api_repository_class, api_data_search_class, model_repository_class, model_id_capitalized_after):
+	def add_web_api(self, model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type, api_repository_class, model_id_capitalized_after):
 
 		resource = '{}_{}::{}_'.format(self._module.package,self._module.name,model_name);
 		api_url = '/V1/{}-{}/'.format(self._module.package.lower(),self._module.name.lower())
-
-		di_xml = Xmlnode('config', attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:framework:ObjectManager/etc/config.xsd"}, nodes=[
-			Xmlnode('preference', attributes={'for': api_repository_class.class_namespace, 'type': model_repository_class.class_namespace}, match_attributes=['for','type']),
-			Xmlnode('preference', attributes={'for': api_data_class.class_namespace, 'type': model_class.class_namespace}, match_attributes=['for','type']),
-			Xmlnode('preference', attributes={'for': api_data_search_class.class_namespace, 'type': "Magento\Framework\Api\SearchResults"}, match_attributes=['for','type'])
-		])
-
-		self.add_xml('etc/di.xml', di_xml)
 
 		webapi_xml = Xmlnode('routes', attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Webapi:etc/webapi.xsd"}, nodes=[
 			Xmlnode('route', attributes={'url': api_url + model_name.lower(), 'method': 'POST'},match_attributes={'url','method'},nodes=[
