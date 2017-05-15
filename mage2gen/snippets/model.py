@@ -309,7 +309,7 @@ class ModelSnippet(Snippet):
 					    ${variable}->setStoreId($storeId);
 					}} */
 					try {{
-					    $this->resource->save(${variable});
+					    ${variable}->getResource()->save(${variable});
 					}} catch (\Exception $exception) {{
 					    throw new CouldNotSaveException(__(
 					        'Could not save the {variable}: %1',
@@ -323,7 +323,7 @@ class ModelSnippet(Snippet):
 		model_repository_class.add_method(Phpmethod('getById', access=Phpmethod.PUBLIC, 
 			params=['${}Id'.format(model_name_capitalized_after)],
 			body="""${variable} = $this->{variable}Factory->create();
-			${variable}->load(${variable}Id);
+			${variable}->getResource()->load(${variable}, ${variable}Id);
 			if (!${variable}->getId()) {{
 			    throw new NoSuchEntityException(__('{model_name} with id "%1" does not exist.', ${variable}Id));
 			}}
@@ -382,7 +382,7 @@ class ModelSnippet(Snippet):
 		model_repository_class.add_method(Phpmethod('delete', access=Phpmethod.PUBLIC, 
 			params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],
 			body="""try {{
-					    $this->resource->delete(${variable});
+					    ${variable}->getResource()->delete(${variable});
 					}} catch (\Exception $exception) {{
 					    throw new CouldNotDeleteException(__(
 					        'Could not delete the {model_name}: %1',
@@ -769,18 +769,18 @@ class ModelSnippet(Snippet):
 					        $model->load($id);
 					        $model->delete();
 					        // display success message
-					        $this->messageManager->addSuccess(__('You deleted the {model_name}.'));
+					        $this->messageManager->addSuccessMessage(__('You deleted the {model_name}.'));
 					        // go to grid
 					        return $resultRedirect->setPath('*/*/');
 					    }} catch (\Exception $e) {{
 					        // display error message
-					        $this->messageManager->addError($e->getMessage());
+					        $this->messageManager->addErrorMessage($e->getMessage());
 					        // go back to edit form
 					        return $resultRedirect->setPath('*/*/edit', ['{model_id}' => $id]);
 					    }}
 					}}
 					// display error message
-					$this->messageManager->addError(__('We can\\\'t find a {model_name} to delete.'));
+					$this->messageManager->addErrorMessage(__('We can\\\'t find a {model_name} to delete.'));
 					// go to grid
 					return $resultRedirect->setPath('*/*/');""".format(
 						model_id = model_id,
@@ -818,7 +818,7 @@ class ModelSnippet(Snippet):
 				if ($id) {{
 				    $model->load($id);
 				    if (!$model->getId()) {{
-				        $this->messageManager->addError(__('This {model_name} no longer exists.'));
+				        $this->messageManager->addErrorMessage(__('This {model_name} no longer exists.'));
 				        /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
 				        $resultRedirect = $this->resultRedirectFactory->create();
 				        return $resultRedirect->setPath('*/*/');
@@ -933,9 +933,8 @@ class ModelSnippet(Snippet):
 				'protected $dataPersistor;'])
 		new_controller.add_method(Phpmethod('__construct',
 			params=['\\Magento\\Backend\\App\\Action\\Context $context',
-				'\\Magento\\Framework\\Registry $coreRegistry',
 				'\\Magento\\Framework\\App\\Request\\DataPersistorInterface $dataPersistor'],
-			body="""$this->dataPersistor = $dataPersistor;\nparent::__construct($context, $coreRegistry);""",
+			body="""$this->dataPersistor = $dataPersistor;\nparent::__construct($context);""",
 			docstring=[
 				'@param \\Magento\\Backend\\App\\Action\\Context $context',
 				'@param \\Magento\\Framework\\App\\Request\\DataPersistorInterface $dataPersistor',
@@ -949,7 +948,7 @@ class ModelSnippet(Snippet):
 
 					    $model = $this->_objectManager->create('{model_class}')->load($id);
 					    if (!$model->getId() && $id) {{
-					        $this->messageManager->addError(__('This {model_name} no longer exists.'));
+					        $this->messageManager->addErrorMessage(__('This {model_name} no longer exists.'));
 					        return $resultRedirect->setPath('*/*/');
 					    }}
 									
@@ -957,7 +956,7 @@ class ModelSnippet(Snippet):
 
 					    try {{
 					        $model->save();
-					        $this->messageManager->addSuccess(__('You saved the {model_name}.'));
+					        $this->messageManager->addSuccessMessage(__('You saved the {model_name}.'));
 					        $this->dataPersistor->clear('{register_model}');
 
 					        if ($this->getRequest()->getParam('back')) {{
@@ -965,9 +964,9 @@ class ModelSnippet(Snippet):
 					        }}
 					        return $resultRedirect->setPath('*/*/');
 					    }} catch (LocalizedException $e) {{
-					        $this->messageManager->addError($e->getMessage());
+					        $this->messageManager->addErrorMessage($e->getMessage());
 					    }} catch (\Exception $e) {{
-					        $this->messageManager->addException($e, __('Something went wrong while saving the {model_name}.'));
+					        $this->messageManager->addExceptionMessage($e, __('Something went wrong while saving the {model_name}.'));
 					    }}
 
 					    $this->dataPersistor->set('{register_model}', $data);
