@@ -333,10 +333,7 @@ class ModelSnippet(Snippet):
 		))
 		model_repository_class.add_method(Phpmethod('getList', access=Phpmethod.PUBLIC, 
 			params=['\Magento\Framework\Api\SearchCriteriaInterface $criteria'],
-			body="""$searchResults = $this->searchResultsFactory->create();
-					$searchResults->setSearchCriteria($criteria);
-
-					$collection = $this->{variable}CollectionFactory->create();
+			body="""$collection = $this->{variable}CollectionFactory->create();
 					foreach ($criteria->getFilterGroups() as $filterGroup) {{
 					    foreach ($filterGroup->getFilters() as $filter) {{
 					        if ($filter->getField() === 'store_id') {{
@@ -347,7 +344,7 @@ class ModelSnippet(Snippet):
 					        $collection->addFieldToFilter($filter->getField(), [$condition => $filter->getValue()]);
 					    }}
 					}}
-					$searchResults->setTotalCount($collection->getSize());
+
 					$sortOrders = $criteria->getSortOrders();
 					if ($sortOrders) {{
 					    /** @var SortOrder $sortOrder */
@@ -360,21 +357,11 @@ class ModelSnippet(Snippet):
 					}}
 					$collection->setCurPage($criteria->getCurrentPage());
 					$collection->setPageSize($criteria->getPageSize());
-					$items = [];
-					
-					foreach ($collection as ${variable}Model) {{
-					    ${variable}Data = $this->data{variable_upper}Factory->create();
-					    $this->dataObjectHelper->populateWithArray(
-					        ${variable}Data,
-					        ${variable}Model->getData(),
-					        '{data_interface}'
-					    );
-					    $items[] = $this->dataObjectProcessor->buildOutputDataArray(
-					        ${variable}Data,
-					        '{data_interface}'
-					    );
-					}}
-					$searchResults->setItems($items);
+
+					$searchResults = $this->searchResultsFactory->create();
+					$searchResults->setSearchCriteria($criteria);
+					$searchResults->setTotalCount($collection->getSize());
+					$searchResults->setItems($collection->getItems());
 					return $searchResults;
 			""".format(variable=model_name_capitalized_after,data_interface=api_data_class.class_namespace,variable_upper=model_name_capitalized),
 			docstring=['{@inheritdoc}']
