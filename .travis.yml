@@ -1,9 +1,7 @@
 language: python
 
-addons:
-  apt:
-    packages:
-      - php5-cli
+dist: trusty
+sudo: required
 
 python:
   - 3.4
@@ -11,6 +9,8 @@ python:
   - 3.6
 
 before_install:
+  - sudo apt-get -q update
+  - sudo apt-get install php5-cli php5-curl php5-common -y
   - "curl -OL https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar"
 
 script: 
