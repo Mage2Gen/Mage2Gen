@@ -185,13 +185,13 @@ class ModelSnippet(Snippet):
 		api_data_class.add_method(InterfaceMethod('get'+model_id_capitalized,docstring=['Get {}'.format(model_id),'@return {}'.format('string|null')]))
 		self.add_class(api_data_class)
 
-		api_data_class.add_method(InterfaceMethod('set'+model_id_capitalized,params=['${}'.format(model_id_capitalized_after)],docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id),'@return {}'.format(api_data_class.class_namespace)]))
+		api_data_class.add_method(InterfaceMethod('set'+model_id_capitalized,params=['${}'.format(model_id_capitalized_after)],docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id),'@return \{}'.format(api_data_class.class_namespace)]))
 		self.add_class(api_data_class)
 
 		api_data_class.add_method(InterfaceMethod('get'+field_name_capitalized,docstring=['Get {}'.format(field_name),'@return {}'.format('string|null')]))
 		self.add_class(api_data_class)
 
-		api_data_class.add_method(InterfaceMethod('set'+field_name_capitalized,params=['${}'.format(field_name)],docstring=['Set {}'.format(field_name),'@param string ${}'.format(field_name),'@return {}'.format(api_data_class.class_namespace)]))
+		api_data_class.add_method(InterfaceMethod('set'+field_name_capitalized,params=['${}'.format(field_name)],docstring=['Set {}'.format(field_name),'@param string ${}'.format(field_name),'@return \{}'.format(api_data_class.class_namespace)]))
 		self.add_class(api_data_class)
 
 
