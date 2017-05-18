@@ -130,7 +130,7 @@ class PaymentSnippet(Snippet):
 		layout_file = 'view/frontend/layout/checkout_index_index.xml'
 
 		layout_payment = Xmlnode('item',attributes={'name':'offline-payments','xsi:type':'array'},nodes=[
-			Xmlnode('item',attributes={'name':'component','xsi:type':'string'},node_text='Magento_OfflinePayments/js/view/payment/offline-payments'),
+			Xmlnode('item',attributes={'name':'component','xsi:type':'string'},node_text='{}/js/view/payment/offline-payments'.format(self.module_name)),
 			Xmlnode('item',attributes={'name':'methods','xsi:type':'array'},nodes=[
 				Xmlnode('item',attributes={'name':payment_code,'xsi:type':'array'},nodes=[
 					Xmlnode('item',attributes={'name':'isBillingAddressRequired','xsi:type':'boolean'},node_text='true')
