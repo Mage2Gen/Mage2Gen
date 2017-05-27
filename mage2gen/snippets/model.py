@@ -861,7 +861,7 @@ class ModelSnippet(Snippet):
 					        $error = true;
 					    }} else {{
 					        foreach (array_keys($postItems) as $modelid) {{
-					            /** @var {model_class} $model */
+					            /** @var \{model_class} $model */
 					            $model = $this->_objectManager->create('{model_class}')->load($modelid);
 					            try {{
 					                $model->setData(array_merge($model->getData(), $postItems[$modelid]));
