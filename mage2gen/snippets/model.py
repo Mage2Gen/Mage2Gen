@@ -997,7 +997,7 @@ class ModelSnippet(Snippet):
 				'@param string $name',
 				'@param string $primaryFieldName',
 				'@param string $requestFieldName',
-				'@param CollectionFactory $blockCollectionFactory',
+				'@param CollectionFactory $collectionFactory',
 				'@param DataPersistorInterface $dataPersistor',
 				'@param array $meta',
 				'@param array $data'
