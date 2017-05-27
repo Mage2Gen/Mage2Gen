@@ -261,8 +261,8 @@ class ModelSnippet(Snippet):
 			], 
 			attributes=[
 				'protected $resource;\n',
-				'protected ${}Factory;\n'.format(model_name),
-				'protected ${}CollectionFactory;\n'.format(model_name),
+				'protected ${}Factory;\n'.format(model_name_capitalized_after),
+				'protected ${}CollectionFactory;\n'.format(model_name_capitalized_after),
     			'protected $searchResultsFactory;\n',
     			'protected $dataObjectHelper;\n',
     			'protected $dataObjectProcessor;\n',
