@@ -261,8 +261,8 @@ class ModelSnippet(Snippet):
 			], 
 			attributes=[
 				'protected $resource;\n',
-				'protected ${}Factory;\n'.format(model_name),
-				'protected ${}CollectionFactory;\n'.format(model_name),
+				'protected ${}Factory;\n'.format(model_name_capitalized_after),
+				'protected ${}CollectionFactory;\n'.format(model_name_capitalized_after),
     			'protected $searchResultsFactory;\n',
     			'protected $dataObjectHelper;\n',
     			'protected $dataObjectProcessor;\n',
@@ -997,7 +997,7 @@ class ModelSnippet(Snippet):
 				'@param string $name',
 				'@param string $primaryFieldName',
 				'@param string $requestFieldName',
-				'@param CollectionFactory $blockCollectionFactory',
+				'@param CollectionFactory $collectionFactory',
 				'@param DataPersistorInterface $dataPersistor',
 				'@param array $meta',
 				'@param array $data'
