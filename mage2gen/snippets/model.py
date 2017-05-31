@@ -1213,18 +1213,6 @@ class ModelSnippet(Snippet):
 						]),
 					]),
 				]),
-				Xmlnode('column', attributes={'name': field_name}, nodes=[
-					Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
-							Xmlnode('item', attributes={'name': 'editor', 'xsi:type': 'array'}, nodes=[
-								Xmlnode('item', attributes={'name': 'editorType', 'xsi:type': 'string'}, node_text=field_element_type if field_element_type == 'date' else 'text'),
-								Xmlnode('item', attributes={'name': 'validation', 'xsi:type': 'array'}, nodes=[
-									Xmlnode('item', attributes={'name': 'required-entry', 'xsi:type': 'boolean'}, node_text='true' if required else 'false'),
-								]),
-							]),
-						]),
-					]),
-				]),
 				Xmlnode('actionsColumn', attributes={'name': 'actions', 'class': actions.class_namespace}, nodes=[
 					Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
 						Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
