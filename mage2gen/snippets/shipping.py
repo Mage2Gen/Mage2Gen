@@ -96,7 +96,7 @@ class ShippingSnippet(Snippet):
 								Xmlnode('frontend_class',node_text='shipping-applicable-country'),
 								Xmlnode('source_model',node_text='Magento\Shipping\Model\Config\Source\Allspecificcountries'),
 							]),
-							Xmlnode('field', attributes={'id':'specificcountry','type':'select','sortOrder':70,'showInWebsite':1,'showInStore':1,'showInDefault':1,'translate':'label'},match_attributes={'id'},nodes=[
+							Xmlnode('field', attributes={'id':'specificcountry','type':'multiselect','sortOrder':70,'showInWebsite':1,'showInStore':1,'showInDefault':1,'translate':'label'},match_attributes={'id'},nodes=[
 								Xmlnode('label',node_text='Ship to Specific Countries'),
 								Xmlnode('can_be_empty',node_text='1'),
 								Xmlnode('source_model',node_text='Magento\Directory\Model\Config\Source\Country'),
