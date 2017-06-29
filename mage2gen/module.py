@@ -200,7 +200,7 @@ class Phpmethod:
 ###############################################################################
 class Xmlnode:
 
-	def __init__(self, node_name, attributes=None, nodes=None, node_text=None, match_attributes=None):
+	def __init__(self, node_name, attributes=None, nodes=None, node_text=None, match_attributes=None, xsd=False):
 		
 		if nodes : 
 			nodes = [x for x in nodes if x]
@@ -210,6 +210,7 @@ class Xmlnode:
 		self.attributes = attributes if attributes else {}
 		self.match_attributes = match_attributes if match_attributes else ['name', 'id']
 		self.nodes = nodes if nodes else []
+		self.xsd = xsd
 
 	def __str__(self):
 		return self.node_name
@@ -241,7 +242,8 @@ class Xmlnode:
 			el = SubElement(element, self.node_name)
 		else:
 			el = Element(self.node_name)
-			el.set('xmlns:xsi',"http://www.w3.org/2001/XMLSchema-instance")
+			if not self.xsd:
+				el.set('xmlns:xsi',"http://www.w3.org/2001/XMLSchema-instance")
 
 		if self.node_text:
 			el.text = self.node_text
@@ -255,7 +257,10 @@ class Xmlnode:
 		if element == None:
 			output = tostring(el, 'utf-8')
 			reparsed = minidom.parseString(output)
-			return reparsed.toprettyxml(indent="\t")
+			if self.xsd:
+				return reparsed.toprettyxml(indent="\t").split('\n', 1)[-1]
+			else:
+				return reparsed.toprettyxml(indent="\t")
 
 	def save(self, xml_path):
 		try:
