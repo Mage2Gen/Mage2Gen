@@ -269,7 +269,7 @@ class ModelSnippet(Snippet):
     			'protected $data{}Factory;\n'.format(model_name_capitalized),
     			'private $storeManager;\n'
 			],
-			implements=[model_name.replace('_', '\\') + 'RepositoryInterface']
+			implements=[model_name_capitalized_after.replace('_', '\\') + 'RepositoryInterface']
 		)
 		model_repository_class.add_method(Phpmethod('__construct', access=Phpmethod.PUBLIC, 
 			params=[
