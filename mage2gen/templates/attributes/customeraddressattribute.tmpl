@@ -1,4 +1,4 @@
-$customerSetup->addAttribute('customer_address', '{attribute_code}', [
+$customerSetup->addAttribute(\Magento\Customer\Model\Indexer\Address\AttributeProvider::ENTITY, '{attribute_code}', [
     'label' => '{attribute_label}',
     'input' => '{frontend_input}',
     'type' => '{value_type}',
