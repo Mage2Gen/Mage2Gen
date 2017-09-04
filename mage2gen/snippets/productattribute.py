@@ -68,7 +68,8 @@ class ProductAttributeSnippet(Snippet):
 		("simple","Simple Products"),
 		("grouped","Grouped Products"),
 		("bundle","Bundled Products"),
-		("configurable","Configurable Products")
+		("configurable","Configurable Products"),
+		("virtual","Virtual Products")		
 	]
 
 	description = """
