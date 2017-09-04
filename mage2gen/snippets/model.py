@@ -90,7 +90,7 @@ class ModelSnippet(Snippet):
 			field_element_type = 'checkbox'
 		elif field_type == 'date' or field_type == 'timestamp':
 			field_element_type = 'date'
-		elif field_type == 'text' and extra_params.get('textarea'):
+		elif field_type == 'text':
 			field_element_type = 'textarea'
 		
 		install_class = Phpclass('Setup\\InstallSchema',implements=['InstallSchemaInterface'],dependencies=[
@@ -1380,12 +1380,5 @@ class ModelSnippet(Snippet):
 				yes_no=True, 
 				depend={'field_type': r'smallint|integer|bigint|float|decimal|numeric'}
 			),
-			SnippetParam(
-				name='textarea', 
-				yes_no=True, 
-				depend={'field_type': r'text'}
-			),
-
 		]
-
 
