@@ -30,7 +30,7 @@ class CategoryAttributeSnippet(Snippet):
 		("select","Dropdown"),
 		("price","Price"),
 		("static","Static"),
-		##("image","Image")
+		("image","Image")
 	]
 
 	STATIC_FIELD_TYPES = [
