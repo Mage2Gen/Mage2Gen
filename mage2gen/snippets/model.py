@@ -70,7 +70,7 @@ class ModelSnippet(Snippet):
 		self.count += 1
 		extra_params = extra_params if extra_params else {}
 		
-		model_table = '{}_{}'.format(self._module.package.lower(), model_name.lower())
+		model_table = '{}_{}_{}'.format(self._module.package.lower(), self._module.name.lower(), model_name.lower())
 		model_id = '{}_id'.format(model_name.lower())
 
 		field_element_type = 'input'
