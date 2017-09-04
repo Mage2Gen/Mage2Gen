@@ -1,4 +1,4 @@
-$customerSetup->addAttribute('customer', '{attribute_code}', [
+$customerSetup->addAttribute(\Magento\Customer\Model\Customer::ENTITY, '{attribute_code}', [
     'type' => '{value_type}',
     'label' => '{attribute_label}',
     'input' => '{frontend_input}',
