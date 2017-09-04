@@ -92,6 +92,8 @@ class ModelSnippet(Snippet):
 			field_element_type = 'date'
 		elif field_type == 'text':
 			field_element_type = 'textarea'
+
+		top_level_menu = extra_params.get('top_level_menu', True)
 		
 		install_class = Phpclass('Setup\\InstallSchema',implements=['InstallSchemaInterface'],dependencies=[
 			'Magento\\Framework\\Setup\\InstallSchemaInterface',
@@ -422,7 +424,7 @@ class ModelSnippet(Snippet):
 
 		# add grid 
 		if adminhtml_grid:
-			self.add_adminhtml_grid(model_name, field_name, model_table, model_id, collection_model_class, field_element_type)
+			self.add_adminhtml_grid(model_name, field_name, model_table, model_id, collection_model_class, field_element_type, top_level_menu)
 
 		if adminhtml_form:
 			self.add_adminhtml_form(model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type)
@@ -434,7 +436,7 @@ class ModelSnippet(Snippet):
 		if web_api | adminhtml_form | adminhtml_grid:
 			self.add_acl(model_name)
 
-	def add_adminhtml_grid(self, model_name, field_name, model_table, model_id, collection_model_class, field_element_type):
+	def add_adminhtml_grid(self, model_name, field_name, model_table, model_id, collection_model_class, field_element_type, top_level_menu):
 		frontname = self.module_name.lower()
 		data_source_id = '{}_grid_data_source'.format(model_table) 
 		
@@ -469,15 +471,19 @@ class ModelSnippet(Snippet):
 		self.add_class(index_controller_class)
 
 		# create menu.xml
+		top_level_menu_node = False
+		if top_level_menu:
+			top_level_menu_node = Xmlnode('add', attributes={
+				'id': "{}::top_level".format(self._module.package),
+				'title': self._module.package,
+				'module': self.module_name,
+				'sortOrder': 9999,
+				'resource': 'Magento_Backend::content',
+			})
+		
 		self.add_xml('etc/adminhtml/menu.xml', Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:module:Magento_Backend:etc/menu.xsd"}, nodes=[
 			Xmlnode('menu', nodes=[
-				Xmlnode('add', attributes={
-					'id': "{}::top_level".format(self._module.package),
-					'title': self._module.package,
-					'module': self.module_name,
-					'sortOrder': 9999,
-					'resource': 'Magento_Backend::content',
-				}),
+				top_level_menu_node,
 				Xmlnode('add', attributes={
 					'id': "{}::{}".format(self._module.package, model_table),
 					'title': model_name.replace('_', ' '),
@@ -1379,6 +1385,12 @@ class ModelSnippet(Snippet):
 				name='unsigned', 
 				yes_no=True, 
 				depend={'field_type': r'smallint|integer|bigint|float|decimal|numeric'}
+			),
+			SnippetParam(
+				name='top_level_menu', 
+				yes_no=True,
+				default=True,
+				repeat=True
 			),
 		]
 
