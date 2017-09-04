@@ -59,6 +59,7 @@ class ModelSnippet(Snippet):
 		('datetime', 'Datetime'),
 		('text', 'Text'),
 		('blob', 'Blob'),
+		('varchar','Varchar')
 	]
 
 	def __init__(self, *args, **kwargs):
@@ -143,6 +144,19 @@ class ModelSnippet(Snippet):
 		
 		options = "[{}]".format(','.join("'{}' => {}".format(key, value) for key, value in options.items()))
 
+		if extra_params.get('field_size') :
+			size = extra_params.get('field_size')
+		elif field_type=='decimal':
+			size = '\'12,4\''
+		elif field_type=='varchar' and not extra_params.get('field_size'):
+			size = '255'	
+		else:
+			size = 'null'
+
+		if field_type == 'varchar':
+			field_type = 'text'	
+
+
 		# Add field
 		install_method.body.append("""
 			$table_{table}->addColumn(
@@ -156,7 +170,7 @@ class ModelSnippet(Snippet):
 			table=model_table,
 			field=field_name,
 			type='\\Magento\\Framework\\DB\\Ddl\\Table::TYPE_{}'.format(field_type.upper()),
-			size=extra_params.get('field_size') or 'null',
+			size= size,
 			options=options,
 			comment=extra_params.get('comment') or field_name	
 		))
