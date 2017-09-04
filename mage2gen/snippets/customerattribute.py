@@ -109,21 +109,8 @@ class CustomerAttributeSnippet(Snippet):
 			source_model_folder = 'Customer' if customer_entity =='customer' else 'Customer\\Address'
 			source_model_class = Phpclass(
 				'Model\\'+source_model_folder+'\\Attribute\\Source\\' + ''.join(n.capitalize() for n in attribute_code.split('_')),
-				extends='\Magento\Eav\Model\Entity\Attribute\Source\AbstractSource',
-				attributes=[
-				'protected $_optionsData;'
-				]	
+				extends='\Magento\Eav\Model\Entity\Attribute\Source\AbstractSource'	
 			)
-
-			source_model_class.add_method(Phpmethod('__construct',
-				params=['array $options'],
-				body="$this->_optionsData = $options;",
-				docstring=[
-					'Constructor',
-					'',
-					'@param array $options',
-				]
-			))
 
 			if frontend_input == 'select':
 				to_option_array = "[\n        {}\n    ]".format(',\n        '.join(
