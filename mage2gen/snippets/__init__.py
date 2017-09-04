@@ -33,5 +33,4 @@ from .model import ModelSnippet
 from .api import ApiSnippet
 from .widget import WidgetSnippet
 from .cache import CacheSnippet
-from .uicomponent import UiComponentSnippet
 from .configurationtype import ConfigurationTypeSnippet
