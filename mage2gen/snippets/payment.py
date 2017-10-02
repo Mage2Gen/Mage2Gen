@@ -130,7 +130,7 @@ class PaymentSnippet(Snippet):
 		layout_file = 'view/frontend/layout/checkout_index_index.xml'
 
 		layout_payment = Xmlnode('item',attributes={'name':payment_code,'xsi:type':'array'},nodes=[
-			Xmlnode('item',attributes={'name':'component','xsi:type':'string'},node_text='{}/js/view/payment/{}'.format(self.module_name, payment_code),
+		 	Xmlnode('item',attributes={'name':'component','xsi:type':'string'},node_text='{}/js/view/payment/{}'.format(self.module_name,payment_code)), 
 			Xmlnode('item',attributes={'name':'methods','xsi:type':'array'},nodes=[
 				Xmlnode('item',attributes={'name':payment_code,'xsi:type':'array'},nodes=[
 					Xmlnode('item',attributes={'name':'isBillingAddressRequired','xsi:type':'boolean'},node_text='true')
