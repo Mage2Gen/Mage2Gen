@@ -12,7 +12,7 @@ setup(
 	packages = ['mage2gen', 'mage2gen.snippets'],
 	package_data={'mage2gen': ['templates/*.tmpl', 'templates/payment/*.tmpl', 'templates/attributes/*.tmpl', 'licenses/*.txt']},
 	scripts=['bin/mage2gen'],
-	version = '0.8',
+	version = '0.9',
 	description = 'Magento 2 module generator',
 	long_description=readme(),
 	classifiers=[
@@ -24,7 +24,7 @@ setup(
 	author_email = 'maikel@martens.me',
 	license='GPL3',
 	url = 'https://github.com/krukas/Mage2Gen',
-	download_url = 'https://github.com/krukas/Mage2Gen/releases/tag/0.8',
+	download_url = 'https://github.com/krukas/Mage2Gen/releases/tag/0.9',
 	keywords = ['Magento', 'Magento2', 'module', 'generator', 'mage2gen'],
 	install_requires=[],
 )
