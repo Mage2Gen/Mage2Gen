@@ -597,7 +597,7 @@ class ModelSnippet(Snippet):
 							Xmlnode('item', attributes={'name': 'sticky', 'xsi:type': 'boolean'}, node_text='true'),
 						])
 					]),
-					Xmlnode('bookmark', attributes={'name': 'bookmark'}),
+					Xmlnode('bookmark', attributes={'name': 'bookmarks'}),
 					Xmlnode('columnsControls', attributes={'name': 'columns_controls'}),
 					Xmlnode('filters', attributes={'name': 'listing_filters'}),
 					Xmlnode('paging', attributes={'name': 'listing_paging'}),
