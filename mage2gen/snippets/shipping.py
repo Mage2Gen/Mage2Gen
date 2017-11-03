@@ -36,6 +36,7 @@ class ShippingClass(Phpclass):
 		return data 
 
 class ShippingSnippet(Snippet):
+	snippet_label = 'Shipping Method'
 
 	description = """Creates a basic Magento 2 shipping method.  
 
