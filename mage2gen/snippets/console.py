@@ -19,6 +19,8 @@ import os
 from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 class ConsoleSnippet(Snippet):
+	snippet_label = 'Console Command'
+	
 	description = """
 	Console commands are listed and executed by **bin/magento** command line tool.
 
