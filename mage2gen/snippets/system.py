@@ -19,6 +19,8 @@ import os
 from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 class SystemSnippet(Snippet):
+	snippet_label = 'System / Config / Setting'
+	
 	description = """
 	System config is used in Magento for storing settings to use in your module.
 
