@@ -19,6 +19,7 @@ import os
 from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 
 class PaymentSnippet(Snippet):
+	snippet_label = 'Payment Method'
 
 	description = """Creates a payment method
 
