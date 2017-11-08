@@ -22,6 +22,8 @@ from mage2gen.utils import upperfirst
 
 
 class ObserverSnippet(Snippet):
+	snippet_label = 'Observer / Event'
+	
 	description = """
 	With observers you can hook in on events fired by Magento or other third party modules. 
 	For creating an observer we need the event name and the scope:
