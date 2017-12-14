@@ -47,11 +47,13 @@ class ObserverSnippet(Snippet):
 	SCOPE_ALL = 'all'
 	SCOPE_FRONTEND = 'frontend'
 	SCOPE_ADMINHTML = 'backend'
+	SCOPE_WEBAPI = 'webapi'
 
 	SCOPE_CHOISES = [
 		(SCOPE_ALL, 'All'),
 		(SCOPE_FRONTEND, 'Frontend'),
 		(SCOPE_ADMINHTML, 'Backend'),
+		(SCOPE_WEBAPI, 'Webapi'),
 	]
 	
 	def add(self, event, scope=SCOPE_ALL, extra_params=None):
@@ -88,10 +90,14 @@ class ObserverSnippet(Snippet):
 			xml_path.append('frontend')
 		elif scope == self.SCOPE_ADMINHTML:
 			xml_path.append('adminhtml')
+		elif scope == self.SCOPE_WEBAPI:
+			soap_xml_path = ['etc']
+			xml_path.append('webapi_rest')
+			soap_xml_path.append('webapi_soap')
+			soap_xml_path.append('events.xml')
+			self.add_xml(os.path.join(*soap_xml_path), config)
 
 		xml_path.append('events.xml')
-
-
 		self.add_xml(os.path.join(*xml_path), config)
 
 	@classmethod
