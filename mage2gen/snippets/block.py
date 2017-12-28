@@ -69,7 +69,7 @@ class BlockSnippet(Snippet):
 		block.add_method(Phpmethod(
 			function_name,
 			body="""//Your block code
-			return 'Hello World!;""",
+			return 'Hello World!';""",
 			params=[],
 			docstring=['@return string']
 		))
