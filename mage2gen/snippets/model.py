@@ -835,7 +835,7 @@ class ModelSnippet(Snippet):
 				}}
 				$this->_coreRegistry->register('{register_model}', $model);
 
-				// 5. Build edit form
+				// 3. Build edit form
 				/** @var \Magento\Backend\Model\View\Result\Page $resultPage */
 				$resultPage = $this->resultPageFactory->create();
 				$this->initPage($resultPage)->addBreadcrumb(
