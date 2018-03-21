@@ -336,6 +336,7 @@ class Module:
 		self._composer = OrderedDict()
 		self._composer['name'] = '{}/module-{}'.format(self.package.lower(), self.name.lower())
 		self._composer['description'] = self.description
+		self._composer['type'] = 'magento2-module'
 		self._composer['license'] = 'proprietary'
 		self._composer['authors'] = [
 				{
