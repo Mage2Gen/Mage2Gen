@@ -19,6 +19,7 @@ import os, locale
 from collections import OrderedDict
 from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 from mage2gen.utils import upperfirst
+from mage2gen.utils import lowerfirst
 from mage2gen.module import TEMPLATE_DIR
 
 # Long boring code to add a lot of PHP classes and xml, only go here if you feel like too bring you happiness down. 
@@ -203,13 +204,13 @@ class ModelSnippet(Snippet):
 		api_data_class.add_method(InterfaceMethod('get'+model_id_capitalized,docstring=['Get {}'.format(model_id),'@return {}'.format('string|null')]))
 		self.add_class(api_data_class)
 
-		api_data_class.add_method(InterfaceMethod('set'+model_id_capitalized,params=['${}'.format(model_id_capitalized_after)],docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id),'@return \{}'.format(api_data_class.class_namespace)]))
+		api_data_class.add_method(InterfaceMethod('set'+model_id_capitalized,params=['${}'.format(model_id_capitalized_after)],docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id_capitalized_after),'@return \{}'.format(api_data_class.class_namespace)]))
 		self.add_class(api_data_class)
 
 		api_data_class.add_method(InterfaceMethod('get'+field_name_capitalized,docstring=['Get {}'.format(field_name),'@return {}'.format('string|null')]))
 		self.add_class(api_data_class)
 
-		api_data_class.add_method(InterfaceMethod('set'+field_name_capitalized,params=['${}'.format(field_name)],docstring=['Set {}'.format(field_name),'@param string ${}'.format(field_name),'@return \{}'.format(api_data_class.class_namespace)]))
+		api_data_class.add_method(InterfaceMethod('set'+field_name_capitalized,params=['${}'.format(lowerfirst(field_name_capitalized))],docstring=['Set {}'.format(field_name),'@param string ${}'.format(lowerfirst(field_name_capitalized)),'@return \{}'.format(api_data_class.class_namespace)]))
 		self.add_class(api_data_class)
 
 
@@ -244,7 +245,7 @@ class ModelSnippet(Snippet):
 		model_class.add_method(Phpmethod('set'+model_id_capitalized, docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id_capitalized_after),'@return \{}'.format(api_data_class.class_namespace)], params=['${}'.format(model_id_capitalized_after)], access=Phpmethod.PUBLIC, body="return $this->setData({}, ${});".format('self::'+model_id.upper(),model_id_capitalized_after)))
 
 		model_class.add_method(Phpmethod('get'+field_name_capitalized, docstring=['Get {}'.format(field_name),'@return string'], access=Phpmethod.PUBLIC, body="return $this->getData({});".format('self::'+field_name.upper())))
-		model_class.add_method(Phpmethod('set'+field_name_capitalized, docstring=['Set {}'.format(field_name),'@param string ${}'.format(field_name),'@return \{}'.format(api_data_class.class_namespace)], params=['${}'.format(field_name)], access=Phpmethod.PUBLIC, body="return $this->setData({}, ${});".format('self::'+field_name.upper(),field_name)))
+		model_class.add_method(Phpmethod('set'+field_name_capitalized, docstring=['Set {}'.format(field_name),'@param string ${}'.format(lowerfirst(field_name_capitalized)),'@return \{}'.format(api_data_class.class_namespace)], params=['${}'.format(lowerfirst(field_name_capitalized))], access=Phpmethod.PUBLIC, body="return $this->setData({}, ${});".format('self::'+field_name.upper(),lowerfirst(field_name_capitalized))))
 		self.add_class(model_class)
 
 		# Create collection
