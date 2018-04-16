@@ -233,9 +233,10 @@ class ModelSnippet(Snippet):
 
 		# Create model class
 		model_class = Phpclass('Model\\' + model_name_capitalized.replace('_', '\\'), 
-			dependencies=[api_data_class.class_namespace], 
+			dependencies=[api_data_class.class_namespace],
 			extends='\\Magento\\Framework\\Model\\AbstractModel', 
-			implements=[model_name_capitalized.replace('_', '\\') + 'Interface'])
+			implements=[model_name_capitalized.replace('_', '\\') + 'Interface'],
+			attributes=['protected $_eventPrefix = \'{}\';'.format(model_table)])
 		model_class.add_method(Phpmethod('_construct', 
 			access=Phpmethod.PROTECTED, 
 			body="$this->_init('{}');".format(resource_model_class.class_namespace),
@@ -354,14 +355,18 @@ class ModelSnippet(Snippet):
 			params=['\Magento\Framework\Api\SearchCriteriaInterface $criteria'],
 			body="""$collection = $this->{variable}CollectionFactory->create();
 					foreach ($criteria->getFilterGroups() as $filterGroup) {{
+					    $fields = [];
+					    $conditions = [];
 					    foreach ($filterGroup->getFilters() as $filter) {{
 					        if ($filter->getField() === 'store_id') {{
 					            $collection->addStoreFilter($filter->getValue(), false);
 					            continue;
 					        }}
+					        $fields[] = $filter->getField();
 					        $condition = $filter->getConditionType() ?: 'eq';
-					        $collection->addFieldToFilter($filter->getField(), [$condition => $filter->getValue()]);
+					        $conditions[] = [$condition => $filter->getValue()];
 					    }}
+					    $collection->addFieldToFilter($fields, $conditions);
 					}}
 
 					$sortOrders = $criteria->getSortOrders();
