@@ -1270,25 +1270,25 @@ class ModelSnippet(Snippet):
 		 			Xmlnode('resource', attributes={'ref':resource + 'save'})
 				])
 			]),
-			Xmlnode('route', attributes={'url': api_url + 'search', 'method': 'GET'},match_attributes={'url','method'},nodes=[
+			Xmlnode('route', attributes={'url': api_url + model_name.lower() + '/search', 'method': 'GET'},match_attributes={'url','method'},nodes=[
 				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'getList'}),
 		 		Xmlnode('resources',nodes=[
 		 			Xmlnode('resource', attributes={'ref':resource + 'view'})
 				])
 			]),
-			Xmlnode('route', attributes={'url': api_url + ':' + model_id_capitalized_after, 'method': 'GET'},match_attributes={'url','method'},nodes=[
+			Xmlnode('route', attributes={'url': api_url + model_name.lower() + '/:' + model_id_capitalized_after, 'method': 'GET'},match_attributes={'url','method'},nodes=[
 				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'getById'}),
 		 		Xmlnode('resources',nodes=[
 		 			Xmlnode('resource', attributes={'ref':resource + 'view'})
 				])
 			]),
-			Xmlnode('route', attributes={'url': api_url + ':' + model_id_capitalized_after, 'method': 'PUT'},match_attributes={'url','method'},nodes=[
+			Xmlnode('route', attributes={'url': api_url + model_name.lower() + '/:' + model_id_capitalized_after, 'method': 'PUT'},match_attributes={'url','method'},nodes=[
 				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'save'}),
 		 		Xmlnode('resources',nodes=[
 		 			Xmlnode('resource', attributes={'ref':resource + 'update'})
 				])
 			]),
-			Xmlnode('route', attributes={'url': api_url + ':' + model_id_capitalized_after, 'method': 'DELETE'},match_attributes={'url','method'},nodes=[
+			Xmlnode('route', attributes={'url': api_url + model_name.lower() + '/:' + model_id_capitalized_after, 'method': 'DELETE'},match_attributes={'url','method'},nodes=[
 				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'deleteById'}),
 		 		Xmlnode('resources',nodes=[
 		 			Xmlnode('resource', attributes={'ref':resource + 'delete'})
