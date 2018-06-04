@@ -491,7 +491,7 @@ class ModelSnippet(Snippet):
 			Xmlnode('menu', nodes=[
 				top_level_menu_node,
 				Xmlnode('add', attributes={
-					'id': "{}::{}".format(self._module.package, model_table),
+					'id': "{}::{}".format(self.module_name, model_table),
 					'title': model_name.replace('_', ' '),
 					'module': self.module_name,
 					'sortOrder': 9999,

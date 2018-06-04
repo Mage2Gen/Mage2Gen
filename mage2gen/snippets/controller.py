@@ -32,9 +32,9 @@ class ControllerSnippet(Snippet):
 	This snippet will also create a layout.xml, Block and phtml for the action.
 	"""
 
-	def add(self, frontname='', section='index', action='index', adminhtml=False, ajax=False, extra_params=None):
+	def add(self, frontname='', section='index', action='index', adminhtml=False, ajax=False, extra_params=None, top_level_menu=True):
 		if not frontname:
-			frontname = self._module.name.lower()
+			frontname = '{}_{}'.format(self._module.package.lower(),self._module.name.lower())
 		file = 'etc/{}/routes.xml'.format('adminhtml' if adminhtml else 'frontend')
 
 		# Create config router
@@ -182,6 +182,49 @@ class ControllerSnippet(Snippet):
 			path = os.path.join('view', 'adminhtml' if adminhtml else 'frontend', 'templates')
 			self.add_static_file(path, StaticFile("{}/{}.phtml".format(section, action),body="Hello {}/{}.phtml".format(section, action)))
 
+			if adminhtml:
+				# create menu.xml
+				top_level_menu_node = False
+				if top_level_menu:
+					top_level_menu_node = Xmlnode('add', attributes={
+						'id': "{}::top_level".format(self._module.package),
+						'title': self._module.package,
+						'module': self.module_name,
+						'sortOrder': 9999,
+						'resource': 'Magento_Backend::content',
+					})
+
+				self.add_xml('etc/adminhtml/menu.xml', Xmlnode('config', attributes={
+					'xsi:noNamespaceSchemaLocation': "urn:magento:module:Magento_Backend:etc/menu.xsd"}, nodes=[
+					Xmlnode('menu', nodes=[
+						top_level_menu_node,
+						Xmlnode('add', attributes={
+							'id': '{}::{}_{}'.format(self.module_name, section, action),
+							'title': "{} {}".format(section.replace('_', ' '), action.replace('_', ' ')),
+							'module': self.module_name,
+							'sortOrder': 9999,
+							'resource': '{}::{}_{}'.format(self.module_name, section, action),
+							'parent': '{}::top_level'.format(self._module.package,frontname),
+							'action': '{}/{}/{}'.format(frontname, section, action)
+						})
+					])
+				]))
+
+
+				acl_xml = Xmlnode('config', attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:framework:Acl/etc/acl.xsd"}, nodes=[
+					Xmlnode('acl',nodes=[
+						Xmlnode('resources',nodes=[
+							Xmlnode('resource',attributes={'id':'Magento_Backend::admin'},nodes=[
+								Xmlnode('resource',attributes={'id':'{}::{}'.format(self.module_name, frontname),'title':'{}'.format(frontname.replace('_', ' ')),'sortOrder':"10"}, nodes=[
+									Xmlnode('resource',attributes={'id':'{}::{}_{}'.format(self.module_name, section, action),'title':'{} {}'.format(section.replace('_', ' '), action.replace('_', ' ')),'sortOrder':"10"}),
+								])
+							])
+						])
+					])
+				])
+
+				self.add_xml('etc/acl.xml', acl_xml)
+
 
 	@classmethod
 	def params(cls):
@@ -199,4 +242,10 @@ class ControllerSnippet(Snippet):
 				error_message='Only lowercase alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
 			SnippetParam(name='adminhtml', yes_no=True),
 			SnippetParam(name='ajax', yes_no=True),
+			SnippetParam(
+				name='top_level_menu',
+				yes_no=True,
+				default=True,
+				repeat=True
+			)
 		]
