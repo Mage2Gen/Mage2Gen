@@ -1,7 +1,7 @@
 import os, locale
-from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
-from mage2gen.utils import upperfirst
-from mage2gen.module import TEMPLATE_DIR
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from ..utils import upperfirst
+from ..module import TEMPLATE_DIR
 
 class InterfaceClass(Phpclass):
 

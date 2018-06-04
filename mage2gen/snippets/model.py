@@ -17,10 +17,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os, locale
 from collections import OrderedDict
-from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
-from mage2gen.utils import upperfirst
-from mage2gen.utils import lowerfirst
-from mage2gen.module import TEMPLATE_DIR
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from ..utils import upperfirst, lowerfirst
+from ..module import TEMPLATE_DIR
 
 # Long boring code to add a lot of PHP classes and xml, only go here if you feel like too bring you happiness down. 
 # Or make your day happy that you don't maintain this code :)
@@ -289,7 +288,7 @@ class ModelSnippet(Snippet):
     			'protected $data{}Factory;\n'.format(model_name_capitalized),
     			'private $storeManager;\n'
 			],
-			implements=[model_name_capitalized_after.replace('_', '\\') + 'RepositoryInterface']
+			implements=[model_name_capitalized.replace('_', '\\') + 'RepositoryInterface']
 		)
 		model_repository_class.add_method(Phpmethod('__construct', access=Phpmethod.PUBLIC, 
 			params=[
@@ -329,7 +328,7 @@ class ModelSnippet(Snippet):
 					    ${variable}->setStoreId($storeId);
 					}} */
 					try {{
-					    ${variable}->getResource()->save(${variable});
+					    $this->resource->save(${variable});
 					}} catch (\Exception $exception) {{
 					    throw new CouldNotSaveException(__(
 					        'Could not save the {variable}: %1',
@@ -343,7 +342,7 @@ class ModelSnippet(Snippet):
 		model_repository_class.add_method(Phpmethod('getById', access=Phpmethod.PUBLIC, 
 			params=['${}Id'.format(model_name_capitalized_after)],
 			body="""${variable} = $this->{variable}Factory->create();
-			${variable}->getResource()->load(${variable}, ${variable}Id);
+			$this->resource->load(${variable}, ${variable}Id);
 			if (!${variable}->getId()) {{
 			    throw new NoSuchEntityException(__('{model_name} with id "%1" does not exist.', ${variable}Id));
 			}}
@@ -393,7 +392,7 @@ class ModelSnippet(Snippet):
 		model_repository_class.add_method(Phpmethod('delete', access=Phpmethod.PUBLIC, 
 			params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],
 			body="""try {{
-					    ${variable}->getResource()->delete(${variable});
+					    $this->resource->delete(${variable});
 					}} catch (\Exception $exception) {{
 					    throw new CouldNotDeleteException(__(
 					        'Could not delete the {model_name}: %1',
@@ -491,7 +490,7 @@ class ModelSnippet(Snippet):
 			Xmlnode('menu', nodes=[
 				top_level_menu_node,
 				Xmlnode('add', attributes={
-					'id': "{}::{}".format(self._module.package, model_table),
+					'id': "{}::{}".format(self.module_name, model_table),
 					'title': model_name.replace('_', ' '),
 					'module': self.module_name,
 					'sortOrder': 9999,
