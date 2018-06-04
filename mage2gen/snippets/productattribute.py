@@ -78,7 +78,7 @@ class ProductAttributeSnippet(Snippet):
 		The attribute is automatically added to all the attribute sets.
 	"""
 	
-	def add(self, attribute_label, frontend_input='text', scope=1, required=False, options=None, extra_params=None):
+	def add(self, attribute_label, frontend_input='text', scope=1, required=False, upgrade_data=False, from_version='1.0.1', options=None, extra_params=None):
 		extra_params = extra_params if extra_params else {}
 		apply_to = extra_params.get('apply_to', [])
 		try:
@@ -123,10 +123,14 @@ class ProductAttributeSnippet(Snippet):
 			backend = 'Magento\Eav\Model\Entity\Attribute\Backend\ArrayBackend' if frontend_input == 'multiselect' else ''
 		)
 
-		install_data = Phpclass('Setup\\InstallData',
-			implements=['InstallDataInterface'],
+		setupType = 'Install'
+		if upgrade_data:
+			setupType = 'Upgrade'
+
+		install_data = Phpclass('Setup\\{}Data'.format(setupType),
+			implements=['{}DataInterface'.format(setupType)],
 			dependencies=[
-				'Magento\\Framework\\Setup\\InstallDataInterface',
+				'Magento\\Framework\\Setup\\{}DataInterface'.format(setupType),
 				'Magento\\Framework\\Setup\\ModuleContextInterface',
 				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
 				'Magento\\Eav\\Setup\\EavSetup',
@@ -145,15 +149,20 @@ class ProductAttributeSnippet(Snippet):
 				'@param \\Magento\\Eav\\Setup\\EavSetupFactory $eavSetupFactory'
 			]
 		)) 
-		install_data.add_method(Phpmethod('install',
+		install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
 			params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
 			body="$eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);",
 			docstring=['{@inheritdoc}']))
-		install_data.add_method(Phpmethod('install',
-			params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
-			body=methodBody))
+		if upgrade_data:
+			install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
+				params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
+				body='if (version_compare($context->getVersion(), "' + from_version + '", "<")) {\n\n    ' + methodBody.replace('\n','\n    ') + '\n}\n'))
+		else:
+			install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
+				params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
+				body = methodBody))
 
-		# Catalog Attributes XML | Transport Attribute to Quote Item Product
+			# Catalog Attributes XML | Transport Attribute to Quote Item Product
 		transport_to_quote_item = extra_params.get('transport_to_quote_item', False)
 		if transport_to_quote_item:
 			config = Xmlnode('config', attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Catalog:etc/catalog_attributes.xsd"}, nodes=[
@@ -198,6 +207,16 @@ class ProductAttributeSnippet(Snippet):
 				 required=True,  
 				 default=True,
 				 yes_no=True),
+			 SnippetParam(
+				 name='upgrade_data',
+				 default=False,
+				 yes_no=True
+			 ),
+			 SnippetParam(
+				 name='from_version',
+				 description='1.0.1',
+				 default='1.0.1'
+			 ),
 					  ]
 
 	@classmethod

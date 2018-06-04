@@ -85,8 +85,8 @@ class CustomerAttributeSnippet(Snippet):
 		Magento 2 create customer attribute programmatically
 	"""
 
-	def add(self,attribute_label, customer_forms=False, customer_address_forms=False, customer_entity='customer', frontend_input='text',
-		static_field_type='varchar', required=False, source_model=False, source_model_options=False, extra_params=None):
+	def add(self,attribute_label, customer_forms=False, customer_address_forms=False, customer_entity='customer', frontend_input='text', upgrade_data=False,
+		from_version='1.0.1', static_field_type='varchar', required=False, source_model=False, source_model_options=False, extra_params=None):
 
 		extra_params = extra_params if extra_params else {}
 		attribute_code = extra_params.get('attribute_code', None)
@@ -172,11 +172,16 @@ class CustomerAttributeSnippet(Snippet):
 			backend_model = backend_model
 		)
 
+		setupType = 'Install'
+		if upgrade_data:
+			setupType = 'Upgrade'
+
+
 		install_data = Phpclass(
-			'Setup\\InstallData',
-			implements=['InstallDataInterface'],
+			'Setup\\{}Data'.format(setupType),
+			implements=['{}DataInterface'.format(setupType)],
 			dependencies=[
-				'Magento\\Framework\\Setup\\InstallDataInterface',
+				'Magento\\Framework\\Setup\\{}DataInterface'.format(setupType),
 				'Magento\\Framework\\Setup\\ModuleContextInterface',
 				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
 				'Magento\\Customer\\Model\\Customer',
@@ -186,7 +191,7 @@ class CustomerAttributeSnippet(Snippet):
 				'private $customerSetupFactory;'
 			]
 		)
-		
+
 		install_data.add_method(Phpmethod(
 			'__construct',
 			params=[
@@ -200,21 +205,23 @@ class CustomerAttributeSnippet(Snippet):
 			]
 		))
 
-		install_data.add_method(Phpmethod('install',
+		install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
 			params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
 			body="$customerSetup = $this->customerSetupFactory->create(['setup' => $setup]);",
 			docstring=['{@inheritdoc}']))
-		install_data.add_method(Phpmethod('install',
-			params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
-			body=methodBody))
 
 		if forms_php_array:
-			attribute_form_data = """
-			$attribute = $customerSetup->getEavConfig()->getAttribute('{customer_entity}', '{attribute_code}')
-			    ->addData(['used_in_forms' => [{forms_php_array}]]);
-			$attribute->save();
-			""".format(customer_entity=customer_entity, attribute_code=attribute_code, forms_php_array=forms_php_array)
-			install_data.add_method(Phpmethod('install',params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],body=attribute_form_data))
+			attribute_form_data = "\n\n$attribute = $customerSetup->getEavConfig()->getAttribute('{customer_entity}', '{attribute_code}')\n->addData(['used_in_forms' => [{forms_php_array}]\n]);\n$attribute->save();".format(customer_entity=customer_entity, attribute_code=attribute_code, forms_php_array=forms_php_array)
+			methodBody = methodBody + attribute_form_data
+
+		if upgrade_data:
+			install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
+				params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
+				body='if (version_compare($context->getVersion(), "' + from_version + '", "<")) {\n\n    ' + methodBody.replace('\n','\n    ') + '\n}\n'))
+		else:
+			install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
+				params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
+				body=methodBody))
 
 		self.add_class(install_data)	
 
@@ -289,8 +296,18 @@ class CustomerAttributeSnippet(Snippet):
                 choises=cls.STATIC_FIELD_TYPES,
                 default='varchar',
                 depend= {'frontend_input': r'static'}, 
-                required=True, 
+                required=True,
                 ),
+			SnippetParam(
+				name='upgrade_data',
+				default=False,
+				yes_no=True
+			),
+			SnippetParam(
+				name='from_version',
+				description='1.0.1',
+				default='1.0.1'
+			),
          ]
 
 	@classmethod
