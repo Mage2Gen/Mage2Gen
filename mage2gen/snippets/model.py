@@ -17,9 +17,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os, locale
 from collections import OrderedDict
-from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
-from mage2gen.utils import upperfirst
-from mage2gen.module import TEMPLATE_DIR
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from ..utils import upperfirst
+from ..module import TEMPLATE_DIR
 
 # Long boring code to add a lot of PHP classes and xml, only go here if you feel like too bring you happiness down. 
 # Or make your day happy that you don't maintain this code :)

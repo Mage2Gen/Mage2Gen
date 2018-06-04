@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from mage2gen import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet
 
 class InstallSnippet(Snippet):
 	description = """

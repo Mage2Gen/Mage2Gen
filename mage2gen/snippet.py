@@ -19,7 +19,7 @@ import re
 import inspect
 from collections import namedtuple
 
-from mage2gen.utils import upperfirst
+from .utils import upperfirst
 
 class SnippetParam:
 	"""

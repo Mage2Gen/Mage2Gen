@@ -21,7 +21,7 @@ from collections import defaultdict, OrderedDict
 from xml.etree.ElementTree import Element, SubElement, tostring, ElementTree
 from xml.dom import minidom
 
-from mage2gen.utils import upperfirst
+from .utils import upperfirst
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
