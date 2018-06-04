@@ -18,7 +18,7 @@
 import os, locale
 from collections import OrderedDict
 from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
-from ..utils import upperfirst
+from ..utils import upperfirst, lowerfirst
 from ..module import TEMPLATE_DIR
 
 # Long boring code to add a lot of PHP classes and xml, only go here if you feel like too bring you happiness down. 
@@ -203,13 +203,13 @@ class ModelSnippet(Snippet):
 		api_data_class.add_method(InterfaceMethod('get'+model_id_capitalized,docstring=['Get {}'.format(model_id),'@return {}'.format('string|null')]))
 		self.add_class(api_data_class)
 
-		api_data_class.add_method(InterfaceMethod('set'+model_id_capitalized,params=['${}'.format(model_id_capitalized_after)],docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id),'@return \{}'.format(api_data_class.class_namespace)]))
+		api_data_class.add_method(InterfaceMethod('set'+model_id_capitalized,params=['${}'.format(model_id_capitalized_after)],docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id_capitalized_after),'@return \{}'.format(api_data_class.class_namespace)]))
 		self.add_class(api_data_class)
 
 		api_data_class.add_method(InterfaceMethod('get'+field_name_capitalized,docstring=['Get {}'.format(field_name),'@return {}'.format('string|null')]))
 		self.add_class(api_data_class)
 
-		api_data_class.add_method(InterfaceMethod('set'+field_name_capitalized,params=['${}'.format(field_name)],docstring=['Set {}'.format(field_name),'@param string ${}'.format(field_name),'@return \{}'.format(api_data_class.class_namespace)]))
+		api_data_class.add_method(InterfaceMethod('set'+field_name_capitalized,params=['${}'.format(lowerfirst(field_name_capitalized))],docstring=['Set {}'.format(field_name),'@param string ${}'.format(lowerfirst(field_name_capitalized)),'@return \{}'.format(api_data_class.class_namespace)]))
 		self.add_class(api_data_class)
 
 
@@ -232,9 +232,10 @@ class ModelSnippet(Snippet):
 
 		# Create model class
 		model_class = Phpclass('Model\\' + model_name_capitalized.replace('_', '\\'), 
-			dependencies=[api_data_class.class_namespace], 
+			dependencies=[api_data_class.class_namespace],
 			extends='\\Magento\\Framework\\Model\\AbstractModel', 
-			implements=[model_name_capitalized.replace('_', '\\') + 'Interface'])
+			implements=[model_name_capitalized.replace('_', '\\') + 'Interface'],
+			attributes=['protected $_eventPrefix = \'{}\';'.format(model_table)])
 		model_class.add_method(Phpmethod('_construct', 
 			access=Phpmethod.PROTECTED, 
 			body="$this->_init('{}');".format(resource_model_class.class_namespace),
@@ -244,7 +245,7 @@ class ModelSnippet(Snippet):
 		model_class.add_method(Phpmethod('set'+model_id_capitalized, docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id_capitalized_after),'@return \{}'.format(api_data_class.class_namespace)], params=['${}'.format(model_id_capitalized_after)], access=Phpmethod.PUBLIC, body="return $this->setData({}, ${});".format('self::'+model_id.upper(),model_id_capitalized_after)))
 
 		model_class.add_method(Phpmethod('get'+field_name_capitalized, docstring=['Get {}'.format(field_name),'@return string'], access=Phpmethod.PUBLIC, body="return $this->getData({});".format('self::'+field_name.upper())))
-		model_class.add_method(Phpmethod('set'+field_name_capitalized, docstring=['Set {}'.format(field_name),'@param string ${}'.format(field_name),'@return \{}'.format(api_data_class.class_namespace)], params=['${}'.format(field_name)], access=Phpmethod.PUBLIC, body="return $this->setData({}, ${});".format('self::'+field_name.upper(),field_name)))
+		model_class.add_method(Phpmethod('set'+field_name_capitalized, docstring=['Set {}'.format(field_name),'@param string ${}'.format(lowerfirst(field_name_capitalized)),'@return \{}'.format(api_data_class.class_namespace)], params=['${}'.format(lowerfirst(field_name_capitalized))], access=Phpmethod.PUBLIC, body="return $this->setData({}, ${});".format('self::'+field_name.upper(),lowerfirst(field_name_capitalized))))
 		self.add_class(model_class)
 
 		# Create collection
@@ -287,7 +288,7 @@ class ModelSnippet(Snippet):
     			'protected $data{}Factory;\n'.format(model_name_capitalized),
     			'private $storeManager;\n'
 			],
-			implements=[model_name_capitalized_after.replace('_', '\\') + 'RepositoryInterface']
+			implements=[model_name_capitalized.replace('_', '\\') + 'RepositoryInterface']
 		)
 		model_repository_class.add_method(Phpmethod('__construct', access=Phpmethod.PUBLIC, 
 			params=[
@@ -353,14 +354,18 @@ class ModelSnippet(Snippet):
 			params=['\Magento\Framework\Api\SearchCriteriaInterface $criteria'],
 			body="""$collection = $this->{variable}CollectionFactory->create();
 					foreach ($criteria->getFilterGroups() as $filterGroup) {{
+					    $fields = [];
+					    $conditions = [];
 					    foreach ($filterGroup->getFilters() as $filter) {{
 					        if ($filter->getField() === 'store_id') {{
 					            $collection->addStoreFilter($filter->getValue(), false);
 					            continue;
 					        }}
+					        $fields[] = $filter->getField();
 					        $condition = $filter->getConditionType() ?: 'eq';
-					        $collection->addFieldToFilter($filter->getField(), [$condition => $filter->getValue()]);
+					        $conditions[] = [$condition => $filter->getValue()];
 					    }}
+					    $collection->addFieldToFilter($fields, $conditions);
 					}}
 
 					$sortOrders = $criteria->getSortOrders();
@@ -835,7 +840,7 @@ class ModelSnippet(Snippet):
 				}}
 				$this->_coreRegistry->register('{register_model}', $model);
 
-				// 5. Build edit form
+				// 3. Build edit form
 				/** @var \Magento\Backend\Model\View\Result\Page $resultPage */
 				$resultPage = $this->resultPageFactory->create();
 				$this->initPage($resultPage)->addBreadcrumb(
@@ -1271,25 +1276,25 @@ class ModelSnippet(Snippet):
 		 			Xmlnode('resource', attributes={'ref':resource + 'save'})
 				])
 			]),
-			Xmlnode('route', attributes={'url': api_url + 'search', 'method': 'GET'},match_attributes={'url','method'},nodes=[
+			Xmlnode('route', attributes={'url': api_url + model_name.lower() + '/search', 'method': 'GET'},match_attributes={'url','method'},nodes=[
 				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'getList'}),
 		 		Xmlnode('resources',nodes=[
 		 			Xmlnode('resource', attributes={'ref':resource + 'view'})
 				])
 			]),
-			Xmlnode('route', attributes={'url': api_url + ':' + model_id_capitalized_after, 'method': 'GET'},match_attributes={'url','method'},nodes=[
+			Xmlnode('route', attributes={'url': api_url + model_name.lower() + '/:' + model_id_capitalized_after, 'method': 'GET'},match_attributes={'url','method'},nodes=[
 				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'getById'}),
 		 		Xmlnode('resources',nodes=[
 		 			Xmlnode('resource', attributes={'ref':resource + 'view'})
 				])
 			]),
-			Xmlnode('route', attributes={'url': api_url + ':' + model_id_capitalized_after, 'method': 'PUT'},match_attributes={'url','method'},nodes=[
+			Xmlnode('route', attributes={'url': api_url + model_name.lower() + '/:' + model_id_capitalized_after, 'method': 'PUT'},match_attributes={'url','method'},nodes=[
 				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'save'}),
 		 		Xmlnode('resources',nodes=[
 		 			Xmlnode('resource', attributes={'ref':resource + 'update'})
 				])
 			]),
-			Xmlnode('route', attributes={'url': api_url + ':' + model_id_capitalized_after, 'method': 'DELETE'},match_attributes={'url','method'},nodes=[
+			Xmlnode('route', attributes={'url': api_url + model_name.lower() + '/:' + model_id_capitalized_after, 'method': 'DELETE'},match_attributes={'url','method'},nodes=[
 				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'deleteById'}),
 		 		Xmlnode('resources',nodes=[
 		 			Xmlnode('resource', attributes={'ref':resource + 'delete'})

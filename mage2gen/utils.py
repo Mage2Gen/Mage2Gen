@@ -31,3 +31,6 @@ class DefaultFormatter(string.Formatter):
 def upperfirst(word):
 	return word[0].upper() + word[1:]
 
+def lowerfirst(word):
+	return word[0].lower() + word[1:]
+

@@ -152,7 +152,20 @@ class ProductAttributeSnippet(Snippet):
 		install_data.add_method(Phpmethod('install',
 			params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
 			body=methodBody))
-	
+
+		# Catalog Attributes XML | Transport Attribute to Quote Item Product
+		transport_to_quote_item = extra_params.get('transport_to_quote_item', False)
+		if transport_to_quote_item:
+			config = Xmlnode('config', attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Catalog:etc/catalog_attributes.xsd"}, nodes=[
+				Xmlnode('group', attributes={'name': 'quote_item'}, nodes=[
+					Xmlnode('attribute', attributes={
+						'name': attribute_code
+					})
+				])
+			])
+			self.add_xml('etc/catalog_attributes.xml', config)
+
+
 		self.add_class(install_data)
 	
 	@classmethod
@@ -230,6 +243,11 @@ class ProductAttributeSnippet(Snippet):
 			 SnippetParam(
 				 name='unique',
 				 required=True,  
+				 default=False,
+				 yes_no=True),
+			 SnippetParam(
+				 name='transport_to_quote_item',
+				 required=True,
 				 default=False,
 				 yes_no=True),
 		]

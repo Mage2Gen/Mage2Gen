@@ -187,16 +187,16 @@ class ControllerSnippet(Snippet):
 	def params(cls):
 		return [
 			SnippetParam(name='frontname', required=False, description='On empty uses module name in lower case',
-				regex_validator= r'^[a-zA-Z]{1}\w+$',
-				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.',
+				regex_validator= r'^[a-z]{1}\w+$',
+				error_message='Only lowercase alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.',
 				repeat=True),
 			SnippetParam(name='section', required=True, default='index',
-				regex_validator= r'^[a-zA-Z]{1}\w+$',
-				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.',
+				regex_validator= r'^[a-z]{1}\w+$',
+				error_message='Only lowercase alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.',
 				repeat=True),
 			SnippetParam(name='action', required=True, default='index',
-				regex_validator= r'^[a-zA-Z]{1}\w+$',
-				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
+				regex_validator= r'^[a-z]{1}\w+$',
+				error_message='Only lowercase alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
 			SnippetParam(name='adminhtml', yes_no=True),
 			SnippetParam(name='ajax', yes_no=True),
 		]

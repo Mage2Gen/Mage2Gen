@@ -53,13 +53,25 @@ class PluginSnippet(Snippet):
 	TYPE_AFTER = 'after'
 	TYPE_AROUND = 'around'
 
-	SCOPE_CHOISES = [
+	TYPE_CHOISES = [
 		(TYPE_BEFORE, 'Before'),
 		(TYPE_AFTER, 'After'),
 		(TYPE_AROUND, 'Around'),
 	]
 
-	def add(self, classname, methodname, plugintype=TYPE_AFTER, sortorder=10, disabled=False, extra_params=None):
+	SCOPE_ALL = 'all'
+	SCOPE_FRONTEND = 'frontend'
+	SCOPE_ADMINHTML = 'backend'
+	SCOPE_WEBAPI = 'webapi'
+
+	SCOPE_CHOISES = [
+		(SCOPE_ALL, 'All'),
+		(SCOPE_FRONTEND, 'Frontend'),
+		(SCOPE_ADMINHTML, 'Backend'),
+		(SCOPE_WEBAPI, 'Webapi'),
+	]
+
+	def add(self, classname, methodname, plugintype=TYPE_AFTER, scope=SCOPE_ALL, sortorder=10, disabled=False, extra_params=None):
 		# Add class
 		plugin = Phpclass('Plugin\\{}'.format(classname))
 		
@@ -93,7 +105,20 @@ class PluginSnippet(Snippet):
 			])
 		])
 
-		self.add_xml('etc/di.xml', config)
+		xml_path = ['etc']
+		if scope == self.SCOPE_FRONTEND:
+			xml_path.append('frontend')
+		elif scope == self.SCOPE_ADMINHTML:
+			xml_path.append('adminhtml')
+		elif scope == self.SCOPE_WEBAPI:
+			soap_xml_path = ['etc']
+			xml_path.append('webapi_rest')
+			soap_xml_path.append('webapi_soap')
+			soap_xml_path.append('di.xml')
+			self.add_xml(os.path.join(*soap_xml_path), config)
+
+		xml_path.append('di.xml')
+		self.add_xml(os.path.join(*xml_path), config)
 
 	@classmethod
 	def params(cls):
@@ -106,7 +131,8 @@ class PluginSnippet(Snippet):
 				description='Example: getPrice',
 				regex_validator= r'^\w+$',
 				error_message='Only alphanumeric and underscore characters are allowed'),
-			SnippetParam(name='plugintype', choises=cls.SCOPE_CHOISES, default=cls.TYPE_AFTER),
+			SnippetParam(name='plugintype', choises=cls.TYPE_CHOISES, default=cls.TYPE_AFTER),
+			SnippetParam(name='scope', choises=cls.SCOPE_CHOISES, default=cls.SCOPE_ALL),
 			SnippetParam(name='sortorder', default=10, 
 				regex_validator=r'^\d*$', 
 				error_message='Must be numeric'),

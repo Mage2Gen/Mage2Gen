@@ -80,7 +80,7 @@ class PaymentSnippet(Snippet):
 						Xmlnode('order_status',node_text='pending'),
 						Xmlnode('title',node_text=method_name),
 						Xmlnode('allowspecific',node_text='0'),
-						Xmlnode('group',node_text='Offline'),
+						Xmlnode('group',node_text='offline'),
 					])
 				])
 			])
