@@ -59,20 +59,40 @@ class BlockSnippet(Snippet):
 
 	def add(self, classname, methodname, scope=SCOPE_FRONTEND, layout_handle=None, reference_type=REFERENCE_CONTAINER, reference_name='content', extra_params=None):
 		# Add class
-		block = Phpclass('Block\\{}'.format(classname))
+		block_extend = '\Magento\Framework\View\Element\Template'
+		block = Phpclass('Block\\{}'.format(classname),block_extend)
 		type = 'frontend'
+		context_class = '\Magento\Framework\View\Element\Template\Context'
 		if scope == self.SCOPE_ADMINHTML:
-			block = Phpclass('Block\\Adminhtml\\{}'.format(classname))
+			block_extend = '\Magento\Backend\Block\Template'
+			block = Phpclass('Block\\Adminhtml\\{}'.format(classname), block_extend)
 			type = 'adminhtml'
+			context_class = '\Magento\Backend\Block\Template\Context'
+
+		block.add_method(Phpmethod(
+				'__construct',
+				params=[
+					context_class + ' $context',
+					'array $data = []',
+				],
+				body="""parent::__construct($context, $data);""",
+				docstring=[
+					'Constructor',
+					'',
+					'@param ' + context_class + '  $context',
+					'@param array $data',
+			]
+		))
 
 		function_name = methodname[0] + methodname[1:]
 		block.add_method(Phpmethod(
 			function_name,
 			body="""//Your block code
-			return 'Hello World!';""",
+			return __('Hello Developer! This how to get the storename: %1 and this is the way to build a url: %2', $this->_storeManager->getStore()->getName(), $this->getUrl('contacts'));""",
 			params=[],
 			docstring=['@return string']
 		))
+
 
 		# Add plug first will add the module namespace to PhpClass
 		self.add_class(block)
