@@ -59,14 +59,12 @@ class BlockSnippet(Snippet):
 
 	def add(self, classname, methodname, scope=SCOPE_FRONTEND, layout_handle=None, reference_type=REFERENCE_CONTAINER, reference_name='content', extra_params=None):
 		# Add class
-		block_extend = '\Magento\Framework\View\Element\Template'
-		block = Phpclass('Block\\{}'.format(classname),block_extend)
-		type = 'frontend'
+		block = Phpclass('Block\\{}'.format(classname),'\Magento\Framework\View\Element\Template')
+		scope_name = 'frontend'
 		context_class = '\Magento\Framework\View\Element\Template\Context'
 		if scope == self.SCOPE_ADMINHTML:
-			block_extend = '\Magento\Backend\Block\Template'
-			block = Phpclass('Block\\Adminhtml\\{}'.format(classname), block_extend)
-			type = 'adminhtml'
+			block = Phpclass('Block\\Adminhtml\\{}'.format(classname), '\Magento\Backend\Block\Template')
+			scope_name = 'adminhtml'
 			context_class = '\Magento\Backend\Block\Template\Context'
 
 		block.add_method(Phpmethod(
@@ -100,7 +98,7 @@ class BlockSnippet(Snippet):
 		block_template = '{}.phtml'.format(classname.replace('\\','/').lower())
 		if layout_handle:
 			# Layout Block XML
-			xml_path = os.path.join('view', type, 'layout')
+			xml_path = os.path.join('view', scope_name, 'layout')
 			page = Xmlnode('page', attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:framework:View/Layout/etc/page_configuration.xsd"}, nodes=[
 				Xmlnode('body', attributes={}, nodes=[
 					Xmlnode(
@@ -122,7 +120,7 @@ class BlockSnippet(Snippet):
 			self.add_xml(xml_path, page)
 
 		# add template file
-		path = os.path.join('view', type, 'templates')
+		path = os.path.join('view', scope_name, 'templates')
 		self.add_static_file(path, StaticFile(
 				block_template,
 				body="""<?php
