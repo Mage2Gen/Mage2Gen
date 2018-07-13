@@ -46,8 +46,6 @@ class InstallSnippet(Snippet):
 			'Magento\\Framework\\Setup\\ModuleContextInterface',
 			'Magento\\Framework\\Setup\\SchemaSetupInterface'])
 		install_schema.add_method(Phpmethod('install',params=['SchemaSetupInterface $setup','ModuleContextInterface $context'],
-			body='',
-			body_return='',
 			docstring=['{@inheritdoc}']))
 	
 		self.add_class(install_schema)
