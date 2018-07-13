@@ -102,8 +102,8 @@ class ModelSnippet(Snippet):
 
 		# Start setup
 		install_method = Phpmethod('install', params=['SchemaSetupInterface $setup','ModuleContextInterface $context'],
-			body='$installer = $setup;\n$installer->startSetup();',
-			body_return='$setup->endSetup();',
+			body='',
+			body_return='',
 			docstring=['{@inheritdoc}'])
 		
 		# Create table
