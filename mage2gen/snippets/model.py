@@ -110,20 +110,18 @@ class ModelSnippet(Snippet):
 		install_method.body.append("$table_{0} = $setup->getConnection()->newTable($setup->getTable('{0}'));".format(model_table))
 		
 		# add model id field
-		install_method.body.append("""
-			$table_{table}->addColumn(
+		install_method.body.append("""$table_{table}->addColumn(
 			    '{field}',
 			    {type},
 			    {size},
 			    {options},
 			    '{comment}'
-			);
-			""".format(
+			);""".format(
 			table=model_table,
 			field=model_id,
 			type='\\Magento\\Framework\\DB\\Ddl\\Table::TYPE_INTEGER',
 			size='null',
-			options="array('identity' => true,'nullable' => false,'primary' => true,'unsigned' => true,)",
+			options="['identity' => true,'nullable' => false,'primary' => true,'unsigned' => true,]",
 			comment='Entity ID'	
 		))
 
@@ -162,15 +160,13 @@ class ModelSnippet(Snippet):
 
 
 		# Add field
-		install_method.body.append("""
-			$table_{table}->addColumn(
+		install_method.body.append("""$table_{table}->addColumn(
 			    '{field}',
 			    {type},
 			    {size},
 			    {options},
 			    '{comment}'
-			);
-			""".format(
+			);""".format(
 			table=model_table,
 			field=field_name,
 			type='\\Magento\\Framework\\DB\\Ddl\\Table::TYPE_{}'.format(field_type.upper()),
@@ -238,7 +234,7 @@ class ModelSnippet(Snippet):
 			attributes=['protected $_eventPrefix = \'{}\';'.format(model_table)])
 		model_class.add_method(Phpmethod('_construct', 
 			access=Phpmethod.PROTECTED, 
-			body="$this->_init('{}');".format(resource_model_class.class_namespace),
+			body="$this->_init(\{}::class);".format(resource_model_class.class_namespace),
 			docstring=['@return void']))
 
 		model_class.add_method(Phpmethod('get'+model_id_capitalized, docstring=['Get {}'.format(model_id),'@return string'], access=Phpmethod.PUBLIC, body="return $this->getData({});".format('self::'+model_id.upper())))
@@ -253,7 +249,7 @@ class ModelSnippet(Snippet):
 				extends='\\Magento\\Framework\\Model\\ResourceModel\\Db\\Collection\\AbstractCollection')
 		collection_model_class.add_method(Phpmethod('_construct', 
 			access=Phpmethod.PROTECTED, 
-			body="$this->_init(\n    '{}',\n    '{}'\n);".format(
+			body="$this->_init(\n    \{}::class,\n    \{}::class\n);".format(
 				model_class.class_namespace ,resource_model_class.class_namespace),
 			docstring=[
 				'Define resource model',
@@ -286,7 +282,7 @@ class ModelSnippet(Snippet):
     			'protected $dataObjectHelper;\n',
     			'protected $dataObjectProcessor;\n',
     			'protected $data{}Factory;\n'.format(model_name_capitalized),
-    			'private $storeManager;\n'
+    			'private $storeManager;'
 			],
 			implements=[model_name_capitalized.replace('_', '\\') + 'RepositoryInterface']
 		)
@@ -779,7 +775,7 @@ class ModelSnippet(Snippet):
 					if ($id) {{
 					    try {{
 					        // init model and delete
-					        $model = $this->_objectManager->create('{model_class}');
+					        $model = $this->_objectManager->create(\{model_class}::class);
 					        $model->load($id);
 					        $model->delete();
 					        // display success message
@@ -826,7 +822,7 @@ class ModelSnippet(Snippet):
 		edit_controller.add_method(Phpmethod('execute',
 			body="""// 1. Get ID and create model
 				$id = $this->getRequest()->getParam('{model_id}');
-				$model = $this->_objectManager->create('{model_class}');
+				$model = $this->_objectManager->create(\{model_class}::class);
 
 				// 2. Initial checking
 				if ($id) {{
@@ -889,7 +885,7 @@ class ModelSnippet(Snippet):
 					    }} else {{
 					        foreach (array_keys($postItems) as $modelid) {{
 					            /** @var \{model_class} $model */
-					            $model = $this->_objectManager->create('{model_class}')->load($modelid);
+					            $model = $this->_objectManager->create(\{model_class}::class)->load($modelid);
 					            try {{
 					                $model->setData(array_merge($model->getData(), $postItems[$modelid]));
 					                $model->save();
@@ -960,7 +956,7 @@ class ModelSnippet(Snippet):
 					if ($data) {{
 					    $id = $this->getRequest()->getParam('{model_id}');
 
-					    $model = $this->_objectManager->create('{model_class}')->load($id);
+					    $model = $this->_objectManager->create(\{model_class}::class)->load($id);
 					    if (!$model->getId() && $id) {{
 					        $this->messageManager->addErrorMessage(__('This {model_name} no longer exists.'));
 					        return $resultRedirect->setPath('*/*/');
