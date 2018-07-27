@@ -59,8 +59,12 @@ class ObserverSnippet(Snippet):
 	def add(self, event, scope=SCOPE_ALL, extra_params=None):
 		split_event = event.split('_')
 
+		observerFolder = ['Observer']
+		if scope != self.SCOPE_ALL:
+			observerFolder.extend([scope])
+		observerFolder.extend([split_event[0], ''.join(upperfirst(item) for item in split_event[1:])])
 		observer = Phpclass(
-			'\\'.join(['Observer', split_event[0], ''.join(upperfirst(item) for item in split_event[1:])]),
+			'\\'.join(observerFolder),
 			implements=['\Magento\Framework\Event\ObserverInterface'])
 		observer.add_method(Phpmethod(
 			'execute',
