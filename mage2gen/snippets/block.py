@@ -163,7 +163,7 @@ class BlockSnippet(Snippet):
 			SnippetParam(name='reference_name',
 						 description='Example: content',
 						 depend={'layout_handle': r'^\w+$'},
-						 regex_validator=r'^\w+$',
-						 error_message='Only alphanumeric and underscore characters are allowed'),
+						 regex_validator=r'^[\w.]+$',
+						 error_message='Only alphanumeric, dots and underscore characters are allowed'),
 		]
 		
