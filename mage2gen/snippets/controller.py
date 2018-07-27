@@ -160,7 +160,25 @@ class ControllerSnippet(Snippet):
 			block_class.append(section)
 			block_class.append(action)
 
-			block = Phpclass('\\'.join(block_class), '\Magento\Framework\View\Element\Template')
+			block_extend = '\Magento\Backend\Block\Template' if adminhtml else '\Magento\Framework\View\Element\Template'
+			block = Phpclass('\\'.join(block_class), block_extend)
+
+			block_context_class = '\Magento\Backend\Block\Template\Context' if adminhtml else '\Magento\Framework\View\Element\Template\Context'
+			block.add_method(Phpmethod(
+				'__construct',
+				params=[
+					block_context_class + ' $context',
+					'array $data = []',
+				],
+				body="""parent::__construct($context, $data);""",
+				docstring=[
+					'Constructor',
+					'',
+					'@param ' + block_context_class + '  $context',
+					'@param array $data',
+				]
+			))
+
 			self.add_class(block)
 
 			# Add layout xml
