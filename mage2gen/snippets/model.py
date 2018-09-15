@@ -536,7 +536,7 @@ class ModelSnippet(Snippet):
 				Xmlnode('update', attributes={'handle': 'styles'}),
 				Xmlnode('body', nodes=[
 					Xmlnode('referenceContainer', attributes={'name': 'content'}, nodes=[
-						Xmlnode('uiComponent', attributes={'name': '{}_index'.format(model_table)})	
+						Xmlnode('uiComponent', attributes={'name': '{}_listing'.format(model_table)})
 					])
 				])
 			]))
@@ -588,16 +588,16 @@ class ModelSnippet(Snippet):
 			]),
 		])
 
-		self.add_xml('view/adminhtml/ui_component/{}_index.xml'.format(model_table), 
+		self.add_xml('view/adminhtml/ui_component/{}_listing.xml'.format(model_table),
 			Xmlnode('listing', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:module:Magento_Ui:etc/ui_configuration.xsd"}, nodes=[
 				Xmlnode('argument', attributes={'name': 'context', 'xsi:type': 'configurableObject'}, nodes=[
 					Xmlnode('argument', attributes={'name': 'class', 'xsi:type': 'string'}, node_text='Magento\\Framework\\View\\Element\\UiComponent\\Context'),
-					Xmlnode('argument', attributes={'name': 'namespace', 'xsi:type': 'string'}, node_text='{}_index'.format(model_table)),
+					Xmlnode('argument', attributes={'name': 'namespace', 'xsi:type': 'string'}, node_text='{}_listing'.format(model_table)),
 				]),
 				Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
 					Xmlnode('item', attributes={'name': 'js_config', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': 'provider', 'xsi:type': 'string'}, node_text='{}_index.{}'.format(model_table, data_source_id)),	
-						Xmlnode('item', attributes={'name': 'deps', 'xsi:type': 'string'}, node_text='{}_index.{}'.format(model_table, data_source_id)),	
+						Xmlnode('item', attributes={'name': 'provider', 'xsi:type': 'string'}, node_text='{}_listing.{}'.format(model_table, data_source_id)),
+						Xmlnode('item', attributes={'name': 'deps', 'xsi:type': 'string'}, node_text='{}_listing.{}'.format(model_table, data_source_id)),
 					]),
 					Xmlnode('item', attributes={'name': 'spinner', 'xsi:type': 'string'}, node_text='{}_columns'.format(model_table)),
 				]),
@@ -1205,7 +1205,7 @@ class ModelSnippet(Snippet):
 		self.add_xml('view/adminhtml/ui_component/{}_form.xml'.format(model_table), ui_form)
 
 		# Update UI Component index
-		ui_index = Xmlnode('listing', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:module:Magento_Ui:etc/ui_configuration.xsd"}, nodes=[
+		ui_listing = Xmlnode('listing', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:module:Magento_Ui:etc/ui_configuration.xsd"}, nodes=[
 			Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
 				Xmlnode('item', attributes={'name': 'buttons', 'xsi:type': 'array'}, nodes=[
 					Xmlnode('item', attributes={'name': 'add', 'xsi:type': 'array'}, nodes=[
@@ -1220,7 +1220,7 @@ class ModelSnippet(Snippet):
 				Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
 					Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
 						Xmlnode('item', attributes={'name': 'editorConfig', 'xsi:type': 'array'}, nodes=[
-							Xmlnode('item', attributes={'name': 'selectProvider', 'xsi:type': 'string'}, node_text='{0}_index.{0}_index.{0}_columns.ids'.format(model_table)),
+							Xmlnode('item', attributes={'name': 'selectProvider', 'xsi:type': 'string'}, node_text='{0}_listing.{0}_listing.{0}_columns.ids'.format(model_table)),
 							Xmlnode('item', attributes={'name': 'enabled', 'xsi:type': 'boolean'}, node_text='true'),
 							Xmlnode('item', attributes={'name': 'indexField', 'xsi:type': 'string'}, node_text=model_id),
 							Xmlnode('item', attributes={'name': 'clientConfig', 'xsi:type': 'array'}, nodes=[
@@ -1230,7 +1230,7 @@ class ModelSnippet(Snippet):
 						]),
 						Xmlnode('item', attributes={'name': 'childDefaults', 'xsi:type': 'array'}, nodes=[
 							Xmlnode('item', attributes={'name': 'fieldAction', 'xsi:type': 'array'}, nodes=[
-								Xmlnode('item', attributes={'name': 'provider', 'xsi:type': 'string'}, node_text='{0}_index.{0}_index.{0}_columns_editor'.format(model_table)),
+								Xmlnode('item', attributes={'name': 'provider', 'xsi:type': 'string'}, node_text='{0}_listing.{0}_listing.{0}_columns_editor'.format(model_table)),
 								Xmlnode('item', attributes={'name': 'target', 'xsi:type': 'string'}, node_text='startEdit'),
 								Xmlnode('item', attributes={'name': 'params', 'xsi:type': 'array'}, nodes=[
 									Xmlnode('item', attributes={'name': '0', 'xsi:type': 'string'}, node_text='${ $.$data.rowIndex }'),
@@ -1262,7 +1262,7 @@ class ModelSnippet(Snippet):
 			]),
 		])
 
-		self.add_xml('view/adminhtml/ui_component/{}_index.xml'.format(model_table), ui_index)
+		self.add_xml('view/adminhtml/ui_component/{}_listing.xml'.format(model_table), ui_listing)
 
 	def add_web_api(self, model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type, api_repository_class, model_id_capitalized_after):
 
