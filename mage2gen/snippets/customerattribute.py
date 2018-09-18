@@ -236,6 +236,16 @@ class CustomerAttributeSnippet(Snippet):
 			])
 		])
 
+		etc_module = Xmlnode('config', attributes={
+			'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Module/etc/module.xsd"}, nodes=[
+			Xmlnode('module', attributes={'name': self.module_name}, nodes=[
+				Xmlnode('sequence', attributes={}, nodes=[
+					Xmlnode('module', attributes={'name': 'Magento_Customer'})
+				])
+			])
+		])
+		self.add_xml('etc/module.xml', etc_module)
+
 		self.add_xml(extension_attributes_file, extension_attributes_xml)
 			
 
