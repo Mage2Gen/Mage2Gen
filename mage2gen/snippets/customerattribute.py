@@ -30,7 +30,6 @@ class CustomerAttributeSnippet(Snippet):
         ("boolean","Yes/No"),
         ("multiselect","Multiple Select"),
         ("select","Dropdown"),
-        ("price","Price"),
         ("static","Static")
     ]
 
@@ -48,7 +47,6 @@ class CustomerAttributeSnippet(Snippet):
         "boolean":"int",
         "multiselect":"varchar",
         "select":"int",
-        "price":"decimal",
     }
 
 	USED_IN_FORMS = [
