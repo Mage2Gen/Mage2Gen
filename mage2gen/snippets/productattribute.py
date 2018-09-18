@@ -17,6 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os, locale
 from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from ..utils import upperfirst
 
 class ProductAttributeSnippet(Snippet):
 	snippet_label = 'Product Attribute'
@@ -78,7 +79,7 @@ class ProductAttributeSnippet(Snippet):
 		The attribute is automatically added to all the attribute sets.
 	"""
 	
-	def add(self, attribute_label, frontend_input='text', scope=1, required=False, upgrade_data=False, from_version='1.0.1', options=None, extra_params=None):
+	def add(self, attribute_label, frontend_input='text', scope=1, required=False, upgrade_data=False, from_version='1.0.1', options=None, source_model=False, extra_params=None):
 		extra_params = extra_params if extra_params else {}
 		apply_to = extra_params.get('apply_to', [])
 		try:
@@ -96,6 +97,17 @@ class ProductAttributeSnippet(Snippet):
 		attribute_code = extra_params.get('attribute_code', None)
 		if not attribute_code:
 			attribute_code = attribute_label.lower().replace(' ','_')[:30]
+
+		if source_model:
+			source_model = "\{}\{}\Model\Product\Attribute\Source\{}::class".format(self._module.package, self._module.name, upperfirst(attribute_code))
+			options_array = []
+			for val in options:
+				options_array.append("['value' => '" + val.lower() + "', 'label' => __('" + val + "')]")
+			options_php_array = '[\n' + ',\n'.join(x.strip() for x in options_array) + '\n]'
+			self.add_source_model(attribute_code, options_php_array, extra_params.get('used_in_product_listing', False))
+			options_php_array_string = ""
+		else:
+			source_model = ""
 
 		templatePath = os.path.join(os.path.dirname(__file__), '../templates/attributes/productattribute.tmpl')
 
@@ -120,7 +132,8 @@ class ProductAttributeSnippet(Snippet):
 			default = 'null',
 			is_visible_in_advanced_search = extra_params.get('is_visible_in_advanced_search','0'),
 			apply_to = apply_to,
-			backend = 'Magento\Eav\Model\Entity\Attribute\Backend\ArrayBackend' if frontend_input == 'multiselect' else ''
+			backend = 'Magento\Eav\Model\Entity\Attribute\Backend\ArrayBackend' if frontend_input == 'multiselect' else '',
+			source_model = source_model
 		)
 
 		setupType = 'Install'
@@ -185,7 +198,66 @@ class ProductAttributeSnippet(Snippet):
 		self.add_xml('etc/module.xml', etc_module)
 
 		self.add_class(install_data)
-	
+
+	def add_source_model(self, attribute_code, options_php_array_string, used_in_product_listing):
+		source_model = Phpclass('Model\\Product\\Attribute\Source\\{}'.format(upperfirst(attribute_code)),
+			extends='Magento\\Eav\\Model\\Entity\\Attribute\\Source\\AbstractSource')
+
+		source_model.add_method(Phpmethod(
+			'getAllOptions',
+			body="$this->_options = " + options_php_array_string + ";\n"
+				 "return $this->_options;",
+			docstring=[
+				'getAllOptions',
+				'',
+				'@return array'
+			]
+		))
+		if used_in_product_listing:
+			source_model.add_method(Phpmethod(
+				'getFlatColumns',
+				body="""
+					$attributeCode = $this->getAttribute()->getAttributeCode();
+					return [
+						$attributeCode => [
+							'unsigned' => false,
+							'default' => null,
+							'extra' => null,
+							'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+							'length' => 255,
+							'nullable' => true,
+							'comment' => $attributeCode . ' column',
+						],
+					];""",
+				docstring=[
+					'@return array'
+				]
+			))
+			source_model.add_method(Phpmethod(
+				'getFlatIndexes',
+				body="""
+					$indexes = [];
+
+					$index = 'IDX_' . strtoupper($this->getAttribute()->getAttributeCode());
+					$indexes[$index] = ['type' => 'index', 'fields' => [$this->getAttribute()->getAttributeCode()]];
+				
+					return $indexes;
+				""",
+				docstring=[
+					'@return array'
+				]
+			))
+			source_model.add_method(Phpmethod(
+				'getFlatUpdateSelect',
+				params=['$store'],
+				body="return $this->eavAttrEntity->create()->getFlatUpdateSelect($this->getAttribute(), $store);",
+				docstring=[
+					'@param int $store',
+					'@return \Magento\Framework\DB\Select|null'
+				]
+			))
+		self.add_class(source_model)
+
 	@classmethod
 	def params(cls):
 		 return [
@@ -206,6 +278,12 @@ class ProductAttributeSnippet(Snippet):
 				required=False, 
 				description='Dropdown or Multiselect options comma seperated',
 				error_message='Only alphanumeric'),
+			 SnippetParam(
+				 name='source_model',
+				 depend={'frontend_input': r'select|multiselect'},
+				 required=False,
+				 default=False,
+				 yes_no=True),
 			 SnippetParam(
 				 name='scope',
 				 required=True,  
