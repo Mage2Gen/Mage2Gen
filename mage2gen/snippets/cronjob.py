@@ -75,7 +75,7 @@ class CronjobSnippet(Snippet):
 		self.add_class(crontab_class)
 
 		crontab_xml = Xmlnode('config',attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Cron:etc/crontab.xsd"},nodes=[
-			Xmlnode('group', attributes={'id': '{}'.format(cronjob_group.lower())},nodes=[
+			Xmlnode('group', attributes={'id': cronjob_group.lower()},nodes=[
 				Xmlnode(
 					'job',
 					attributes={
