@@ -875,7 +875,7 @@ class ModelSnippet(Snippet):
 				    $id ? __('Edit {model_name}') : __('New {model_name}')
 				);
 				$resultPage->getConfig()->getTitle()->prepend(__('{model_name}s'));
-				$resultPage->getConfig()->getTitle()->prepend($model->getId() ? $model->getTitle() : __('New {model_name}'));
+				$resultPage->getConfig()->getTitle()->prepend($model->getId() ? __('Edit {model_name} %1', $model->getId()) : __('New {model_name}'));
 				return $resultPage;""".format(
 						model_id = model_id,
 						model_class = model_class.class_namespace,
