@@ -71,3 +71,8 @@ class OSLV3(FileLicense):
 	template_license = 'oslv3.txt'
 	template_short_license = 'oslv3_short.txt'
 	identifier = 'OSL-3.0'
+
+class MIT(FileLicense):
+	template_license = 'mit.txt'
+	template_short_license = 'mit.txt'
+	identifier = 'MIT'

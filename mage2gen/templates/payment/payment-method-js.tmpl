@@ -11,6 +11,13 @@ define(
             getMailingAddress: function () {{
                 return window.checkoutConfig.payment.checkmo.mailingAddress;
             }},
+            /**
+             * Get value of instruction field.
+             * @returns {String}
+             */
+            getInstructions: function () {{
+                return window.checkoutConfig.payment.instructions[this.item.method];
+            }}
         }});
     }}
 );
