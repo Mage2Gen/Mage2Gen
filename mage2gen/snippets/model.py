@@ -226,10 +226,42 @@ class ModelSnippet(Snippet):
 
 		# Create model class
 		model_class = Phpclass('Model\\' + model_name_capitalized.replace('_', '\\'),
-			dependencies=[api_data_class.class_namespace],
+			dependencies=[
+				api_data_class.class_namespace,
+				api_data_class.class_namespace + 'Factory',
+				'Magento\\Framework\\Api\\DataObjectHelper',
+			],
 			extends='\\Magento\\Framework\\Model\\AbstractModel',
 			implements=[model_name_capitalized.replace('_', '\\') + 'Interface'],
-			attributes=['protected $_eventPrefix = \'{}\';'.format(model_table)])
+			attributes=[
+				'protected ${}DataFactory;\n'.format(model_name.lower()),
+				'protected $dataObjectHelper;\n',
+				'protected $_eventPrefix = \'{}\';'.format(model_table)
+			])
+		model_class.add_method(Phpmethod('__construct', access=Phpmethod.PUBLIC,
+			params=[
+				"\Magento\Framework\Model\Context $context",
+				"\Magento\Framework\Registry $registry",
+				"{}InterfaceFactory ${}DataFactory".format(model_name_capitalized, model_name.lower()),
+				"DataObjectHelper $dataObjectHelper",
+				"\Magento\Framework\Model\ResourceModel\AbstractResource $resource = null",
+				"\Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null",
+				"array $data = []",
+			],
+			body="""$this->{variable}DataFactory = ${variable}DataFactory;
+			$this->dataObjectHelper = $dataObjectHelper;
+			parent::__construct($context, $registry, $resource, $resourceCollection, $data);
+			""".format(variable=model_name.lower()),
+			docstring=[
+				"@param \Magento\Framework\Model\Context $context",
+				"@param \Magento\Framework\Registry $registry",
+				"@param {}InterfaceFactory ${}DataFactory".format(model_name_capitalized, model_name.lower()),
+				"@param DataObjectHelper $dataObjectHelper",
+				"@param \Magento\Framework\Model\ResourceModel\AbstractResource $resource",
+				"@param \Magento\Framework\Data\Collection\AbstractDb $resourceCollection",
+				"@param array $data",
+			]
+		))
 		model_class.add_method(Phpmethod('_construct',
 			access=Phpmethod.PROTECTED,
 			body="$this->_init(\{}::class);".format(resource_model_class.class_namespace),
@@ -240,6 +272,23 @@ class ModelSnippet(Snippet):
 
 		model_class.add_method(Phpmethod('get'+field_name_capitalized, docstring=['Get {}'.format(field_name),'@return string'], access=Phpmethod.PUBLIC, body="return $this->getData({});".format('self::'+field_name.upper())))
 		model_class.add_method(Phpmethod('set'+field_name_capitalized, docstring=['Set {}'.format(field_name),'@param string ${}'.format(lowerfirst(field_name_capitalized)),'@return \{}'.format(api_data_class.class_namespace)], params=['${}'.format(lowerfirst(field_name_capitalized))], access=Phpmethod.PUBLIC, body="return $this->setData({}, ${});".format('self::'+field_name.upper(),lowerfirst(field_name_capitalized))))
+		model_class.add_method(Phpmethod('getDataModel', access=Phpmethod.PUBLIC,
+			body="""${variable}Data = $this->getData();
+			
+			${variable}DataObject = $this->{variable}DataFactory->create();
+			$this->dataObjectHelper->populateWithArray(
+            	${variable}DataObject,
+            	${variable}Data,
+            	{variable_upper}Interface::class
+        	);
+        	
+        	return ${variable}DataObject;
+			""".format(variable=model_name.lower(), variable_upper=model_name_capitalized),
+			docstring=[
+				"Retrieve {} model with {} data".format(model_name.lower(), model_name.lower()),
+				"@return {}Interface".format(model_name_capitalized),
+			]
+		))
 		self.add_class(model_class)
 
 		# Create collection
@@ -345,9 +394,12 @@ class ModelSnippet(Snippet):
 			docstring=['{@inheritdoc}']
 		))
 		model_repository_class.add_method(Phpmethod('getList', access=Phpmethod.PUBLIC,
-			params=['\Magento\Framework\Api\SearchCriteriaInterface $criteria'],
-			body="""$collection = $this->{variable}CollectionFactory->create();
-					foreach ($criteria->getFilterGroups() as $filterGroup) {{
+			params=['\Magento\Framework\Api\SearchCriteriaInterface $searchCriteria'],
+			body="""$searchResults = $this->searchResultsFactory->create();
+        			$searchResults->setSearchCriteria($searchCriteria);
+        			
+       				$collection = $this->{variable}CollectionFactory->create();
+					foreach ($searchCriteria->getFilterGroups() as $filterGroup) {{
 					    $fields = [];
 					    $conditions = [];
 					    foreach ($filterGroup->getFilters() as $filter) {{
@@ -361,8 +413,9 @@ class ModelSnippet(Snippet):
 					    }}
 					    $collection->addFieldToFilter($fields, $conditions);
 					}}
-
-					$sortOrders = $criteria->getSortOrders();
+					
+					$searchResults->setTotalCount($collection->getSize());
+					$sortOrders = $searchCriteria->getSortOrders();
 					if ($sortOrders) {{
 					    /** @var SortOrder $sortOrder */
 					    foreach ($sortOrders as $sortOrder) {{
@@ -372,13 +425,14 @@ class ModelSnippet(Snippet):
 					        );
 					    }}
 					}}
-					$collection->setCurPage($criteria->getCurrentPage());
-					$collection->setPageSize($criteria->getPageSize());
+					$collection->setCurPage($searchCriteria->getCurrentPage());
+					$collection->setPageSize($searchCriteria->getPageSize());
 
-					$searchResults = $this->searchResultsFactory->create();
-					$searchResults->setSearchCriteria($criteria);
-					$searchResults->setTotalCount($collection->getSize());
-					$searchResults->setItems($collection->getItems());
+					$items = [];
+					foreach ($collection as $model) {
+						$items[] = $model->getDataModel();
+					}
+					$searchResults->setItems($items);
 					return $searchResults;
 			""".format(variable=model_name_capitalized_after,data_interface=api_data_class.class_namespace,variable_upper=model_name_capitalized),
 			docstring=['{@inheritdoc}']
