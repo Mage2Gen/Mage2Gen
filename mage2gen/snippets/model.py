@@ -429,9 +429,9 @@ class ModelSnippet(Snippet):
 					$collection->setPageSize($searchCriteria->getPageSize());
 
 					$items = [];
-					foreach ($collection as $model) {
+					foreach ($collection as $model) {{
 						$items[] = $model->getDataModel();
-					}
+					}}
 					$searchResults->setItems($items);
 					return $searchResults;
 			""".format(variable=model_name_capitalized_after,data_interface=api_data_class.class_namespace,variable_upper=model_name_capitalized),
