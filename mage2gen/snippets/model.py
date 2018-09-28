@@ -277,11 +277,11 @@ class ModelSnippet(Snippet):
 			
 			${variable}DataObject = $this->{variable}DataFactory->create();
 			$this->dataObjectHelper->populateWithArray(
-            	${variable}DataObject,
-            	${variable}Data,
-            	{variable_upper}Interface::class
-        	);
-        	
+			    ${variable}DataObject,
+			    ${variable}Data,
+			    {variable_upper}Interface::class
+			);
+			
         	return ${variable}DataObject;
 			""".format(variable=model_name.lower(), variable_upper=model_name_capitalized),
 			docstring=[
@@ -430,9 +430,10 @@ class ModelSnippet(Snippet):
 
 					$items = [];
 					foreach ($collection as $model) {{
-						$items[] = $model->getDataModel();
+					    $items[] = $model->getDataModel();
 					}}
 					$searchResults->setItems($items);
+					
 					return $searchResults;
 			""".format(variable=model_name_capitalized_after,data_interface=api_data_class.class_namespace,variable_upper=model_name_capitalized),
 			docstring=['{@inheritdoc}']
