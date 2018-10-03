@@ -282,7 +282,7 @@ class ModelSnippet(Snippet):
 			    {variable_upper}Interface::class
 			);
 			
-        	return ${variable}DataObject;
+			return ${variable}DataObject;
 			""".format(variable=model_name.lower(), variable_upper=model_name_capitalized),
 			docstring=[
 				"Retrieve {} model with {} data".format(model_name.lower(), model_name.lower()),
@@ -396,9 +396,9 @@ class ModelSnippet(Snippet):
 		model_repository_class.add_method(Phpmethod('getList', access=Phpmethod.PUBLIC,
 			params=['\Magento\Framework\Api\SearchCriteriaInterface $searchCriteria'],
 			body="""$searchResults = $this->searchResultsFactory->create();
-        			$searchResults->setSearchCriteria($searchCriteria);
-        			
-       				$collection = $this->{variable}CollectionFactory->create();
+			$searchResults->setSearchCriteria($searchCriteria);
+			
+			$collection = $this->{variable}CollectionFactory->create();
 					foreach ($searchCriteria->getFilterGroups() as $filterGroup) {{
 					    $fields = [];
 					    $conditions = [];
