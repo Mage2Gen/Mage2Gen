@@ -208,7 +208,7 @@ class Xmlnode:
 		self.node_name = node_name
 		self.node_text = node_text
 		self.attributes = attributes if attributes else {}
-		self.match_attributes = match_attributes if match_attributes else ['name', 'id']
+		self.match_attributes = match_attributes if match_attributes else ['name', 'id', 'for']
 		self.nodes = nodes if nodes else []
 		self.xsd = xsd
 
