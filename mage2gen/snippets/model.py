@@ -257,21 +257,21 @@ class ModelSnippet(Snippet):
 		self.add_class(collection_model_class)
 
 		# Create Repository Class
-		model_repository_class = Phpclass('Model\\' + model_name_capitalized.replace('_', '\\') + 'Repository', 
+		model_repository_class = Phpclass('Model\\' + model_name_capitalized.replace('_', '\\') + 'Repository',
 			dependencies=[
 				api_repository_class.class_namespace,
 				api_data_search_class.class_namespace + 'Factory',
 				api_data_class.class_namespace + 'Factory',
 				'Magento\\Framework\\Api\\DataObjectHelper',
-				'Magento\\Framework\\Api\\SortOrder',
 				'Magento\\Framework\\Exception\\CouldNotDeleteException',
 				'Magento\\Framework\\Exception\\NoSuchEntityException',
 				'Magento\\Framework\\Exception\\CouldNotSaveException',
 				'Magento\\Framework\\Reflection\\DataObjectProcessor',
+				'Magento\\Framework\\Api\\SearchCriteria\\CollectionProcessorInterface',
 				resource_model_class.class_namespace + ' as Resource' + model_name_capitalized,
 				collection_model_class.class_namespace + 'Factory as '+ model_name_capitalized +'CollectionFactory',
 				'Magento\\Store\\Model\\StoreManagerInterface'
-			], 
+			],
 			attributes=[
 				'protected $resource;\n',
 				'protected ${}Factory;\n'.format(model_name_capitalized_after),
@@ -280,11 +280,12 @@ class ModelSnippet(Snippet):
     			'protected $dataObjectHelper;\n',
     			'protected $dataObjectProcessor;\n',
     			'protected $data{}Factory;\n'.format(model_name_capitalized),
-    			'private $storeManager;'
+    			'private $storeManager;\n',
+				'private $collectionProcessor;'
 			],
 			implements=[model_name_capitalized.replace('_', '\\') + 'RepositoryInterface']
 		)
-		model_repository_class.add_method(Phpmethod('__construct', access=Phpmethod.PUBLIC, 
+		model_repository_class.add_method(Phpmethod('__construct', access=Phpmethod.PUBLIC,
 			params=[
 				"Resource{} $resource".format(model_name_capitalized),
 		        "{}Factory ${}Factory".format(model_name_capitalized,model_name_capitalized_after),
@@ -294,6 +295,7 @@ class ModelSnippet(Snippet):
 		        "DataObjectHelper $dataObjectHelper",
 		        "DataObjectProcessor $dataObjectProcessor",
 		        "StoreManagerInterface $storeManager",
+		        "CollectionProcessorInterface $collectionProcessor",
 			],
 			body="""$this->resource = $resource;
 			$this->{variable}Factory = ${variable}Factory;
@@ -303,6 +305,7 @@ class ModelSnippet(Snippet):
 			$this->data{variable_upper}Factory = $data{variable_upper}Factory;
 			$this->dataObjectProcessor = $dataObjectProcessor;
 			$this->storeManager = $storeManager;
+			$this->collectionProcessor = $collectionProcessor;
 			""".format(variable=model_name_capitalized_after,variable_upper=model_name_capitalized),
 			docstring=[
 				"@param Resource{} $resource".format(model_name_capitalized),
@@ -313,6 +316,7 @@ class ModelSnippet(Snippet):
 				"@param DataObjectHelper $dataObjectHelper",
 				"@param DataObjectProcessor $dataObjectProcessor",
 				"@param StoreManagerInterface $storeManager",
+				"@param CollectionProcessorInterface $collectionProcessor",
 			]
 		))
 		model_repository_class.add_method(Phpmethod('save', access=Phpmethod.PUBLIC, 
@@ -344,41 +348,17 @@ class ModelSnippet(Snippet):
 			""".format(variable=model_name_capitalized_after,model_name=model_name),
 			docstring=['{@inheritdoc}']
 		))
+		
 		model_repository_class.add_method(Phpmethod('getList', access=Phpmethod.PUBLIC, 
 			params=['\Magento\Framework\Api\SearchCriteriaInterface $criteria'],
 			body="""$collection = $this->{variable}CollectionFactory->create();
-					foreach ($criteria->getFilterGroups() as $filterGroup) {{
-					    $fields = [];
-					    $conditions = [];
-					    foreach ($filterGroup->getFilters() as $filter) {{
-					        if ($filter->getField() === 'store_id') {{
-					            $collection->addStoreFilter($filter->getValue(), false);
-					            continue;
-					        }}
-					        $fields[] = $filter->getField();
-					        $condition = $filter->getConditionType() ?: 'eq';
-					        $conditions[] = [$condition => $filter->getValue()];
-					    }}
-					    $collection->addFieldToFilter($fields, $conditions);
-					}}
-
-					$sortOrders = $criteria->getSortOrders();
-					if ($sortOrders) {{
-					    /** @var SortOrder $sortOrder */
-					    foreach ($sortOrders as $sortOrder) {{
-					        $collection->addOrder(
-					            $sortOrder->getField(),
-					            ($sortOrder->getDirection() == SortOrder::SORT_ASC) ? 'ASC' : 'DESC'
-					        );
-					    }}
-					}}
-					$collection->setCurPage($criteria->getCurrentPage());
-					$collection->setPageSize($criteria->getPageSize());
-
+			
+					$this->collectionProcessor->process($criteria, $collection);
+					
 					$searchResults = $this->searchResultsFactory->create();
 					$searchResults->setSearchCriteria($criteria);
-					$searchResults->setTotalCount($collection->getSize());
 					$searchResults->setItems($collection->getItems());
+					$searchResults->setTotalCount($collection->getSize());
 					return $searchResults;
 			""".format(variable=model_name_capitalized_after,data_interface=api_data_class.class_namespace,variable_upper=model_name_capitalized),
 			docstring=['{@inheritdoc}']
@@ -759,7 +739,8 @@ class ModelSnippet(Snippet):
 			docstring=[
 				'Init page',
 				'',
-				'@param \Magento\Backend\Model\View\Result\Page $resultPage'
+				'@param \Magento\Backend\Model\View\Result\Page $resultPage',
+				'@return \Magento\Backend\Model\View\Result\Page'
 			]))
 		self.add_class(link_controller)
 
