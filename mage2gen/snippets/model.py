@@ -270,7 +270,8 @@ class ModelSnippet(Snippet):
 				'Magento\\Framework\\Api\\SearchCriteria\\CollectionProcessorInterface',
 				resource_model_class.class_namespace + ' as Resource' + model_name_capitalized,
 				collection_model_class.class_namespace + 'Factory as '+ model_name_capitalized +'CollectionFactory',
-				'Magento\\Store\\Model\\StoreManagerInterface'
+				'Magento\\Store\\Model\\StoreManagerInterface',
+				'Magento\\Framework\\\Api\\ExtensionAttribute\\JoinProcessorInterface'
 			],
 			attributes=[
 				'protected $resource;\n',
@@ -280,6 +281,7 @@ class ModelSnippet(Snippet):
     			'protected $dataObjectHelper;\n',
     			'protected $dataObjectProcessor;\n',
     			'protected $data{}Factory;\n'.format(model_name_capitalized),
+				'protected $extensionAttributesJoinProcessor;\n',
     			'private $storeManager;\n',
 				'private $collectionProcessor;'
 			],
@@ -296,6 +298,7 @@ class ModelSnippet(Snippet):
 		        "DataObjectProcessor $dataObjectProcessor",
 		        "StoreManagerInterface $storeManager",
 		        "CollectionProcessorInterface $collectionProcessor",
+				"JoinProcessorInterface $extensionAttributesJoinProcessor"
 			],
 			body="""$this->resource = $resource;
 			$this->{variable}Factory = ${variable}Factory;
@@ -306,6 +309,7 @@ class ModelSnippet(Snippet):
 			$this->dataObjectProcessor = $dataObjectProcessor;
 			$this->storeManager = $storeManager;
 			$this->collectionProcessor = $collectionProcessor;
+			$this-extensionAttributesJoinProcessor = $extensionAttributesJoinProcessor;
 			""".format(variable=model_name_capitalized_after,variable_upper=model_name_capitalized),
 			docstring=[
 				"@param Resource{} $resource".format(model_name_capitalized),
@@ -317,9 +321,10 @@ class ModelSnippet(Snippet):
 				"@param DataObjectProcessor $dataObjectProcessor",
 				"@param StoreManagerInterface $storeManager",
 				"@param CollectionProcessorInterface $collectionProcessor",
+				"@param JoinProcessorInterface $extensionAttributesJoinProcessor",
 			]
 		))
-		model_repository_class.add_method(Phpmethod('save', access=Phpmethod.PUBLIC, 
+		model_repository_class.add_method(Phpmethod('save', access=Phpmethod.PUBLIC,
 			params=['\\' + api_data_class.class_namespace + ' $' + model_name_capitalized_after],
 			body="""/* if (empty(${variable}->getStoreId())) {{
 					    $storeId = $this->storeManager->getStore()->getId();
@@ -337,7 +342,7 @@ class ModelSnippet(Snippet):
 			""".format(variable=model_name_capitalized_after),
 			docstring=['{@inheritdoc}']
 		))
-		model_repository_class.add_method(Phpmethod('getById', access=Phpmethod.PUBLIC, 
+		model_repository_class.add_method(Phpmethod('getById', access=Phpmethod.PUBLIC,
 			params=['${}Id'.format(model_name_capitalized_after)],
 			body="""${variable} = $this->{variable}Factory->create();
 			$this->resource->load(${variable}, ${variable}Id);
@@ -352,6 +357,11 @@ class ModelSnippet(Snippet):
 		model_repository_class.add_method(Phpmethod('getList', access=Phpmethod.PUBLIC, 
 			params=['\Magento\Framework\Api\SearchCriteriaInterface $criteria'],
 			body="""$collection = $this->{variable}CollectionFactory->create();
+			
+					this->extensionAttributesJoinProcessor->process(
+					    $collection,
+					    {data_interface}::class
+					);
 			
 					$this->collectionProcessor->process($criteria, $collection);
 					
