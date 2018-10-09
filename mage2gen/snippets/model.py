@@ -47,8 +47,8 @@ class ModelSnippet(Snippet):
 	"""
 
 	FIELD_TYPE_CHOISES = [
-		('boolean','Boolean'),	
-		('smallint','Smallint'),	
+		('boolean','Boolean'),
+		('smallint','Smallint'),
 		('integer','Integer'),
 		('bigint', 'Bigint'),
 		('float', 'Float'),
@@ -69,7 +69,7 @@ class ModelSnippet(Snippet):
 	def add(self, model_name, field_name, field_type='text', adminhtml_grid=False, adminhtml_form=False,web_api=False, extra_params=False):
 		self.count += 1
 		extra_params = extra_params if extra_params else {}
-		
+
 		model_table = '{}_{}_{}'.format(self._module.package.lower(), self._module.name.lower(), model_name.lower())
 		model_id = '{}_id'.format(model_name.lower())
 
@@ -94,7 +94,7 @@ class ModelSnippet(Snippet):
 			field_element_type = 'textarea'
 
 		top_level_menu = extra_params.get('top_level_menu', True)
-		
+
 		install_class = Phpclass('Setup\\InstallSchema',implements=['InstallSchemaInterface'],dependencies=[
 			'Magento\\Framework\\Setup\\InstallSchemaInterface',
 			'Magento\\Framework\\Setup\\ModuleContextInterface',
@@ -103,10 +103,10 @@ class ModelSnippet(Snippet):
 		# Start setup
 		install_method = Phpmethod('install', params=['SchemaSetupInterface $setup','ModuleContextInterface $context'],
 			docstring=['{@inheritdoc}'])
-		
+
 		# Create table
 		install_method.body.append("$table_{0} = $setup->getConnection()->newTable($setup->getTable('{0}'));".format(model_table))
-		
+
 		# add model id field
 		install_method.body.append("""$table_{table}->addColumn(
 			    '{field}',
@@ -120,7 +120,7 @@ class ModelSnippet(Snippet):
 			type='\\Magento\\Framework\\DB\\Ddl\\Table::TYPE_INTEGER',
 			size='null',
 			options="['identity' => true,'nullable' => false,'primary' => true,'unsigned' => true,]",
-			comment='Entity ID'	
+			comment='Entity ID'
 		))
 
 		# create options
@@ -141,7 +141,7 @@ class ModelSnippet(Snippet):
 			options['precision'] = extra_params.get('precision')
 		if extra_params.get('scale'):
 			options['scale'] = extra_params.get('scale')
-		
+
 		options = "[{}]".format(','.join("'{}' => {}".format(key, value) for key, value in options.items()))
 
 		if extra_params.get('field_size') :
@@ -149,12 +149,12 @@ class ModelSnippet(Snippet):
 		elif field_type=='decimal':
 			size = '\'12,4\''
 		elif field_type=='varchar' and not extra_params.get('field_size'):
-			size = '255'	
+			size = '255'
 		else:
 			size = 'null'
 
 		if field_type == 'varchar':
-			field_type = 'text'	
+			field_type = 'text'
 
 
 		# Add field
@@ -170,19 +170,19 @@ class ModelSnippet(Snippet):
 			type='\\Magento\\Framework\\DB\\Ddl\\Table::TYPE_{}'.format(field_type.upper()),
 			size= size,
 			options=options,
-			comment=extra_params.get('comment') or field_name	
+			comment=extra_params.get('comment') or field_name
 		))
-		
+
 		# End setup + create table 
 		install_method.end_body.append('$setup->getConnection()->createTable($table_{});'.format(model_table))
 
 		install_class.add_method(install_method)
 		self.add_class(install_class)
-		
+
 		# Create resource class
 		resource_model_class = Phpclass('Model\\ResourceModel\\' + model_name_capitalized.replace('_', '\\'), extends='\\Magento\\Framework\\Model\\ResourceModel\\Db\\AbstractDb')
-		resource_model_class.add_method(Phpmethod('_construct', 
-			access=Phpmethod.PROTECTED, 
+		resource_model_class.add_method(Phpmethod('_construct',
+			access=Phpmethod.PROTECTED,
 			body="$this->_init('{}', '{}');".format(model_table, model_id),
 			docstring=[
 				'Define resource model',
@@ -225,13 +225,13 @@ class ModelSnippet(Snippet):
 		self.add_class(api_repository_class)
 
 		# Create model class
-		model_class = Phpclass('Model\\' + model_name_capitalized.replace('_', '\\'), 
+		model_class = Phpclass('Model\\' + model_name_capitalized.replace('_', '\\'),
 			dependencies=[api_data_class.class_namespace],
-			extends='\\Magento\\Framework\\Model\\AbstractModel', 
+			extends='\\Magento\\Framework\\Model\\AbstractModel',
 			implements=[model_name_capitalized.replace('_', '\\') + 'Interface'],
 			attributes=['protected $_eventPrefix = \'{}\';'.format(model_table)])
-		model_class.add_method(Phpmethod('_construct', 
-			access=Phpmethod.PROTECTED, 
+		model_class.add_method(Phpmethod('_construct',
+			access=Phpmethod.PROTECTED,
 			body="$this->_init(\{}::class);".format(resource_model_class.class_namespace),
 			docstring=['@return void']))
 
@@ -243,10 +243,10 @@ class ModelSnippet(Snippet):
 		self.add_class(model_class)
 
 		# Create collection
-		collection_model_class = Phpclass('Model\\ResourceModel\\' + model_name_capitalized.replace('_', '\\') + '\\Collection', 
+		collection_model_class = Phpclass('Model\\ResourceModel\\' + model_name_capitalized.replace('_', '\\') + '\\Collection',
 				extends='\\Magento\\Framework\\Model\\ResourceModel\\Db\\Collection\\AbstractCollection')
-		collection_model_class.add_method(Phpmethod('_construct', 
-			access=Phpmethod.PROTECTED, 
+		collection_model_class.add_method(Phpmethod('_construct',
+			access=Phpmethod.PROTECTED,
 			body="$this->_init(\n    \{}::class,\n    \{}::class\n);".format(
 				model_class.class_namespace ,resource_model_class.class_namespace),
 			docstring=[
@@ -353,8 +353,7 @@ class ModelSnippet(Snippet):
 			""".format(variable=model_name_capitalized_after,model_name=model_name),
 			docstring=['{@inheritdoc}']
 		))
-		
-		model_repository_class.add_method(Phpmethod('getList', access=Phpmethod.PUBLIC, 
+		model_repository_class.add_method(Phpmethod('getList', access=Phpmethod.PUBLIC,
 			params=['\Magento\Framework\Api\SearchCriteriaInterface $criteria'],
 			body="""$collection = $this->{variable}CollectionFactory->create();
 			
@@ -373,7 +372,7 @@ class ModelSnippet(Snippet):
 			""".format(variable=model_name_capitalized_after,data_interface=api_data_class.class_namespace,variable_upper=model_name_capitalized),
 			docstring=['{@inheritdoc}']
 		))
-		model_repository_class.add_method(Phpmethod('delete', access=Phpmethod.PUBLIC, 
+		model_repository_class.add_method(Phpmethod('delete', access=Phpmethod.PUBLIC,
 			params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],
 			body="""try {{
 					    $this->resource->delete(${variable});
@@ -387,7 +386,7 @@ class ModelSnippet(Snippet):
 			""".format(variable=model_name_capitalized_after,model_name=model_name),
 			docstring=['{@inheritdoc}']
 		))
-		model_repository_class.add_method(Phpmethod('deleteById', access=Phpmethod.PUBLIC, 
+		model_repository_class.add_method(Phpmethod('deleteById', access=Phpmethod.PUBLIC,
 			params=['${}Id'.format(model_name_capitalized_after)],
 			body="""return $this->delete($this->getById(${variable}Id));
 			""".format(variable=model_name_capitalized_after,model_name=model_name),
@@ -411,31 +410,32 @@ class ModelSnippet(Snippet):
 		    })
 		]))
 
-		# add grid 
+		# add grid
 		if adminhtml_grid:
-			self.add_adminhtml_grid(model_name, field_name, model_table, model_id, collection_model_class, field_element_type, top_level_menu)
+			self.add_adminhtml_grid(model_name, field_name, model_table, model_id, collection_model_class, field_element_type, top_level_menu, adminhtml_form)
 
 		if adminhtml_form:
 			self.add_adminhtml_form(model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type)
 			self.add_acl(model_name)
 
+
 		if web_api:
-			self.add_web_api(model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type, api_repository_class, model_id_capitalized_after)	
-		
+			self.add_web_api(model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type, api_repository_class, model_id_capitalized_after)
+
 		if web_api | adminhtml_form | adminhtml_grid:
 			self.add_acl(model_name)
 
-	def add_adminhtml_grid(self, model_name, field_name, model_table, model_id, collection_model_class, field_element_type, top_level_menu):
+	def add_adminhtml_grid(self, model_name, field_name, model_table, model_id, collection_model_class, field_element_type, top_level_menu, adminhtml_form):
 		frontname = self.module_name.lower()
-		data_source_id = '{}_grid_data_source'.format(model_table) 
-		
+		data_source_id = '{}_listing_data_source'.format(model_table)
+
 		# create controller
 		index_controller_class = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Index', extends='\\Magento\\Backend\\App\\Action',
 			attributes=[
 			'protected $resultPageFactory;'
 			])
-		
-		index_controller_class.add_method(Phpmethod('__construct', 
+
+		index_controller_class.add_method(Phpmethod('__construct',
 			params=['\\Magento\\Backend\\App\\Action\\Context $context', '\\Magento\\Framework\\View\\Result\\PageFactory $resultPageFactory'],
 			body='$this->resultPageFactory = $resultPageFactory;\nparent::__construct($context);',
 			docstring=[
@@ -444,8 +444,8 @@ class ModelSnippet(Snippet):
 				'@param \\Magento\\Backend\\App\\Action\\Context $context',
 				'@param \\Magento\\Framework\\View\\Result\\PageFactory $resultPageFactory',
 			]))
-		
-		index_controller_class.add_method(Phpmethod('execute', 
+
+		index_controller_class.add_method(Phpmethod('execute',
 			body_return="""
 			$resultPage = $this->resultPageFactory->create();
 			$resultPage->getConfig()->getTitle()->prepend(__("{model_name}"));
@@ -456,7 +456,7 @@ class ModelSnippet(Snippet):
 				'',
 				'@return \Magento\Framework\Controller\ResultInterface',
 			]))
-		
+
 		self.add_class(index_controller_class)
 
 		# create menu.xml
@@ -469,7 +469,7 @@ class ModelSnippet(Snippet):
 				'sortOrder': 9999,
 				'resource': 'Magento_Backend::content',
 			})
-		
+
 		self.add_xml('etc/adminhtml/menu.xml', Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:module:Magento_Backend:etc/menu.xsd"}, nodes=[
 			Xmlnode('menu', nodes=[
 				top_level_menu_node,
@@ -482,7 +482,7 @@ class ModelSnippet(Snippet):
 					'parent': '{}::top_level'.format(self._module.package),
 					'action': '{}/{}/index'.format(frontname, model_name.lower().replace('_', ''))
 				})
-			])	
+			])
 		]))
 
 		# Create routes.xml
@@ -490,8 +490,8 @@ class ModelSnippet(Snippet):
 			Xmlnode('router', attributes={'id': 'admin'}, nodes=[
 				Xmlnode('route', attributes={'frontName': frontname, 'id':frontname}, nodes=[
 					Xmlnode('module', attributes={'before': 'Magento_Backend', 'name': self.module_name})
-				])	
-			])	
+				])
+			])
 		]))
 
 		# di.xml
@@ -503,101 +503,133 @@ class ModelSnippet(Snippet):
 				Xmlnode('arguments', nodes=[
 					Xmlnode('argument', attributes={'name': 'mainTable', 'xsi:type': 'string'}, node_text=model_table),
 					Xmlnode('argument', attributes={'name': 'resourceModel', 'xsi:type': 'string'}, node_text= collection_model_class.class_namespace),
-				])	
+				])
 			]),
 			Xmlnode('type', attributes={'name': 'Magento\\Framework\\View\\Element\\UiComponent\\DataProvider\\CollectionFactory'}, nodes=[
 				Xmlnode('arguments', nodes=[
 					Xmlnode('argument', attributes={'name': 'collections', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': data_source_id, 'xsi:type': 'string'}, node_text=collection_model_class.class_namespace.replace('Collection', 'Grid\\Collection'))	
-					])	
-				])	
+						Xmlnode('item', attributes={'name': data_source_id, 'xsi:type': 'string'}, node_text=collection_model_class.class_namespace.replace('Collection', 'Grid\\Collection'))
+					])
+				])
 			])
 		]))
 
 		# create layout.xml
-		self.add_xml('view/adminhtml/layout/{}_{}_index.xml'.format(frontname, model_name.replace('_', '').lower()), 
+		self.add_xml('view/adminhtml/layout/{}_{}_index.xml'.format(frontname, model_name.replace('_', '').lower()),
 			Xmlnode('page', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:framework:View/Layout/etc/page_configuration.xsd"}, nodes=[
 				Xmlnode('update', attributes={'handle': 'styles'}),
 				Xmlnode('body', nodes=[
 					Xmlnode('referenceContainer', attributes={'name': 'content'}, nodes=[
-						Xmlnode('uiComponent', attributes={'name': '{}_index'.format(model_table)})	
+						Xmlnode('uiComponent', attributes={'name': '{}_listing'.format(model_table)})
 					])
 				])
 			]))
 
 		# create components.xml
-		data_source_xml = Xmlnode('dataSource', attributes={'name': data_source_id}, nodes=[
-			Xmlnode('argument', attributes={'name': 'dataProvider', 'xsi:type': 'configurableObject'}, nodes=[
-				Xmlnode('argument', attributes={'name': 'class', 'xsi:type': 'string'}, node_text='Magento\\Framework\\View\\Element\\UiComponent\\DataProvider\\DataProvider'),
-				Xmlnode('argument', attributes={'name': 'name', 'xsi:type': 'string'}, node_text= data_source_id),
-				Xmlnode('argument', attributes={'name': 'primaryFieldName', 'xsi:type': 'string'}, node_text=model_id),
-				Xmlnode('argument', attributes={'name': 'requestFieldName', 'xsi:type': 'string'}, node_text='id'),
-				Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
-					Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': 'component', 'xsi:type': 'string'}, node_text='Magento_Ui/js/grid/provider'),
-						Xmlnode('item', attributes={'name': 'update_url', 'xsi:type': 'url', 'path': 'mui/index/render'}),
-						Xmlnode('item', attributes={'name': 'storageConfig', 'xsi:type': 'array'}, nodes=[
-							Xmlnode('item', attributes={'name': 'indexField', 'xsi:type': 'string'}, node_text=model_id)	
-						]),
-					])	
-				]),
+		data_source_xml = Xmlnode('dataSource', attributes={'name': data_source_id, 'component': 'Magento_Ui/js/grid/provider'}, nodes=[
+			Xmlnode('settings', nodes=[
+				Xmlnode('updateUrl', attributes={'path': 'mui/index/render'})
+			]),
+			Xmlnode('aclResource', node_text='{}_{}::{}'.format(self._module.package, self._module.name, model_name)),
+			Xmlnode('dataProvider', attributes={'name': data_source_id,'class': 'Magento\\Framework\\View\\Element\\UiComponent\\DataProvider\\DataProvider'}, nodes=[
+				Xmlnode('settings', nodes=[
+					Xmlnode('requestFieldName', node_text='id'),
+					Xmlnode('primaryFieldName', node_text=model_id)
+				])
 			])
 		])
 
+		if adminhtml_form:
+			columns_settings_xml = Xmlnode('settings', nodes=[
+				Xmlnode('editorConfig', nodes=[
+					Xmlnode('param', attributes={'name': 'selectProvider', 'xsi:type': 'string'}, node_text='{0}_listing.{0}_listing.{0}_columns.ids'.format(model_table)),
+					Xmlnode('param', attributes={'name': 'enabled', 'xsi:type': 'boolean'}, node_text='true'),
+					Xmlnode('param', attributes={'name': 'indexField', 'xsi:type': 'string'}, node_text=model_id),
+					Xmlnode('param', attributes={'name': 'clientConfig', 'xsi:type': 'array'}, nodes=[
+						Xmlnode('item', attributes={'name': 'saveUrl', 'xsi:type': 'url', 'path': '{}/{}/inlineEdit'.format(frontname, model_name.replace('_', ''))}),
+						Xmlnode('item', attributes={'name': 'validateBeforeSave', 'xsi:type': 'boolean'}, node_text='false'),
+					]),
+				]),
+				Xmlnode('childDefaults', nodes=[
+					Xmlnode('param', attributes={'name': 'fieldAction', 'xsi:type': 'array'}, nodes=[
+						Xmlnode('item', attributes={'name': 'provider', 'xsi:type': 'string'}, node_text='{0}_listing.{0}_listing.{0}_columns.actions'.format(model_table)),
+						Xmlnode('item', attributes={'name': 'target', 'xsi:type': 'string'}, node_text='applyAction'),
+						Xmlnode('item', attributes={'name': 'params', 'xsi:type': 'array'}, nodes=[
+							Xmlnode('item', attributes={'name': '0', 'xsi:type': 'string'}, node_text='${ $.$data.rowIndex }'),
+							Xmlnode('item', attributes={'name': '1', 'xsi:type': 'boolean'}, node_text='true'),
+						]),
+					]),
+				]),
+			])
+
 		columns_xml = Xmlnode('columns', attributes={'name': '{}_columns'.format(model_table)}, nodes=[
-			Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}),
 			Xmlnode('selectionsColumn', attributes={'name': 'ids'}, nodes=[
-				Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
-					Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': 'indexField', 'xsi:type': 'string'}, node_text=model_id)	
-					])
-				])		
+				Xmlnode('settings', nodes=[
+					Xmlnode('indexField', node_text=model_id)
+				]),
 			]),
 			Xmlnode('column', attributes={'name': model_id}, nodes=[
-				Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
-					Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': 'filter', 'xsi:type': 'string'}, node_text='text'),	
-						Xmlnode('item', attributes={'name': 'sorting', 'xsi:type': 'string'}, node_text='asc'),	
-						Xmlnode('item', attributes={'name': 'label', 'xsi:type': 'string', 'translate': 'true'}, node_text='ID'),	
-					])
-				])		
+				Xmlnode('settings', nodes=[
+					Xmlnode('filter', node_text='text'),
+					Xmlnode('sorting', node_text='asc'),
+					Xmlnode('label', attributes={'translate': 'true'}, node_text='ID')
+				])
 			]),
 			Xmlnode('column', attributes={'name': field_name}, nodes=[
-				Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
-					Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': 'filter', 'xsi:type': 'string'}, node_text='text'),	
-						Xmlnode('item', attributes={'name': 'label', 'xsi:type': 'string', 'translate': 'true'}, node_text=field_name),	
-					])
-				])		
-			]),
+				Xmlnode('settings', nodes=[
+					Xmlnode('filter', node_text='text'),
+					Xmlnode('label', attributes={'translate': 'true'}, node_text=field_name)
+				])
+			])
 		])
 
-		self.add_xml('view/adminhtml/ui_component/{}_index.xml'.format(model_table), 
-			Xmlnode('listing', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:module:Magento_Ui:etc/ui_configuration.xsd"}, nodes=[
-				Xmlnode('argument', attributes={'name': 'context', 'xsi:type': 'configurableObject'}, nodes=[
-					Xmlnode('argument', attributes={'name': 'class', 'xsi:type': 'string'}, node_text='Magento\\Framework\\View\\Element\\UiComponent\\Context'),
-					Xmlnode('argument', attributes={'name': 'namespace', 'xsi:type': 'string'}, node_text='{}_index'.format(model_table)),
+		if adminhtml_form:
+			columns_xml = Xmlnode('columns', attributes={'name': '{}_columns'.format(model_table)}, nodes=[
+				columns_settings_xml,
+				Xmlnode('selectionsColumn', attributes={'name': 'ids'}, nodes=[
+					Xmlnode('settings', nodes=[
+						Xmlnode('indexField', node_text=model_id)
+					]),
 				]),
+				Xmlnode('column', attributes={'name': model_id}, nodes=[
+					Xmlnode('settings', nodes=[
+						Xmlnode('filter', node_text='text'),
+						Xmlnode('sorting', node_text='asc'),
+						Xmlnode('label', attributes={'translate': 'true'}, node_text='ID')
+					])
+				]),
+				Xmlnode('column', attributes={'name': field_name}, nodes=[
+					Xmlnode('settings', nodes=[
+						Xmlnode('filter', node_text='text'),
+						Xmlnode('label', attributes={'translate': 'true'}, node_text=field_name)
+					])
+				])
+			])
+
+		self.add_xml('view/adminhtml/ui_component/{}_listing.xml'.format(model_table),
+			Xmlnode('listing', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:module:Magento_Ui:etc/ui_configuration.xsd"}, nodes=[
 				Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
 					Xmlnode('item', attributes={'name': 'js_config', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': 'provider', 'xsi:type': 'string'}, node_text='{}_index.{}'.format(model_table, data_source_id)),	
-						Xmlnode('item', attributes={'name': 'deps', 'xsi:type': 'string'}, node_text='{}_index.{}'.format(model_table, data_source_id)),	
+						Xmlnode('item', attributes={'name': 'provider', 'xsi:type': 'string'}, node_text='{}_listing.{}'.format(model_table, data_source_id)),
 					]),
-					Xmlnode('item', attributes={'name': 'spinner', 'xsi:type': 'string'}, node_text='{}_columns'.format(model_table)),
+				]),
+				Xmlnode('settings', nodes=[
+					Xmlnode('spinner', node_text='{}_columns'.format(model_table)),
+					Xmlnode('deps', nodes=[
+						Xmlnode('dep',node_text='{}_listing.{}'.format(model_table, data_source_id))
+					])
 				]),
 				data_source_xml,
 				Xmlnode('listingToolbar', attributes={'name': 'listing_top'}, nodes=[
-					Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
-							Xmlnode('item', attributes={'name': 'sticky', 'xsi:type': 'boolean'}, node_text='true'),
-						])
+					Xmlnode('settings', nodes=[
+						Xmlnode('sticky', node_text='true'),
 					]),
 					Xmlnode('bookmark', attributes={'name': 'bookmarks'}),
 					Xmlnode('columnsControls', attributes={'name': 'columns_controls'}),
 					Xmlnode('filters', attributes={'name': 'listing_filters'}),
-					Xmlnode('paging', attributes={'name': 'listing_paging'}),
+					Xmlnode('paging', attributes={'name': 'listing_paging'})
 				]),
-				columns_xml,
+				columns_xml
 			]))
 
 	def add_adminhtml_form(self, model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type):
@@ -653,7 +685,7 @@ class ModelSnippet(Snippet):
 
 		# Generic button
 		generic_button = Phpclass('Block\\Adminhtml\\' + model_name.replace('_', '\\') + '\\Edit\\GenericButton',
-			dependencies=['Magento\\Backend\\Block\Widget\\Context'], 
+			dependencies=['Magento\\Backend\\Block\Widget\\Context'],
 			attributes=[
 				'protected $context;'
 			],
@@ -662,7 +694,7 @@ class ModelSnippet(Snippet):
 			params=['Context $context'],
 			body="""$this->context = $context;""",
 			docstring=['@param \\Magento\\Backend\\Block\Widget\\Context $context']))
-		
+
 		generic_button.add_method(Phpmethod('getModelId',
 			body="""return $this->context->getRequest()->getParam('{}');""".format(model_id),
 			docstring=[
@@ -794,7 +826,7 @@ class ModelSnippet(Snippet):
 		self.add_class(delete_controller)
 
 		# Edit controller
-		edit_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Edit', extends= '\\' + link_controller.class_namespace, 
+		edit_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Edit', extends= '\\' + link_controller.class_namespace,
 			attributes=[
 				'protected $resultPageFactory;'
 			])
@@ -833,7 +865,7 @@ class ModelSnippet(Snippet):
 				    $id ? __('Edit {model_name}') : __('New {model_name}')
 				);
 				$resultPage->getConfig()->getTitle()->prepend(__('{model_name}s'));
-				$resultPage->getConfig()->getTitle()->prepend($model->getId() ? $model->getTitle() : __('New {model_name}'));
+				$resultPage->getConfig()->getTitle()->prepend($model->getId() ? __('Edit {model_name} %1', $model->getId()) : __('New {model_name}'));
 				return $resultPage;""".format(
 						model_id = model_id,
 						model_class = model_class.class_namespace,
@@ -848,7 +880,7 @@ class ModelSnippet(Snippet):
 		self.add_class(edit_controller)
 
 		# Inline Controller
-		inline_edit_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\InlineEdit', extends='\\Magento\\Backend\\App\\Action', 
+		inline_edit_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\InlineEdit', extends='\\Magento\\Backend\\App\\Action',
 			attributes=[
 				'protected $jsonFactory;'
 			])
@@ -901,7 +933,7 @@ class ModelSnippet(Snippet):
 		self.add_class(inline_edit_controller)
 
 		# new Controller
-		new_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\NewAction', extends='\\' + link_controller.class_namespace, 
+		new_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\NewAction', extends='\\' + link_controller.class_namespace,
 			attributes=[
 				'protected $resultForwardFactory;'
 			])
@@ -927,7 +959,7 @@ class ModelSnippet(Snippet):
 		self.add_class(new_controller)
 
 		# Save Controller
-		new_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Save', dependencies=['Magento\Framework\Exception\LocalizedException'], extends='\\Magento\\Backend\\App\\Action', 
+		new_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Save', dependencies=['Magento\Framework\Exception\LocalizedException'], extends='\\Magento\\Backend\\App\\Action',
 			attributes=[
 				'protected $dataPersistor;'])
 		new_controller.add_method(Phpmethod('__construct',
@@ -985,7 +1017,7 @@ class ModelSnippet(Snippet):
 		self.add_class(new_controller)
 
 		# Add model provider
-		data_provider = Phpclass('Model\\' + model_name.replace('_', '') + '\\DataProvider', extends='\\Magento\\Ui\\DataProvider\\AbstractDataProvider', 
+		data_provider = Phpclass('Model\\' + model_name.replace('_', '') + '\\DataProvider', extends='\\Magento\\Ui\\DataProvider\\AbstractDataProvider',
 			attributes=[
 				'protected $collection;\n',
 				'protected $dataPersistor;\n',
@@ -1043,9 +1075,9 @@ class ModelSnippet(Snippet):
 		self.add_class(data_provider)
 
 		# Add model actions
-		actions = Phpclass('Ui\Component\Listing\Column\\' + model_name.replace('_', '') + 'Actions', extends='\\Magento\\Ui\\Component\\Listing\\Columns\Column', 
+		actions = Phpclass('Ui\Component\Listing\Column\\' + model_name.replace('_', '') + 'Actions', extends='\\Magento\\Ui\\Component\\Listing\\Columns\Column',
 			attributes=[
-				"const URL_PATH_EDIT = '{}/{}/edit';".format(frontname, model_name.replace('_', '').lower()), 
+				"const URL_PATH_EDIT = '{}/{}/edit';".format(frontname, model_name.replace('_', '').lower()),
 				"const URL_PATH_DELETE = '{}/{}/delete';".format(frontname, model_name.replace('_', '').lower()),
 				"const URL_PATH_DETAILS = '{}/{}/details';".format(frontname, model_name.replace('_', '').lower()),
 				'protected $urlBuilder;',
@@ -1108,18 +1140,18 @@ class ModelSnippet(Snippet):
 		self.add_class(actions)
 
 		# Edit layout
-		self.add_xml('view/adminhtml/layout/{}_{}_edit.xml'.format(frontname, model_name.replace('_', '').lower()), 
+		self.add_xml('view/adminhtml/layout/{}_{}_edit.xml'.format(frontname, model_name.replace('_', '').lower()),
 			Xmlnode('page', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:framework:View/Layout/etc/page_configuration.xsd"}, nodes=[
 				Xmlnode('update', attributes={'handle': 'styles'}),
 				Xmlnode('body', nodes=[
 					Xmlnode('referenceContainer', attributes={'name': 'content'}, nodes=[
-						Xmlnode('uiComponent', attributes={'name': '{}_form'.format(model_table)})	
+						Xmlnode('uiComponent', attributes={'name': '{}_form'.format(model_table)})
 					])
 				])
 			]))
 
 		# New layout
-		self.add_xml('view/adminhtml/layout/{}_{}_new.xml'.format(frontname, model_name.replace('_', '').lower()), 
+		self.add_xml('view/adminhtml/layout/{}_{}_new.xml'.format(frontname, model_name.replace('_', '').lower()),
 			Xmlnode('page', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:framework:View/Layout/etc/page_configuration.xsd"}, nodes=[
 				Xmlnode('update', attributes={'handle': '{}_{}_edit'.format(frontname, model_name.lower())})
 			]))
@@ -1130,124 +1162,132 @@ class ModelSnippet(Snippet):
 			Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
 				Xmlnode('item', attributes={'name': 'js_config', 'xsi:type': 'array'}, nodes=[
 					Xmlnode('item', attributes={'name': 'provider', 'xsi:type': 'string'}, node_text='{}_form.{}'.format(model_table, data_source)),
-					Xmlnode('item', attributes={'name': 'deps', 'xsi:type': 'string'}, node_text='{}_form.{}'.format(model_table, data_source)),
 				]),
 				Xmlnode('item', attributes={'name': 'label', 'xsi:type': 'string', 'translate': 'true'}, node_text='General Information'),
-				Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
-					Xmlnode('item', attributes={'name': 'dataScope', 'xsi:type': 'string'}, node_text='data'),
-					Xmlnode('item', attributes={'name': 'namespace', 'xsi:type': 'string'}, node_text='{}_form'.format(model_table)),
-				]),
 				Xmlnode('item', attributes={'name': 'template', 'xsi:type': 'string'}, node_text='templates/form/collapsible'),
-				Xmlnode('item', attributes={'name': 'buttons', 'xsi:type': 'array'}, nodes=[
-					Xmlnode('item', attributes={'name': 'back', 'xsi:type': 'string'}, node_text=back_button.class_namespace),
-					Xmlnode('item', attributes={'name': 'delete', 'xsi:type': 'string'}, node_text=delete_button.class_namespace),
-					Xmlnode('item', attributes={'name': 'save', 'xsi:type': 'string'}, node_text=save_button.class_namespace),
-					Xmlnode('item', attributes={'name': 'save_and_continue', 'xsi:type': 'string'}, node_text=save_continue_button.class_namespace),
+			]),
+			Xmlnode('settings', nodes=[
+				Xmlnode('buttons', nodes=[
+					Xmlnode('button', attributes={'name': 'back', 'class': back_button.class_namespace}),
+					Xmlnode('button', attributes={'name': 'delete', 'class': delete_button.class_namespace}),
+					Xmlnode('button', attributes={'name': 'save', 'class': save_button.class_namespace}),
+					Xmlnode('button', attributes={'name': 'save_and_continue', 'class': save_continue_button.class_namespace}),
+				]),
+				Xmlnode('namespace', node_text='{}_form'.format(model_table)),
+				Xmlnode('dataScope', node_text='data'),
+				Xmlnode('deps', nodes=[
+					Xmlnode('dep', node_text='{}_form.{}'.format(model_table, data_source)),
 				]),
 			]),
 			Xmlnode('dataSource', attributes={'name': data_source}, nodes=[
-				Xmlnode('argument', attributes={'name': 'dataProvider', 'xsi:type': 'configurableObject'}, nodes=[
-					Xmlnode('argument', attributes={'name': 'class', 'xsi:type': 'string'}, node_text=data_provider.class_namespace),
-					Xmlnode('argument', attributes={'name': 'name', 'xsi:type': 'string'}, node_text=data_source),
-					Xmlnode('argument', attributes={'name': 'primaryFieldName', 'xsi:type': 'string'}, node_text=model_id),
-					Xmlnode('argument', attributes={'name': 'requestFieldName', 'xsi:type': 'string'}, node_text=model_id),
-					Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
-							Xmlnode('item', attributes={'name': 'submit_url', 'xsi:type': 'url', 'path': '*/*/save'}),
-						]),
-					]),
-				]),
 				Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
 					Xmlnode('item', attributes={'name': 'js_config', 'xsi:type': 'array'}, nodes=[
 						Xmlnode('item', attributes={'name': 'component', 'xsi:type': 'string'}, node_text='Magento_Ui/js/form/provider'),
 					]),
 				]),
-			]),
-			Xmlnode('fieldset', attributes={'name': 'General'}, nodes=[
-				Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
-					Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': 'label', 'xsi:type': 'string'}),
+				Xmlnode('settings', nodes=[
+					Xmlnode('submitUrl', attributes={'path': '*/*/save'}),
+				]),
+				Xmlnode('dataProvider', attributes={'name': data_source, 'class': data_provider.class_namespace}, nodes=[
+					Xmlnode('settings', nodes=[
+						Xmlnode('requestFieldName', node_text=model_id),
+						Xmlnode('primaryFieldName', node_text=model_id),
 					]),
 				]),
-				Xmlnode('field', attributes={'name': field_name}, nodes=[
+			]),
+			Xmlnode('fieldset', attributes={'name': 'general'}, nodes=[
+				Xmlnode('settings', nodes=[
+					Xmlnode('label'),
+				]),
+				Xmlnode('field', attributes={'name': field_name, 'formElement': field_element_type, 'sortOrder': str(10 * self.count)}, nodes=[
 					Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
 						Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
-							Xmlnode('item', attributes={'name': 'dataType', 'xsi:type': 'string'}, node_text='text'),
-							Xmlnode('item', attributes={'name': 'label', 'xsi:type': 'string', 'translate': 'true'}, node_text=field_name),
-							Xmlnode('item', attributes={'name': 'formElement', 'xsi:type': 'string'}, node_text=field_element_type),
 							Xmlnode('item', attributes={'name': 'source', 'xsi:type': 'string'}, node_text=model_name),
-							Xmlnode('item', attributes={'name': 'sortOrder', 'xsi:type': 'number'}, node_text=str(10 * self.count)),
-							Xmlnode('item', attributes={'name': 'dataScope', 'xsi:type': 'string'}, node_text=field_name),
-							Xmlnode('item', attributes={'name': 'validation', 'xsi:type': 'array'}, nodes=[
-								Xmlnode('item', attributes={'name': 'required-entry', 'xsi:type': 'boolean'}, node_text= 'true' if required else 'false'),
-							]),
+						]),
+					]),
+					Xmlnode('settings', nodes=[
+						Xmlnode('dataType', node_text='text'),
+						Xmlnode('label', attributes={'translate': 'true'}, node_text=field_name),
+						Xmlnode('dataScope', node_text=field_name),
+						Xmlnode('validation', nodes=[
+							Xmlnode('rule', attributes={'name': 'required-entry', 'xsi:type': 'boolean'}, node_text= 'true' if required else 'false'),
 						]),
 					]),
 				]),
 			]),
 		])
-
 		self.add_xml('view/adminhtml/ui_component/{}_form.xml'.format(model_table), ui_form)
 
-		# Update UI Component index
-		ui_index = Xmlnode('listing', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:module:Magento_Ui:etc/ui_configuration.xsd"}, nodes=[
-			Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
-				Xmlnode('item', attributes={'name': 'buttons', 'xsi:type': 'array'}, nodes=[
-					Xmlnode('item', attributes={'name': 'add', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': 'name', 'xsi:type': 'string'}, node_text='add'),
-						Xmlnode('item', attributes={'name': 'label', 'xsi:type': 'string', 'translate': 'true'}, node_text='Add new {}'.format(model_name)),
-						Xmlnode('item', attributes={'name': 'class', 'xsi:type': 'string'}, node_text='primary'),
-						Xmlnode('item', attributes={'name': 'url', 'xsi:type': 'string'}, node_text='*/*/new'),
+		# Set UI Component Listing
+		ui_listing = Xmlnode('listing', attributes={
+			'xsi:noNamespaceSchemaLocation': "urn:magento:module:Magento_Ui:etc/ui_configuration.xsd"}, nodes=[
+			Xmlnode('settings', nodes=[
+				Xmlnode('buttons', nodes=[
+					Xmlnode('button', attributes={'name': 'add'}, nodes=[
+						Xmlnode('url', attributes={'path': '*/*/new'}),
+						Xmlnode('class', node_text='primary'),
+						Xmlnode('label', attributes={'translate': 'true'}, node_text='Add new {}'.format(model_name)),
 					]),
 				]),
 			]),
 			Xmlnode('columns', attributes={'name': '{}_columns'.format(model_table)}, nodes=[
-				Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
-					Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': 'editorConfig', 'xsi:type': 'array'}, nodes=[
-							Xmlnode('item', attributes={'name': 'selectProvider', 'xsi:type': 'string'}, node_text='{0}_index.{0}_index.{0}_columns.ids'.format(model_table)),
-							Xmlnode('item', attributes={'name': 'enabled', 'xsi:type': 'boolean'}, node_text='true'),
-							Xmlnode('item', attributes={'name': 'indexField', 'xsi:type': 'string'}, node_text=model_id),
-							Xmlnode('item', attributes={'name': 'clientConfig', 'xsi:type': 'array'}, nodes=[
-								Xmlnode('item', attributes={'name': 'saveUrl', 'xsi:type': 'url', 'path': '{}/{}/inlineEdit'.format(frontname, model_name.replace('_', ''))}),
-								Xmlnode('item', attributes={'name': 'validateBeforeSave', 'xsi:type': 'boolean'}, node_text='false'),
-							]),
-						]),
-						Xmlnode('item', attributes={'name': 'childDefaults', 'xsi:type': 'array'}, nodes=[
-							Xmlnode('item', attributes={'name': 'fieldAction', 'xsi:type': 'array'}, nodes=[
-								Xmlnode('item', attributes={'name': 'provider', 'xsi:type': 'string'}, node_text='{0}_index.{0}_index.{0}_columns_editor'.format(model_table)),
-								Xmlnode('item', attributes={'name': 'target', 'xsi:type': 'string'}, node_text='startEdit'),
-								Xmlnode('item', attributes={'name': 'params', 'xsi:type': 'array'}, nodes=[
-									Xmlnode('item', attributes={'name': '0', 'xsi:type': 'string'}, node_text='${ $.$data.rowIndex }'),
-									Xmlnode('item', attributes={'name': '1', 'xsi:type': 'boolean'}, node_text='true'),
-								]),
-							]),
-						]),
-					]),
-				]),
 				Xmlnode('column', attributes={'name': field_name}, nodes=[
-					Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
-							Xmlnode('item', attributes={'name': 'editor', 'xsi:type': 'array'}, nodes=[
-								Xmlnode('item', attributes={'name': 'editorType', 'xsi:type': 'string'}, node_text=field_element_type if field_element_type == 'date' else 'text'),
-								Xmlnode('item', attributes={'name': 'validation', 'xsi:type': 'array'}, nodes=[
-									Xmlnode('item', attributes={'name': 'required-entry', 'xsi:type': 'boolean'}, node_text='true' if required else 'false'),
-								]),
+					Xmlnode('settings', nodes=[
+						Xmlnode('editor', nodes=[
+							Xmlnode('editorType',
+									node_text=field_element_type if field_element_type == 'date' else 'text'),
+							Xmlnode('validation', nodes=[
+								Xmlnode('rule', attributes={'name': 'required-entry', 'xsi:type': 'boolean'},
+										node_text='true' if required else 'false'),
 							]),
 						]),
 					]),
 				]),
 				Xmlnode('actionsColumn', attributes={'name': 'actions', 'class': actions.class_namespace}, nodes=[
-					Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
-							Xmlnode('item', attributes={'name': 'indexField', 'xsi:type': 'string'}, node_text=model_id),
-						]),
+					Xmlnode('settings', nodes=[
+						Xmlnode('indexField', node_text=model_id),
+						Xmlnode('resizeEnabled', node_text='false'),
+						Xmlnode('resizeDefaultWidth', node_text='107'),
 					]),
 				]),
 			]),
 		])
 
-		self.add_xml('view/adminhtml/ui_component/{}_index.xml'.format(model_table), ui_index)
+		self.add_xml('view/adminhtml/ui_component/{}_listing.xml'.format(model_table), ui_listing)
+
+		# Update UI Component Listing
+		ui_listing = Xmlnode('listing', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:module:Magento_Ui:etc/ui_configuration.xsd"}, nodes=[
+			Xmlnode('settings', nodes=[
+				Xmlnode('buttons', nodes=[
+					Xmlnode('button', attributes={'name': 'add'}, nodes=[
+						Xmlnode('url', attributes={'path':'*/*/new'}),
+						Xmlnode('class', node_text='primary'),
+						Xmlnode('label', attributes={'translate': 'true'}, node_text='Add new {}'.format(model_name)),
+					]),
+				]),
+			]),
+			Xmlnode('columns', attributes={'name': '{}_columns'.format(model_table)}, nodes=[
+				Xmlnode('column', attributes={'name': field_name}, nodes=[
+					Xmlnode('settings', nodes=[
+						Xmlnode('editor',  nodes=[
+							Xmlnode('editorType', node_text=field_element_type if field_element_type == 'date' else 'text'),
+							Xmlnode('validation', nodes=[
+								Xmlnode('rule', attributes={'name': 'required-entry', 'xsi:type': 'boolean'}, node_text='true' if required else 'false'),
+							]),
+						]),
+					]),
+				]),
+				Xmlnode('actionsColumn', attributes={'name': 'actions', 'class': actions.class_namespace}, nodes=[
+					Xmlnode('settings', nodes=[
+						Xmlnode('indexField', node_text=model_id),
+						Xmlnode('resizeEnabled', node_text='false'),
+						Xmlnode('resizeDefaultWidth', node_text='107'),
+					]),
+				]),
+			]),
+		])
+
+		self.add_xml('view/adminhtml/ui_component/{}_listing.xml'.format(model_table), ui_listing)
 
 	def add_web_api(self, model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type, api_repository_class, model_id_capitalized_after):
 
@@ -1291,7 +1331,7 @@ class ModelSnippet(Snippet):
 
 
 	def add_acl(self,model_name):
-		
+
 		namespace = '{}_{}'.format(self._module.package,self._module.name)
 
 		acl_xml = Xmlnode('config', attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:framework:Acl/etc/acl.xsd"}, nodes=[
@@ -1310,7 +1350,7 @@ class ModelSnippet(Snippet):
 		])
 
 		self.add_xml('etc/acl.xml', acl_xml)
-		
+
 
 	@classmethod
 	def params(cls):
@@ -1318,7 +1358,7 @@ class ModelSnippet(Snippet):
 			SnippetParam(
 				name='model_name',
 				description='Example: Blog',
-				required=True, 
+				required=True,
 				regex_validator= r'^[a-zA-Z]{1}\w+$',
 				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.',
 				repeat=True
@@ -1326,13 +1366,13 @@ class ModelSnippet(Snippet):
 			SnippetParam(
 				name='field_name',
 				description='Example: content',
-				required=True, 
+				required=True,
 				regex_validator= r'^[a-zA-Z]{1}\w+$',
 				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'
 			),
 			SnippetParam(
-				name='field_type', 
-				choises=cls.FIELD_TYPE_CHOISES, 
+				name='field_type',
+				choises=cls.FIELD_TYPE_CHOISES,
 				default='text',
 			),
 			SnippetParam(name='adminhtml_grid', yes_no=True),
@@ -1352,32 +1392,32 @@ class ModelSnippet(Snippet):
 			SnippetParam(
 				name='field_size',
 				description='Size of field, Example: 512 for max chars',
-				required=False, 
+				required=False,
 				regex_validator= r'^\d+$',
 				error_message='Only numeric value allowed.',
 				depend={'field_type': r'text|blob|decimal|numeric'}
 			),
 			SnippetParam(
-				name='precision', 
-				required=False, 
+				name='precision',
+				required=False,
 				regex_validator= r'^\d+$',
 				error_message='Only numeric value allowed.',
 				depend={'field_type': r'decimal|numeric'}
 			),
 			SnippetParam(
-				name='scale', 
-				required=False, 
+				name='scale',
+				required=False,
 				regex_validator= r'^\d+$',
 				error_message='Only numeric value allowed.',
 				depend={'field_type': r'decimal|numeric'}
 			),
 			SnippetParam(
-				name='unsigned', 
-				yes_no=True, 
+				name='unsigned',
+				yes_no=True,
 				depend={'field_type': r'smallint|integer|bigint|float|decimal|numeric'}
 			),
 			SnippetParam(
-				name='top_level_menu', 
+				name='top_level_menu',
 				yes_no=True,
 				default=True,
 				repeat=True
