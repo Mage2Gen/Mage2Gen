@@ -312,14 +312,15 @@ class ModelSnippet(Snippet):
 				api_data_search_class.class_namespace + 'Factory',
 				api_data_class.class_namespace + 'Factory',
 				'Magento\\Framework\\Api\\DataObjectHelper',
-				'Magento\\Framework\\Api\\SortOrder',
 				'Magento\\Framework\\Exception\\CouldNotDeleteException',
 				'Magento\\Framework\\Exception\\NoSuchEntityException',
 				'Magento\\Framework\\Exception\\CouldNotSaveException',
 				'Magento\\Framework\\Reflection\\DataObjectProcessor',
+				'Magento\\Framework\\Api\\SearchCriteria\\CollectionProcessorInterface',
 				resource_model_class.class_namespace + ' as Resource' + model_name_capitalized,
 				collection_model_class.class_namespace + 'Factory as '+ model_name_capitalized +'CollectionFactory',
-				'Magento\\Store\\Model\\StoreManagerInterface'
+				'Magento\\Store\\Model\\StoreManagerInterface',
+				'Magento\\Framework\\\Api\\ExtensionAttribute\\JoinProcessorInterface'
 			],
 			attributes=[
 				'protected $resource;\n',
@@ -329,7 +330,9 @@ class ModelSnippet(Snippet):
     			'protected $dataObjectHelper;\n',
     			'protected $dataObjectProcessor;\n',
     			'protected $data{}Factory;\n'.format(model_name_capitalized),
-    			'private $storeManager;'
+				'protected $extensionAttributesJoinProcessor;\n',
+    			'private $storeManager;\n',
+				'private $collectionProcessor;'
 			],
 			implements=[model_name_capitalized.replace('_', '\\') + 'RepositoryInterface']
 		)
@@ -343,6 +346,8 @@ class ModelSnippet(Snippet):
 		        "DataObjectHelper $dataObjectHelper",
 		        "DataObjectProcessor $dataObjectProcessor",
 		        "StoreManagerInterface $storeManager",
+		        "CollectionProcessorInterface $collectionProcessor",
+				"JoinProcessorInterface $extensionAttributesJoinProcessor"
 			],
 			body="""$this->resource = $resource;
 			$this->{variable}Factory = ${variable}Factory;
@@ -352,6 +357,8 @@ class ModelSnippet(Snippet):
 			$this->data{variable_upper}Factory = $data{variable_upper}Factory;
 			$this->dataObjectProcessor = $dataObjectProcessor;
 			$this->storeManager = $storeManager;
+			$this->collectionProcessor = $collectionProcessor;
+			$this-extensionAttributesJoinProcessor = $extensionAttributesJoinProcessor;
 			""".format(variable=model_name_capitalized_after,variable_upper=model_name_capitalized),
 			docstring=[
 				"@param Resource{} $resource".format(model_name_capitalized),
@@ -362,6 +369,8 @@ class ModelSnippet(Snippet):
 				"@param DataObjectHelper $dataObjectHelper",
 				"@param DataObjectProcessor $dataObjectProcessor",
 				"@param StoreManagerInterface $storeManager",
+				"@param CollectionProcessorInterface $collectionProcessor",
+				"@param JoinProcessorInterface $extensionAttributesJoinProcessor",
 			]
 		))
 		model_repository_class.add_method(Phpmethod('save', access=Phpmethod.PUBLIC,
@@ -394,46 +403,26 @@ class ModelSnippet(Snippet):
 			docstring=['{@inheritdoc}']
 		))
 		model_repository_class.add_method(Phpmethod('getList', access=Phpmethod.PUBLIC,
-			params=['\Magento\Framework\Api\SearchCriteriaInterface $searchCriteria'],
-			body="""$searchResults = $this->searchResultsFactory->create();
-			$searchResults->setSearchCriteria($searchCriteria);
+			params=['\Magento\Framework\Api\SearchCriteriaInterface $criteria'],
+			body="""$collection = $this->{variable}CollectionFactory->create();
 			
-			$collection = $this->{variable}CollectionFactory->create();
-					foreach ($searchCriteria->getFilterGroups() as $filterGroup) {{
-					    $fields = [];
-					    $conditions = [];
-					    foreach ($filterGroup->getFilters() as $filter) {{
-					        if ($filter->getField() === 'store_id') {{
-					            $collection->addStoreFilter($filter->getValue(), false);
-					            continue;
-					        }}
-					        $fields[] = $filter->getField();
-					        $condition = $filter->getConditionType() ?: 'eq';
-					        $conditions[] = [$condition => $filter->getValue()];
-					    }}
-					    $collection->addFieldToFilter($fields, $conditions);
-					}}
+					this->extensionAttributesJoinProcessor->process(
+					    $collection,
+					    {data_interface}::class
+					);
+			
+					$this->collectionProcessor->process($criteria, $collection);
 					
-					$searchResults->setTotalCount($collection->getSize());
-					$sortOrders = $searchCriteria->getSortOrders();
-					if ($sortOrders) {{
-					    /** @var SortOrder $sortOrder */
-					    foreach ($sortOrders as $sortOrder) {{
-					        $collection->addOrder(
-					            $sortOrder->getField(),
-					            ($sortOrder->getDirection() == SortOrder::SORT_ASC) ? 'ASC' : 'DESC'
-					        );
-					    }}
-					}}
-					$collection->setCurPage($searchCriteria->getCurrentPage());
-					$collection->setPageSize($searchCriteria->getPageSize());
-
+					$searchResults = $this->searchResultsFactory->create();
+					$searchResults->setSearchCriteria($criteria);
+					
 					$items = [];
 					foreach ($collection as $model) {{
 					    $items[] = $model->getDataModel();
 					}}
-					$searchResults->setItems($items);
 					
+					$searchResults->setItems($items);
+					$searchResults->setTotalCount($collection->getSize());
 					return $searchResults;
 			""".format(variable=model_name_capitalized_after,data_interface=api_data_class.class_namespace,variable_upper=model_name_capitalized),
 			docstring=['{@inheritdoc}']
@@ -847,7 +836,8 @@ class ModelSnippet(Snippet):
 			docstring=[
 				'Init page',
 				'',
-				'@param \Magento\Backend\Model\View\Result\Page $resultPage'
+				'@param \Magento\Backend\Model\View\Result\Page $resultPage',
+				'@return \Magento\Backend\Model\View\Result\Page'
 			]))
 		self.add_class(link_controller)
 
