@@ -192,7 +192,12 @@ class ModelSnippet(Snippet):
 		self.add_class(resource_model_class)
 
 		# Create api data interface class
-		api_data_class =  InterfaceClass('Api\\Data\\' + model_name_capitalized.replace('_', '\\') + 'Interface',attributes=["const {} = '{}';".format(field_name.upper(),field_name),"const {} = '{}';".format(model_id.upper(),model_id)])
+		api_data_class =  InterfaceClass('Api\\Data\\' + model_name_capitalized.replace('_', '\\') + 'Interface',
+			attributes=[
+				"const {} = '{}';".format(field_name.upper(),field_name),
+				"const {} = '{}';".format(model_id.upper(),model_id),
+				"const DATA_MODEL = 'data_model';"
+			])
 
 		api_data_class.add_method(InterfaceMethod('get'+model_id_capitalized,docstring=['Get {}'.format(model_id),'@return {}'.format('string|null')]))
 		self.add_class(api_data_class)
@@ -206,6 +211,11 @@ class ModelSnippet(Snippet):
 		api_data_class.add_method(InterfaceMethod('set'+field_name_capitalized,params=['${}'.format(lowerfirst(field_name_capitalized))],docstring=['Set {}'.format(field_name),'@param string ${}'.format(lowerfirst(field_name_capitalized)),'@return \{}'.format(api_data_class.class_namespace)]))
 		self.add_class(api_data_class)
 
+		api_data_class.add_method(InterfaceMethod('getDataModel',docstring=['Get data model.','@return {}'.format('string|null')]))
+		self.add_class(api_data_class)
+
+		api_data_class.add_method(InterfaceMethod('setDataModel', params=['$dataModel'], docstring=['Set data model.', '@param $dataModel','@return \{}'.format(api_data_class.class_namespace)]))
+		self.add_class(api_data_class)
 
 
 
@@ -289,6 +299,7 @@ class ModelSnippet(Snippet):
 				"@return {}Interface".format(model_name_capitalized),
 			]
 		))
+		model_class.add_method(Phpmethod('setDataModel', docstring=['Set data model.','@param {}Interface $dataModel'.format(model_name_capitalized),'@return \{}'.format(api_data_class.class_namespace)], params=['$dataModel'], access=Phpmethod.PUBLIC, body="return $this->setData(self::DATA_MODEL, $dataModel);"))
 		self.add_class(model_class)
 
 		# Create collection
