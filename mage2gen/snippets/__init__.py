@@ -35,3 +35,4 @@ from .widget import WidgetSnippet
 from .cache import CacheSnippet
 from .configurationtype import ConfigurationTypeSnippet
 from .block import BlockSnippet
+from .helper import HelperSnippet
