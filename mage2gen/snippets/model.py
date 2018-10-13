@@ -309,7 +309,7 @@ class ModelSnippet(Snippet):
 			$this->dataObjectProcessor = $dataObjectProcessor;
 			$this->storeManager = $storeManager;
 			$this->collectionProcessor = $collectionProcessor;
-			$this-extensionAttributesJoinProcessor = $extensionAttributesJoinProcessor;
+			$this->extensionAttributesJoinProcessor = $extensionAttributesJoinProcessor;
 			""".format(variable=model_name_capitalized_after,variable_upper=model_name_capitalized),
 			docstring=[
 				"@param Resource{} $resource".format(model_name_capitalized),
