@@ -359,7 +359,7 @@ class ModelSnippet(Snippet):
 			
 					$this->extensionAttributesJoinProcessor->process(
 					    $collection,
-					    {data_interface}::class
+					    \{data_interface}::class
 					);
 			
 					$this->collectionProcessor->process($criteria, $collection);
