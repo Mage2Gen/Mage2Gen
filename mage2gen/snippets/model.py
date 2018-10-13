@@ -271,7 +271,7 @@ class ModelSnippet(Snippet):
 				resource_model_class.class_namespace + ' as Resource' + model_name_capitalized,
 				collection_model_class.class_namespace + 'Factory as '+ model_name_capitalized +'CollectionFactory',
 				'Magento\\Store\\Model\\StoreManagerInterface',
-				'Magento\\Framework\\\Api\\ExtensionAttribute\\JoinProcessorInterface'
+				'Magento\\Framework\\Api\\ExtensionAttribute\\JoinProcessorInterface'
 			],
 			attributes=[
 				'protected $resource;\n',
