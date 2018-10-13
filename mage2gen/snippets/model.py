@@ -357,7 +357,7 @@ class ModelSnippet(Snippet):
 			params=['\Magento\Framework\Api\SearchCriteriaInterface $criteria'],
 			body="""$collection = $this->{variable}CollectionFactory->create();
 			
-					this->extensionAttributesJoinProcessor->process(
+					$this->extensionAttributesJoinProcessor->process(
 					    $collection,
 					    {data_interface}::class
 					);
