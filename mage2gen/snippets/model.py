@@ -267,11 +267,6 @@ class ModelSnippet(Snippet):
 				"@param array $data",
 			]
 		))
-		model_class.add_method(Phpmethod('_construct',
-			access=Phpmethod.PROTECTED,
-			body="$this->_init(\{}::class);".format(resource_model_class.class_namespace),
-			docstring=['@return void']))
-
 		model_class.add_method(Phpmethod('getDataModel', access=Phpmethod.PUBLIC,
 			body="""${variable}Data = $this->getData();
 			
