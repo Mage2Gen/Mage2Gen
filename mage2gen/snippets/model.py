@@ -192,7 +192,11 @@ class ModelSnippet(Snippet):
 		self.add_class(resource_model_class)
 
 		# Create api data interface class
-		api_data_class =  InterfaceClass('Api\\Data\\' + model_name_capitalized.replace('_', '\\') + 'Interface',attributes=["const {} = '{}';".format(field_name.upper(),field_name),"const {} = '{}';".format(model_id.upper(),model_id)])
+		api_data_class =  InterfaceClass('Api\\Data\\' + model_name_capitalized.replace('_', '\\') + 'Interface',
+			extends='\\Magento\\Framework\\Api\\ExtensibleDataInterface',
+			attributes=[
+				"const {} = '{}';".format(field_name.upper(),field_name),"const {} = '{}';".format(model_id.upper(),model_id)
+			])
 
 		api_data_class.add_method(InterfaceMethod('get'+model_id_capitalized,docstring=['Get {}'.format(model_id),'@return {}'.format('string|null')]))
 		self.add_class(api_data_class)
@@ -206,7 +210,9 @@ class ModelSnippet(Snippet):
 		api_data_class.add_method(InterfaceMethod('set'+field_name_capitalized,params=['${}'.format(lowerfirst(field_name_capitalized))],docstring=['Set {}'.format(field_name),'@param string ${}'.format(lowerfirst(field_name_capitalized)),'@return \{}'.format(api_data_class.class_namespace)]))
 		self.add_class(api_data_class)
 
-
+		api_data_class.add_method(InterfaceMethod('getExtensionAttributes', docstring=['Retrieve existing extension attributes object or create a new one.','@return \Magento\Framework\Api\ExtensionAttributesInterface|null']))
+		api_data_class.add_method(InterfaceMethod('setExtensionAttributes', params=['\Magento\Framework\Api\ExtensionAttributesInterface $extensionAttributes'], docstring=['Set an extension attributes object.','@param \Magento\Framework\Api\ExtensionAttributesInterface $extensionAttributes','@return $this']))
+		self.add_class(api_data_class)
 
 
 		# Create api data interface class
@@ -232,7 +238,6 @@ class ModelSnippet(Snippet):
 				'Magento\\Framework\\Api\\DataObjectHelper',
 			],
 			extends='\\Magento\\Framework\\Model\\AbstractModel',
-			implements=[model_name_capitalized.replace('_', '\\') + 'Interface'],
 			attributes=[
 				'protected ${}DataFactory;\n'.format(model_name.lower()),
 				'protected $dataObjectHelper;\n',
@@ -267,11 +272,6 @@ class ModelSnippet(Snippet):
 			body="$this->_init(\{}::class);".format(resource_model_class.class_namespace),
 			docstring=['@return void']))
 
-		model_class.add_method(Phpmethod('get'+model_id_capitalized, docstring=['Get {}'.format(model_id),'@return string'], access=Phpmethod.PUBLIC, body="return $this->getData({});".format('self::'+model_id.upper())))
-		model_class.add_method(Phpmethod('set'+model_id_capitalized, docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id_capitalized_after),'@return \{}'.format(api_data_class.class_namespace)], params=['${}'.format(model_id_capitalized_after)], access=Phpmethod.PUBLIC, body="return $this->setData({}, ${});".format('self::'+model_id.upper(),model_id_capitalized_after)))
-
-		model_class.add_method(Phpmethod('get'+field_name_capitalized, docstring=['Get {}'.format(field_name),'@return string'], access=Phpmethod.PUBLIC, body="return $this->getData({});".format('self::'+field_name.upper())))
-		model_class.add_method(Phpmethod('set'+field_name_capitalized, docstring=['Set {}'.format(field_name),'@param string ${}'.format(lowerfirst(field_name_capitalized)),'@return \{}'.format(api_data_class.class_namespace)], params=['${}'.format(lowerfirst(field_name_capitalized))], access=Phpmethod.PUBLIC, body="return $this->setData({}, ${});".format('self::'+field_name.upper(),lowerfirst(field_name_capitalized))))
 		model_class.add_method(Phpmethod('getDataModel', access=Phpmethod.PUBLIC,
 			body="""${variable}Data = $this->getData();
 			
@@ -320,7 +320,8 @@ class ModelSnippet(Snippet):
 				resource_model_class.class_namespace + ' as Resource' + model_name_capitalized,
 				collection_model_class.class_namespace + 'Factory as '+ model_name_capitalized +'CollectionFactory',
 				'Magento\\Store\\Model\\StoreManagerInterface',
-				'Magento\\Framework\\Api\\ExtensionAttribute\\JoinProcessorInterface'
+				'Magento\\Framework\\Api\\ExtensionAttribute\\JoinProcessorInterface',
+				'Magento\\Framework\\Api\\ExtensibleDataObjectConverter'
 			],
 			attributes=[
 				'protected $resource;\n',
@@ -332,7 +333,8 @@ class ModelSnippet(Snippet):
     			'protected $data{}Factory;\n'.format(model_name_capitalized),
 				'protected $extensionAttributesJoinProcessor;\n',
     			'private $storeManager;\n',
-				'private $collectionProcessor;'
+				'private $collectionProcessor;\n',
+				'protected $extensibleDataObjectConverter;'
 			],
 			implements=[model_name_capitalized.replace('_', '\\') + 'RepositoryInterface']
 		)
@@ -347,7 +349,8 @@ class ModelSnippet(Snippet):
 		        "DataObjectProcessor $dataObjectProcessor",
 		        "StoreManagerInterface $storeManager",
 		        "CollectionProcessorInterface $collectionProcessor",
-				"JoinProcessorInterface $extensionAttributesJoinProcessor"
+				"JoinProcessorInterface $extensionAttributesJoinProcessor",
+				"ExtensibleDataObjectConverter $extensibleDataObjectConverter"
 			],
 			body="""$this->resource = $resource;
 			$this->{variable}Factory = ${variable}Factory;
@@ -359,6 +362,7 @@ class ModelSnippet(Snippet):
 			$this->storeManager = $storeManager;
 			$this->collectionProcessor = $collectionProcessor;
 			$this->extensionAttributesJoinProcessor = $extensionAttributesJoinProcessor;
+			$this->extensibleDataObjectConverter = $extensibleDataObjectConverter;
 			""".format(variable=model_name_capitalized_after,variable_upper=model_name_capitalized),
 			docstring=[
 				"@param Resource{} $resource".format(model_name_capitalized),
@@ -371,6 +375,7 @@ class ModelSnippet(Snippet):
 				"@param StoreManagerInterface $storeManager",
 				"@param CollectionProcessorInterface $collectionProcessor",
 				"@param JoinProcessorInterface $extensionAttributesJoinProcessor",
+				"@param ExtensibleDataObjectConverter $extensibleDataObjectConverter",
 			]
 		))
 		model_repository_class.add_method(Phpmethod('save', access=Phpmethod.PUBLIC,
@@ -379,16 +384,25 @@ class ModelSnippet(Snippet):
 					    $storeId = $this->storeManager->getStore()->getId();
 					    ${variable}->setStoreId($storeId);
 					}} */
+					
+					${variable}Data = $this->extensibleDataObjectConverter->toNestedArray(
+					    ${variable},
+					    [],
+					    \{data_interface}::class
+					);
+					
+					${variable}Model = $this->{variable}Factory->create()->setData(${variable}Data);
+					
 					try {{
-					    $this->resource->save(${variable});
+					    $this->resource->save(${variable}Model);
 					}} catch (\Exception $exception) {{
 					    throw new CouldNotSaveException(__(
 					        'Could not save the {variable}: %1',
 					        $exception->getMessage()
 					    ));
 					}}
-					return ${variable};
-			""".format(variable=model_name_capitalized_after),
+					return ${variable}Model->getDataModel();
+			""".format(data_interface=api_data_class.class_namespace, variable=model_name_capitalized_after),
 			docstring=['{@inheritdoc}']
 		))
 		model_repository_class.add_method(Phpmethod('getById', access=Phpmethod.PUBLIC,
@@ -398,7 +412,7 @@ class ModelSnippet(Snippet):
 			if (!${variable}->getId()) {{
 			    throw new NoSuchEntityException(__('{model_name} with id "%1" does not exist.', ${variable}Id));
 			}}
-			return ${variable};
+			return ${variable}->getDataModel();
 			""".format(variable=model_name_capitalized_after,model_name=model_name),
 			docstring=['{@inheritdoc}']
 		))
@@ -448,6 +462,54 @@ class ModelSnippet(Snippet):
 			docstring=['{@inheritdoc}']
 		))
 		self.add_class(model_repository_class)
+
+		# Create Data Model Class
+		data_model_class = Phpclass('Model\\Data\\' + model_name_capitalized.replace('_', '\\'),
+			dependencies=[api_data_class.class_namespace],
+			extends='\\Magento\\Framework\\Api\\AbstractExtensibleObject',
+			implements=[
+				api_data_class.class_name
+			])
+
+		data_model_class.add_method(Phpmethod('get' + model_id_capitalized,
+			docstring=['Get {}'.format(model_id),'@return {}'.format('string|null')],
+			body="""return $this->_get({});
+			""".format('self::'+model_id.upper()),
+		))
+
+		data_model_class.add_method(Phpmethod('set' + model_id_capitalized,
+			params=['${}'.format(model_id_capitalized_after)],
+			docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id_capitalized_after),'@return \{}'.format(api_data_class.class_namespace)],
+			body="""return $this->setData({}, ${});
+			""".format('self::' + model_id.upper(), model_id_capitalized_after)
+		))
+
+		data_model_class.add_method(Phpmethod('get' + field_name_capitalized,
+			docstring=['Get {}'.format(field_name),'@return {}'.format('string|null')],
+			body="""return $this->_get({});
+			""".format('self::' + field_name.upper()),
+		))
+
+		data_model_class.add_method(Phpmethod('set' + field_name_capitalized,
+			params=['${}'.format(lowerfirst(field_name_capitalized))],
+			docstring=['Set {}'.format(field_name),'@param string ${}'.format(lowerfirst(field_name_capitalized)),'@return \{}'.format(api_data_class.class_namespace)],
+			body="""return $this->setData({}, ${});
+			""".format('self::' + field_name.upper(), lowerfirst(field_name_capitalized))
+		))
+
+		data_model_class.add_method(Phpmethod('getExtensionAttributes',
+			docstring=['Retrieve existing extension attributes object or create a new one.','@return \Magento\Framework\Api\ExtensionAttributesInterface|null'],
+			body="""return $this->_getExtensionAttributes();
+			"""
+		))
+
+		data_model_class.add_method(Phpmethod('setExtensionAttributes',
+			params=['\Magento\Framework\Api\ExtensionAttributesInterface $extensionAttributes'],
+			docstring=['Set an extension attributes object.','@param \Magento\Framework\Api\ExtensionAttributesInterface $extensionAttributes','@return $this'],
+			body="""return $this->_setExtensionAttributes($extensionAttributes);
+			"""
+		))
+		self.add_class(data_model_class)
 
 		# Create di.xml preferences
 		self.add_xml('etc/di.xml', Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:framework:ObjectManager/etc/config.xsd"}, nodes=[
