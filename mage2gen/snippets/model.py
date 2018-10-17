@@ -320,7 +320,7 @@ class ModelSnippet(Snippet):
 				resource_model_class.class_namespace + ' as Resource' + model_name_capitalized,
 				collection_model_class.class_namespace + 'Factory as '+ model_name_capitalized +'CollectionFactory',
 				'Magento\\Store\\Model\\StoreManagerInterface',
-				'Magento\\Framework\\\Api\\ExtensionAttribute\\JoinProcessorInterface'
+				'Magento\\Framework\\Api\\ExtensionAttribute\\JoinProcessorInterface'
 			],
 			attributes=[
 				'protected $resource;\n',
@@ -358,7 +358,7 @@ class ModelSnippet(Snippet):
 			$this->dataObjectProcessor = $dataObjectProcessor;
 			$this->storeManager = $storeManager;
 			$this->collectionProcessor = $collectionProcessor;
-			$this-extensionAttributesJoinProcessor = $extensionAttributesJoinProcessor;
+			$this->extensionAttributesJoinProcessor = $extensionAttributesJoinProcessor;
 			""".format(variable=model_name_capitalized_after,variable_upper=model_name_capitalized),
 			docstring=[
 				"@param Resource{} $resource".format(model_name_capitalized),
@@ -406,9 +406,9 @@ class ModelSnippet(Snippet):
 			params=['\Magento\Framework\Api\SearchCriteriaInterface $criteria'],
 			body="""$collection = $this->{variable}CollectionFactory->create();
 			
-					this->extensionAttributesJoinProcessor->process(
+					$this->extensionAttributesJoinProcessor->process(
 					    $collection,
-					    {data_interface}::class
+					    \{data_interface}::class
 					);
 			
 					$this->collectionProcessor->process($criteria, $collection);
