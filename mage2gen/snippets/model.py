@@ -86,6 +86,16 @@ class ModelSnippet(Snippet):
 		model_id_capitalized = ''.join(upperfirst(item) for item in split_model_id)
 		model_id_capitalized_after = model_id_capitalized[0].lower() + model_id_capitalized[1:]
 
+		collection_model_class_name = "\\{}\\{}\\Model\\ResourceModel\\{}\\Collection".format(self._module.package,
+			self._module.name,
+		  	model_name_capitalized.replace('_', '\\')
+		)
+
+		extension_interface_class_name = "\\{}\\{}\\Api\\Data\\{}ExtensionInterface".format(self._module.package,
+		  	self._module.name,
+		  	model_name_capitalized.replace('_', '\\')
+		)
+
 		if field_type == 'boolean':
 			field_element_type = 'checkbox'
 		elif field_type == 'date' or field_type == 'timestamp':
@@ -210,8 +220,8 @@ class ModelSnippet(Snippet):
 		api_data_class.add_method(InterfaceMethod('set'+field_name_capitalized,params=['${}'.format(lowerfirst(field_name_capitalized))],docstring=['Set {}'.format(field_name),'@param string ${}'.format(lowerfirst(field_name_capitalized)),'@return \{}'.format(api_data_class.class_namespace)]))
 		self.add_class(api_data_class)
 
-		api_data_class.add_method(InterfaceMethod('getExtensionAttributes', docstring=['Retrieve existing extension attributes object or create a new one.','@return \Magento\Framework\Api\ExtensionAttributesInterface|null']))
-		api_data_class.add_method(InterfaceMethod('setExtensionAttributes', params=['\Magento\Framework\Api\ExtensionAttributesInterface $extensionAttributes'], docstring=['Set an extension attributes object.','@param \Magento\Framework\Api\ExtensionAttributesInterface $extensionAttributes','@return $this']))
+		api_data_class.add_method(InterfaceMethod('getExtensionAttributes', docstring=['Retrieve existing extension attributes object or create a new one.','@return ' + extension_interface_class_name + '|null']))
+		api_data_class.add_method(InterfaceMethod('setExtensionAttributes', params=[extension_interface_class_name + ' $extensionAttributes'], docstring=['Set an extension attributes object.','@param ' + extension_interface_class_name +' $extensionAttributes','@return $this']))
 		self.add_class(api_data_class)
 
 
@@ -249,8 +259,8 @@ class ModelSnippet(Snippet):
 				"\Magento\Framework\Registry $registry",
 				"{}InterfaceFactory ${}DataFactory".format(model_name_capitalized, model_name.lower()),
 				"DataObjectHelper $dataObjectHelper",
-				"\Magento\Framework\Model\ResourceModel\AbstractResource $resource = null",
-				"\Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null",
+				"\\" + resource_model_class.class_namespace + " $resource",
+				collection_model_class_name + " $resourceCollection",
 				"array $data = []",
 			],
 			body="""$this->{variable}DataFactory = ${variable}DataFactory;
@@ -262,8 +272,8 @@ class ModelSnippet(Snippet):
 				"@param \Magento\Framework\Registry $registry",
 				"@param {}InterfaceFactory ${}DataFactory".format(model_name_capitalized, model_name.lower()),
 				"@param DataObjectHelper $dataObjectHelper",
-				"@param \Magento\Framework\Model\ResourceModel\AbstractResource $resource",
-				"@param \Magento\Framework\Data\Collection\AbstractDb $resourceCollection",
+				"@param \\" + resource_model_class.class_namespace + " $resource",
+				"@param " + collection_model_class_name + " $resourceCollection",
 				"@param array $data",
 			]
 		))
@@ -493,14 +503,14 @@ class ModelSnippet(Snippet):
 		))
 
 		data_model_class.add_method(Phpmethod('getExtensionAttributes',
-			docstring=['Retrieve existing extension attributes object or create a new one.','@return \Magento\Framework\Api\ExtensionAttributesInterface|null'],
+			docstring=['Retrieve existing extension attributes object or create a new one.','@return '+ extension_interface_class_name +'|null'],
 			body="""return $this->_getExtensionAttributes();
 			"""
 		))
 
 		data_model_class.add_method(Phpmethod('setExtensionAttributes',
-			params=['\Magento\Framework\Api\ExtensionAttributesInterface $extensionAttributes'],
-			docstring=['Set an extension attributes object.','@param \Magento\Framework\Api\ExtensionAttributesInterface $extensionAttributes','@return $this'],
+			params=[extension_interface_class_name + ' $extensionAttributes'],
+			docstring=['Set an extension attributes object.','@param ' + extension_interface_class_name +' $extensionAttributes','@return $this'],
 			body="""return $this->_setExtensionAttributes($extensionAttributes);
 			"""
 		))
@@ -514,7 +524,7 @@ class ModelSnippet(Snippet):
 		    }),
 		    Xmlnode('preference', attributes={
 		        'for': "{}\\{}\\Api\\Data\\{}Interface".format(self._module.package, self._module.name, model_name_capitalized),
-		        'type': "{}\\{}\\Model\\{}".format(self._module.package, self._module.name, model_name_capitalized)
+		        'type': "{}\\{}\\Model\\Data\\{}".format(self._module.package, self._module.name, model_name_capitalized)
 		    }),
 		    Xmlnode('preference', attributes={
 		        'for': "{}\\{}\\Api\\Data\\{}SearchResultsInterface".format(self._module.package, self._module.name, model_name_capitalized),
