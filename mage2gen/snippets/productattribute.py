@@ -201,7 +201,7 @@ class ProductAttributeSnippet(Snippet):
 
 	def add_source_model(self, attribute_code, options_php_array_string, used_in_product_listing):
 		source_model = Phpclass('Model\\Product\\Attribute\Source\\{}'.format(upperfirst(attribute_code)),
-			extends='Magento\\Eav\\Model\\Entity\\Attribute\\Source\\AbstractSource')
+			extends='\\Magento\\Eav\\Model\\Entity\\Attribute\\Source\\AbstractSource')
 
 		source_model.add_method(Phpmethod(
 			'getAllOptions',
