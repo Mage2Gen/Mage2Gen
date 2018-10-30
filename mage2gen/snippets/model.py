@@ -674,8 +674,8 @@ class ModelSnippet(Snippet):
 				]),
 				Xmlnode('childDefaults', nodes=[
 					Xmlnode('param', attributes={'name': 'fieldAction', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': 'provider', 'xsi:type': 'string'}, node_text='{0}_listing.{0}_listing.{0}_columns.actions'.format(model_table)),
-						Xmlnode('item', attributes={'name': 'target', 'xsi:type': 'string'}, node_text='applyAction'),
+						Xmlnode('item', attributes={'name': 'provider', 'xsi:type': 'string'}, node_text='{0}_listing.{0}_listing.{0}_columns_editor'.format(model_table)),
+						Xmlnode('item', attributes={'name': 'target', 'xsi:type': 'string'}, node_text='startEdit'),
 						Xmlnode('item', attributes={'name': 'params', 'xsi:type': 'array'}, nodes=[
 							Xmlnode('item', attributes={'name': '0', 'xsi:type': 'string'}, node_text='${ $.$data.rowIndex }'),
 							Xmlnode('item', attributes={'name': '1', 'xsi:type': 'boolean'}, node_text='true'),
