@@ -44,6 +44,7 @@ class SystemSnippet(Snippet):
 	- Multiselect
 	- Text
 	- Textarea
+	- Encrypted (Obscure)
 
 	For Select and Multiselect you will need to define a source model. By default this will be this will be the core Magento yes/no.
 	"""
@@ -53,6 +54,7 @@ class SystemSnippet(Snippet):
 		('textarea', 'Textarea'),
 		('select', 'Select'),
 		('multiselect', 'Multiselect'),
+		('obscure', 'Encrypted (Obscure)'),
 	]
 
 	SOURCE_MODELS = [
@@ -131,10 +133,19 @@ class SystemSnippet(Snippet):
 		else:
 			source_model_xml = False
 
+
+
 		if extra_params.get('field_backend_model'):
 			backend_model_xml = Xmlnode('backend_model',node_text=extra_params.get('field_backend_model'))
 		else:
-			backend_model_xml = False			
+			backend_model_xml = False
+
+		if field_type == 'obscure' :
+			backend_model_xml = Xmlnode('backend_model',node_text='Magento\\Config\\Model\\Config\\Backend\\Encrypted')
+			config_path_xml = Xmlnode('config_path',node_text='{}/{}/{}'.format(section, group, field))
+		else:
+			config_path_xml = False
+
 
 		label = extra_params.get('field_label',field) or field
 
@@ -169,7 +180,8 @@ class SystemSnippet(Snippet):
 								Xmlnode('label',node_text=label),
 								Xmlnode('comment',node_text=extra_params.get('field_comment')),
 								source_model_xml,
-								backend_model_xml
+								backend_model_xml,
+								config_path_xml
 							])
 						])	
 					])
