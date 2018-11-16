@@ -105,89 +105,77 @@ class ModelSnippet(Snippet):
 
 		top_level_menu = extra_params.get('top_level_menu', True)
 
-		install_class = Phpclass('Setup\\InstallSchema',implements=['InstallSchemaInterface'],dependencies=[
-			'Magento\\Framework\\Setup\\InstallSchemaInterface',
-			'Magento\\Framework\\Setup\\ModuleContextInterface',
-			'Magento\\Framework\\Setup\\SchemaSetupInterface'])
-
-		# Start setup
-		install_method = Phpmethod('install', params=['SchemaSetupInterface $setup','ModuleContextInterface $context'],
-			docstring=['{@inheritdoc}'])
-
-		# Create table
-		install_method.body.append("$table_{0} = $setup->getConnection()->newTable($setup->getTable('{0}'));".format(model_table))
-
+		column_nodes = []
 		# add model id field
-		install_method.body.append("""$table_{table}->addColumn(
-			    '{field}',
-			    {type},
-			    {size},
-			    {options},
-			    '{comment}'
-			);""".format(
-			table=model_table,
-			field=model_id,
-			type='\\Magento\\Framework\\DB\\Ddl\\Table::TYPE_INTEGER',
-			size='null',
-			options="['identity' => true,'nullable' => false,'primary' => true,'unsigned' => true,]",
-			comment='Entity ID'
-		))
+		column_nodes.append(Xmlnode('column', attributes={
+			'xsi:type': "{}".format('smallint'),
+			'name': "{}".format(model_id),
+			'padding': "{}".format('6'),
+			'unsigned': "{}".format('false'),
+			'nullable': "{}".format('false'),
+			'identity': "{}".format('true'),
+			'comment': "{}".format('Entity Id')
+		}))
 
 		# create options
-		options = OrderedDict()
 		required = False
+		attributes = {
+			'xsi:type': "{}".format(field_type),
+			'name': "{}".format(field_name),
+			'nullable': "true"
+		}
 		if extra_params.get('default'):
-			options['default'] = "'{}'".format(extra_params.get('default'))
+			attributes['default'] = "{}".format(extra_params.get('default'))
 		if not extra_params.get('nullable'):
-			options['nullable'] = extra_params.get('nullable')
-			required = not options['nullable']
+			attributes['nullable'] = 'false'
+			required = not attributes['nullable']
 		if extra_params.get('identity'):
-			options['identity'] = 'true'
+			attributes['identity'] = 'true'
 		if extra_params.get('auto_increment'):
-			options['auto_increment'] = 'true'
+			attributes['auto_increment'] = 'true'
 		if extra_params.get('unsigned'):
-			options['unsigned'] = 'true'
+			attributes['unsigned'] = 'true'
 		if extra_params.get('precision'):
-			options['precision'] = extra_params.get('precision')
+			attributes['precision'] = extra_params.get('precision')
 		if extra_params.get('scale'):
-			options['scale'] = extra_params.get('scale')
-
-		options = "[{}]".format(','.join("'{}' => {}".format(key, value) for key, value in options.items()))
-
+			attributes['scale'] = extra_params.get('scale')
 		if extra_params.get('field_size') :
-			size = extra_params.get('field_size')
-		elif field_type=='decimal':
-			size = '\'12,4\''
-		elif field_type=='varchar' and not extra_params.get('field_size'):
-			size = '255'
-		else:
-			size = 'null'
+			attributes['length'] = '{}'.extra_params.get('field_size')
+		elif field_type == 'decimal':
+			attributes['scale'] = '4'
+			attributes['precision'] = '12'
+		elif field_type == 'varchar' and not extra_params.get('field_size'):
+			attributes['length'] = '255'
 
-		if field_type == 'varchar':
-			field_type = 'text'
-
-
-		# Add field
-		install_method.body.append("""$table_{table}->addColumn(
-			    '{field}',
-			    {type},
-			    {size},
-			    {options},
-			    '{comment}'
-			);""".format(
-			table=model_table,
-			field=field_name,
-			type='\\Magento\\Framework\\DB\\Ddl\\Table::TYPE_{}'.format(field_type.upper()),
-			size= size,
-			options=options,
-			comment=extra_params.get('comment') or field_name
-		))
-
-		# End setup + create table 
-		install_method.end_body.append('$setup->getConnection()->createTable($table_{});'.format(model_table))
-
-		install_class.add_method(install_method)
-		self.add_class(install_class)
+		# Create di.xml preferences
+		self.add_xml('etc/db_schema.xml', Xmlnode('schema', attributes={
+			'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd"}, nodes=[
+			Xmlnode('table', attributes={
+				'name': "{}".format(model_table),
+				'resource': "default",
+				'engine': "innodb",
+				'comment': "{} Table".format(model_table)
+			}, nodes=[
+				Xmlnode('column', attributes={
+					'xsi:type': "{}".format('smallint'),
+					'name': "{}".format(model_id),
+					'padding': "{}".format('6'),
+					'unsigned': "{}".format('false'),
+					'nullable': "{}".format('false'),
+					'identity': "{}".format('true'),
+					'comment': "{}".format('Entity Id')
+				}),
+				Xmlnode('constraint', attributes={
+					'xsi:type': "primary",
+					'referenceId': "PRIMARY".format(model_id)
+				}, nodes=[
+					Xmlnode('column', attributes={
+						'name': "{}".format(model_id)
+					})
+				]),
+				Xmlnode('column', attributes=attributes)
+			])
+		]))
 
 		# Create resource class
 		resource_model_class = Phpclass('Model\\ResourceModel\\' + model_name_capitalized.replace('_', '\\'), extends='\\Magento\\Framework\\Model\\ResourceModel\\Db\\AbstractDb')
