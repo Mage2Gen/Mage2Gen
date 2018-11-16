@@ -1,5 +1,5 @@
 {description}
-Copyright (C) 2017 {copyright}
+Copyright (C) 2018 {copyright}
 
 This file is part of {module_name}.
 
