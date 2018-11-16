@@ -449,7 +449,9 @@ class ModelSnippet(Snippet):
 		model_repository_class.add_method(Phpmethod('delete', access=Phpmethod.PUBLIC,
 			params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],
 			body="""try {{
-					    $this->resource->delete(${variable});
+						    ${variable}Model = $this->{variable}Factory->create();
+						    $this->resource->load(${variable}Model, ${variable}->get{model_id}());
+						    $this->resource->delete(${variable}Model);
 					}} catch (\Exception $exception) {{
 					    throw new CouldNotDeleteException(__(
 					        'Could not delete the {model_name}: %1',
@@ -457,7 +459,7 @@ class ModelSnippet(Snippet):
 					    ));
 					}}
 					return true;
-			""".format(variable=model_name_capitalized_after,model_name=model_name),
+			""".format(variable=model_name_capitalized_after,model_name=model_name,model_id=model_id_capitalized),
 			docstring=['{@inheritdoc}']
 		))
 		model_repository_class.add_method(Phpmethod('deleteById', access=Phpmethod.PUBLIC,
@@ -674,8 +676,8 @@ class ModelSnippet(Snippet):
 				]),
 				Xmlnode('childDefaults', nodes=[
 					Xmlnode('param', attributes={'name': 'fieldAction', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': 'provider', 'xsi:type': 'string'}, node_text='{0}_listing.{0}_listing.{0}_columns.actions'.format(model_table)),
-						Xmlnode('item', attributes={'name': 'target', 'xsi:type': 'string'}, node_text='applyAction'),
+						Xmlnode('item', attributes={'name': 'provider', 'xsi:type': 'string'}, node_text='{0}_listing.{0}_listing.{0}_columns_editor'.format(model_table)),
+						Xmlnode('item', attributes={'name': 'target', 'xsi:type': 'string'}, node_text='startEdit'),
 						Xmlnode('item', attributes={'name': 'params', 'xsi:type': 'array'}, nodes=[
 							Xmlnode('item', attributes={'name': '0', 'xsi:type': 'string'}, node_text='${ $.$data.rowIndex }'),
 							Xmlnode('item', attributes={'name': '1', 'xsi:type': 'boolean'}, node_text='true'),
