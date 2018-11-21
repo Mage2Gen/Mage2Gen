@@ -119,16 +119,17 @@ class PluginSnippet(Snippet):
 
 		xml_path.append('di.xml')
 
-		split_classname =  classname.split('\\')
-		etc_module = Xmlnode('config', attributes={
-			'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Module/etc/module.xsd"}, nodes=[
-			Xmlnode('module', attributes={'name': self.module_name}, nodes=[
-				Xmlnode('sequence', attributes={}, nodes=[
-					Xmlnode('module', attributes={'name': '{}_{}'.format(split_classname[0], split_classname[1] )})
+		split_classname = classname.split('\\')
+		if len(split_classname) > 1:
+			etc_module = Xmlnode('config', attributes={
+				'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Module/etc/module.xsd"}, nodes=[
+				Xmlnode('module', attributes={'name': self.module_name}, nodes=[
+					Xmlnode('sequence', attributes={}, nodes=[
+						Xmlnode('module', attributes={'name': '{}_{}'.format(split_classname[0], split_classname[1] )})
+					])
 				])
 			])
-		])
-		self.add_xml('etc/module.xml', etc_module)
+			self.add_xml('etc/module.xml', etc_module)
 
 		self.add_xml(os.path.join(*xml_path), config)
 
