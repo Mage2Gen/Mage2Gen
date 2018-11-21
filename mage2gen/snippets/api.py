@@ -46,7 +46,7 @@ class ApiSnippet(Snippet):
 
 		model = Phpclass(
 			'\\'.join(['Model',methodname + 'Management']),
-			 implements=[api_classname])
+			 implements=['\\{}'.format(api_classname)])
 		model.add_method(Phpmethod(
 			api_method.lower() + upperfirst(api_name),
 			params=['$param'],
