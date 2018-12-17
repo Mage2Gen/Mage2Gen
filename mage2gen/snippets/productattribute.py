@@ -114,6 +114,10 @@ class ProductAttributeSnippet(Snippet):
 		with open(templatePath, 'rb') as tmpl:
 			template = tmpl.read().decode('utf-8')
 
+		split_attribute_code = attribute_code.split('_')
+		attribute_code_capitalized = ''.join(upperfirst(item) for item in split_attribute_code)
+		attribute_code_capitalized_after = attribute_code_capitalized[0].lower() + attribute_code_capitalized[1:]
+
 		is_swatch_option = frontend_input == 'swatch_visual' or frontend_input == 'swatch_text'
 
 		if frontend_input == 'swatch_visual':
@@ -143,7 +147,7 @@ class ProductAttributeSnippet(Snippet):
 			apply_to = apply_to,
 			backend = 'Magento\Eav\Model\Entity\Attribute\Backend\ArrayBackend' if frontend_input == 'multiselect' else '',
 			source_model = source_model,
-			call_convert_method = '$this->convert' + upperfirst(attribute_code) + 'ToSwatches();' if is_swatch_option else ''
+			call_convert_method = '$this->convert' + attribute_code_capitalized + 'ToSwatches();' if is_swatch_option else ''
 		)
 
 		setupType = 'Install'
@@ -232,7 +236,7 @@ class ProductAttributeSnippet(Snippet):
 
 		if is_swatch_option:
 			install_data.add_method(Phpmethod(
-				'convert{}ToSwatches'.format(upperfirst(attribute_code)),
+				'convert{}ToSwatches'.format(attribute_code_capitalized),
 				body="""$attribute = $this->eavConfig->getAttribute('catalog_product', '{attribute_code}');
 				if (!$attribute) {{
 				    return;
