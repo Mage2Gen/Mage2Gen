@@ -18,6 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
 from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+import csv
+import json
 
 class PluginSnippet(Snippet):
 
@@ -74,20 +76,44 @@ class PluginSnippet(Snippet):
 	def add(self, classname, methodname, plugintype=TYPE_AFTER, scope=SCOPE_ALL, sortorder=10, disabled=False, extra_params=None):
 		# Add class
 		plugin = Phpclass('Plugin\\{}'.format(classname))
-		
-		variable = '$result'
-		if plugintype == self.TYPE_BEFORE:
-			variable = '//$functionvariables'
+
+		params = ['\\' + classname + ' $subject']
+		returnParams = []
+		if plugintype == self.TYPE_AFTER:
+			params.append('$result')
 		elif plugintype == self.TYPE_AROUND:
-			variable = '\Closure $proceed' 
+			params.append('\Closure $proceed')
+
+		split_classname = classname.split('\\')
+		if len(split_classname) > 1:
+			csvfile = open('mage2gen3/snippets/mage2methods.csv', 'r')
+			mage2methods = csv.reader(csvfile, delimiter=';', quotechar="'")
+			for row in mage2methods:
+				if classname == row[0] and methodname == row[1]:
+					parametersJson = json.loads(row[2])
+					for key, value in parametersJson.items():
+						param = '$' + key
+						returnParams.append(param)
+						if value != '':
+							param += ' = ' + value
+						params.append(param)
+					break
+		else:
+			params.append('//$functionParam')
+
+		body = "//Your plugin code"
+		if plugintype == self.TYPE_BEFORE:
+			body += "\nreturn [" + ', '.join(returnParams) + "];"
+		elif plugintype == self.TYPE_AROUND:
+			body += "\n$result = $proceed(" + ', '.join(returnParams) + ");"
+			body += "\nreturn $result;"
+		elif plugintype == self.TYPE_AFTER:
+			body += "\nreturn $result;"
 
 		plugin.add_method(Phpmethod(
 			plugintype + methodname[0].capitalize() + methodname[1:],
-			body="//Your plugin code",
-			params=[
-				'\\' + classname + ' $subject',
-				variable
-			]
+			body=body,
+			params=params
 		))
 	
 		# Add plug first will add the module namespace to PhpClass
