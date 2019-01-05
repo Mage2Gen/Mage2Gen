@@ -57,7 +57,7 @@ class GraphQlSnippet(Snippet):
 
             base_object_type.add_objectitem(
                 GraphQlObjectItem(
-                    identifier,
+                    item_identifier,
                     item_arguments=object_arguments,
                     item_type=item_type,
                     item_resolver=resolver_graphqlformat,
