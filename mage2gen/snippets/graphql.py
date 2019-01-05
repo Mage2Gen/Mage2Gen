@@ -45,8 +45,11 @@ class GraphQlSnippet(Snippet):
                                                                           item_identifier)
 
         item_type = 'String'
-        if base_type != 'Mutation':
+        if base_type == 'Custom':
             item_type = identifier
+        
+        if base_type == 'Query':
+            item_type = item_identifier
 
         schema = GraphQlSchema()
 
@@ -57,7 +60,7 @@ class GraphQlSnippet(Snippet):
 
             base_object_type.add_objectitem(
                 GraphQlObjectItem(
-                    item_identifier,
+                    identifier,
                     item_arguments=object_arguments,
                     item_type=item_type,
                     item_resolver=resolver_graphqlformat,
