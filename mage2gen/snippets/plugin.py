@@ -86,7 +86,7 @@ class PluginSnippet(Snippet):
 
 		split_classname = classname.split('\\')
 		if len(split_classname) > 1:
-			csvfile = open('mage2gen3/snippets/mage2methods.csv', 'r')
+			csvfile = open(os.path.dirname(__file__) + '/mage2methods.csv', 'r')
 			mage2methods = csv.reader(csvfile, delimiter=';', quotechar="'")
 			for row in mage2methods:
 				if classname == row[0] and methodname == row[1]:
