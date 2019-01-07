@@ -89,7 +89,7 @@ class PluginSnippet(Snippet):
 			csvfile = open(os.path.dirname(__file__) + '/mage2methods.csv', 'r')
 			mage2methods = csv.reader(csvfile, delimiter=';', quotechar="'")
 			for row in mage2methods:
-				if classname == row[0] and methodname == row[1]:
+				if len(row) == 3 and classname == row[0] and methodname == row[1]:
 					parametersJson = json.loads(row[2])
 					for key, value in parametersJson.items():
 						param = '$' + key
