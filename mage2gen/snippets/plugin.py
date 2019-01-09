@@ -88,7 +88,7 @@ class PluginSnippet(Snippet):
 		split_classname = classname.split('\\')
 		if len(split_classname) > 1:
 			with connection.cursor() as cursor:
-				cursor.execute("SELECT parameters FROM mage2gen_mage2methods WHERE main_version = 3 AND full_classname = ? AND method = ?", [classname, methodname])
+				cursor.execute("SELECT parameters FROM mage2gen_mage2methods WHERE main_version = 3 AND full_classname = %s AND method = %s", [classname, methodname])
 				row = cursor.fetchone()
 				if row:
 					parametersJson = json.loads(row[0])
