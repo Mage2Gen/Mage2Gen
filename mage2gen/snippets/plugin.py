@@ -17,9 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
-import csv
+from .. import Phpclass, Phpmethod, Xmlnode, Snippet, SnippetParam
+from django.db import connection
 import json
+
 
 class PluginSnippet(Snippet):
 
@@ -86,18 +87,17 @@ class PluginSnippet(Snippet):
 
 		split_classname = classname.split('\\')
 		if len(split_classname) > 1:
-			csvfile = open(os.path.dirname(__file__) + '/mage2methods.csv', 'r')
-			mage2methods = csv.reader(csvfile, delimiter=';', quotechar="'")
-			for row in mage2methods:
-				if len(row) == 3 and classname == row[0] and methodname == row[1]:
-					parametersJson = json.loads(row[2])
+			with connection.cursor() as cursor:
+				cursor.execute("SELECT parameters FROM mage2gen_mage2methods WHERE main_version = 3 AND full_classname = ? AND method = ?", [classname, methodname])
+				row = cursor.fetchone()
+				if row:
+					parametersJson = json.loads(row[0])
 					for key, value in parametersJson.items():
 						param = '$' + key
 						returnParams.append(param)
 						if value != '':
 							param += ' = ' + value
 						params.append(param)
-					break
 		else:
 			params.append('//$functionParam')
 
