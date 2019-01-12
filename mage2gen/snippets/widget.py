@@ -68,7 +68,7 @@ class WidgetSnippet(Snippet):
 		self.add_xml(widget_file, widget_xml)
 
 		path = os.path.join('view','frontend','templates')
-		self.add_static_file(path, StaticFile("{}/{}.phtml".format('widget', name),body="<?php if($block->getData('{name}')): ?>\n\t<h2 class='{name}'><?php echo $block->getData('{name}'); ?></h2>\n<?php endif; ?>".format(name=field.lower(),classname=widget_block.class_namespace)))
+		self.add_static_file(path, StaticFile("{}/{}.phtml".format('widget', name.lower()),body="<?php if($block->getData('{name}')): ?>\n\t<h2 class='{name}'><?php echo $block->getData('{name}'); ?></h2>\n<?php endif; ?>".format(name=field.lower(),classname=widget_block.class_namespace)))
 
 	@classmethod
 	def params(cls):
