@@ -154,17 +154,7 @@ class ProductAttributeSnippet(Snippet):
 		if upgrade_data:
 			setupType = 'Upgrade'
 
-		if not is_swatch_option:
-			install_data = Phpclass('Setup\\{}Data'.format(setupType),
-				implements=['{}DataInterface'.format(setupType)],
-				dependencies=[
-					'Magento\\Framework\\Setup\\{}DataInterface'.format(setupType),
-					'Magento\\Framework\\Setup\\ModuleContextInterface',
-					'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
-					'Magento\\Eav\\Setup\\EavSetup',
-					'Magento\\Eav\\Setup\\EavSetupFactory'],
-				attributes=['private $eavSetupFactory;'])
-		else:
+		if is_swatch_option:
 			install_data = Phpclass(
 				'Setup\\{}Data'.format(setupType),
 				implements=['{}DataInterface'.format(setupType)],
@@ -184,8 +174,36 @@ class ProductAttributeSnippet(Snippet):
 					"protected $eavConfig;"
 				]
 			)
-
-		if not is_swatch_option:
+			install_data.add_method(Phpmethod(
+				'__construct',
+				params=[
+					'EavSetupFactory $eavSetupFactory',
+					'\\Magento\\Eav\\Model\\ResourceModel\\Entity\\Attribute\\Option\\CollectionFactory $attrOptionCollectionFactory',
+					'\\Magento\\Eav\\Model\\Config $eavConfig'
+				],
+				body="""
+					$this->eavSetupFactory = $eavSetupFactory;
+					$this->attrOptionCollectionFactory = $attrOptionCollectionFactory;
+					$this->eavConfig = $eavConfig;
+					""",
+				docstring=[
+					'Constructor',
+					'',
+					'@param \\Magento\\Eav\\Setup\\EavSetupFactory $eavSetupFactory',
+					'@param \\Magento\\Eav\\Model\\ResourceModel\\Entity\\Attribute\\Option\\CollectionFactory $attrOptionCollectionFactory',
+					'@param \\Magento\\Eav\\Model\\Config $eavConfig',
+				]
+			))
+		else:
+			install_data = Phpclass('Setup\\{}Data'.format(setupType),
+				implements=['{}DataInterface'.format(setupType)],
+				dependencies=[
+					'Magento\\Framework\\Setup\\{}DataInterface'.format(setupType),
+					'Magento\\Framework\\Setup\\ModuleContextInterface',
+					'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
+					'Magento\\Eav\\Setup\\EavSetup',
+					'Magento\\Eav\\Setup\\EavSetupFactory'],
+				attributes=['private $eavSetupFactory;'])
 			install_data.add_method(Phpmethod(
 				'__construct',
 				params=[
@@ -198,28 +216,6 @@ class ProductAttributeSnippet(Snippet):
 					'@param \\Magento\\Eav\\Setup\\EavSetupFactory $eavSetupFactory'
 				]
 			))
-		else:
-			install_data.add_method(Phpmethod(
-				'__construct',
-				params=[
-					'EavSetupFactory $eavSetupFactory',
-					'\\Magento\\Eav\\Model\\ResourceModel\\Entity\\Attribute\\Option\\CollectionFactory $attrOptionCollectionFactory',
-					'\\Magento\\Eav\\Model\\Config $eavConfig'
-				],
-				body="""
-				$this->eavSetupFactory = $eavSetupFactory;
-				$this->attrOptionCollectionFactory = $attrOptionCollectionFactory;
-				$this->eavConfig = $eavConfig;
-				""",
-				docstring=[
-					'Constructor',
-					'',
-					'@param \\Magento\\Eav\\Setup\\EavSetupFactory $eavSetupFactory',
-					'@param \\Magento\\Eav\\Model\\ResourceModel\\Entity\\Attribute\\Option\\CollectionFactory $attrOptionCollectionFactory',
-					'@param \\Magento\\Eav\\Model\\Config $eavConfig',
-				]
-			))
-
 
 		install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
 			params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
@@ -234,6 +230,7 @@ class ProductAttributeSnippet(Snippet):
 				params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
 				body = methodBody))
 
+		# Swatches Converter | \Magento\SwatchesSampleData\Model\Swatches
 		if is_swatch_option:
 			install_data.add_method(Phpmethod(
 				'convert{}ToSwatches'.format(attribute_code_capitalized),
@@ -264,8 +261,6 @@ class ProductAttributeSnippet(Snippet):
 					'Convert {} to swatches'.format(attribute_code)
 				]
 			))
-
-		if is_swatch_option:
 			install_data.add_method(Phpmethod(
 				'getOptionSwatch',
 				params=['array $attributeData'],
@@ -283,8 +278,6 @@ class ProductAttributeSnippet(Snippet):
 					'@return array'
 				]
 			))
-
-		if is_swatch_option:
 			install_data.add_method(Phpmethod(
 				'getOptionSwatchVisual',
 				access='private',
@@ -306,8 +299,6 @@ class ProductAttributeSnippet(Snippet):
 					'@return array'
 				]
 			))
-
-		if is_swatch_option:
 			install_data.add_method(Phpmethod(
 				'getOptionDefaultVisual',
 				access='private',
@@ -320,8 +311,6 @@ class ProductAttributeSnippet(Snippet):
 					'@return array'
 				]
 			))
-
-		if is_swatch_option:
 			install_data.add_method(Phpmethod(
 				'getOptionSwatchText',
 				access='private',
@@ -337,8 +326,6 @@ class ProductAttributeSnippet(Snippet):
 					'@return array'
 				]
 			))
-
-		if is_swatch_option:
 			install_data.add_method(Phpmethod(
 				'getOptionDefaultText',
 				access='private',
@@ -351,8 +338,6 @@ class ProductAttributeSnippet(Snippet):
 					'@return array'
 				]
 			))
-
-		if is_swatch_option:
 			install_data.add_method(Phpmethod(
 				'loadOptionCollection',
 				access='private',
@@ -369,8 +354,6 @@ class ProductAttributeSnippet(Snippet):
 					'@return void'
 				]
 			))
-
-		if is_swatch_option:
 			install_data.add_method(Phpmethod(
 				'addExistingOptions',
 				access='private',
