@@ -17,7 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Phpclass, Phpmethod, Xmlnode, Snippet, SnippetParam
+from django.db import connection
+import json
+
 
 class PluginSnippet(Snippet):
 
@@ -74,20 +77,43 @@ class PluginSnippet(Snippet):
 	def add(self, classname, methodname, plugintype=TYPE_AFTER, scope=SCOPE_ALL, sortorder=10, disabled=False, extra_params=None):
 		# Add class
 		plugin = Phpclass('Plugin\\{}'.format(classname))
-		
-		variable = '$result'
-		if plugintype == self.TYPE_BEFORE:
-			variable = '//$functionvariables'
+
+		params = ['\\' + classname + ' $subject']
+		returnParams = []
+		if plugintype == self.TYPE_AFTER:
+			params.append('$result')
 		elif plugintype == self.TYPE_AROUND:
-			variable = '\Closure $proceed' 
+			params.append('\Closure $proceed')
+
+		split_classname = classname.split('\\')
+		if len(split_classname) > 1:
+			with connection.cursor() as cursor:
+				cursor.execute("SELECT parameters FROM mage2gen_mage2methods WHERE main_version = 2 AND full_classname = %s AND method = %s", [classname, methodname])
+				row = cursor.fetchone()
+				if row:
+					parametersJson = json.loads(row[0])
+					for key, value in parametersJson.items():
+						param = '$' + key
+						returnParams.append(param)
+						if value != '':
+							param += ' = ' + value
+						params.append(param)
+		else:
+			params.append('//$functionParam')
+
+		body = "//Your plugin code"
+		if plugintype == self.TYPE_BEFORE:
+			body += "\nreturn [" + ', '.join(returnParams) + "];"
+		elif plugintype == self.TYPE_AROUND:
+			body += "\n$result = $proceed(" + ', '.join(returnParams) + ");"
+			body += "\nreturn $result;"
+		elif plugintype == self.TYPE_AFTER:
+			body += "\nreturn $result;"
 
 		plugin.add_method(Phpmethod(
 			plugintype + methodname[0].capitalize() + methodname[1:],
-			body="//Your plugin code",
-			params=[
-				'\\' + classname + ' $subject',
-				variable
-			]
+			body=body,
+			params=params
 		))
 	
 		# Add plug first will add the module namespace to PhpClass
