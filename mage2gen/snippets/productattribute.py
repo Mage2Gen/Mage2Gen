@@ -59,9 +59,9 @@ class ProductAttributeSnippet(Snippet):
 	}
 
 	SCOPE_CHOICES = [
-		("0","SCOPE_STORE"),
-		("1","SCOPE_GLOBAL"),
-		("2","SCOPE_WEBSITE")
+		("ScopedAttributeInterface::SCOPE_STORE","SCOPE_STORE"),
+		("ScopedAttributeInterface::SCOPE_GLOBAL","SCOPE_GLOBAL"),
+		("ScopedAttributeInterface::SCOPE_WEBSITE","SCOPE_WEBSITE")
 	]
 
 	APPLY_TO_CHOICES = [
@@ -70,7 +70,7 @@ class ProductAttributeSnippet(Snippet):
 		("grouped","Grouped Products"),
 		("bundle","Bundled Products"),
 		("configurable","Configurable Products"),
-		("virtual","Virtual Products")		
+		("virtual","Virtual Products")
 	]
 
 	description = """
@@ -78,7 +78,7 @@ class ProductAttributeSnippet(Snippet):
 
 		The attribute is automatically added to all the attribute sets.
 	"""
-	
+
 	def add(self, attribute_label, frontend_input='text', scope=1, required=False, upgrade_data=False, from_version='1.0.1', options=None, source_model=False, extra_params=None):
 		extra_params = extra_params if extra_params else {}
 		apply_to = extra_params.get('apply_to', [])
@@ -86,7 +86,7 @@ class ProductAttributeSnippet(Snippet):
 			apply_to = ','.join(x for x in apply_to if x != '-1')
 		except:
 			apply_to = ''
-		
+
 		value_type = self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int')
 		value_type = value_type if value_type != 'date' else 'datetime'
 		user_defined = 'true'
@@ -119,8 +119,8 @@ class ProductAttributeSnippet(Snippet):
 			attribute_label=attribute_label,
 			value_type=value_type,
 			frontend_input=frontend_input,
-			user_defined = user_defined,
-			scope = scope,
+			user_defined=user_defined,
+			scope=scope,
 			required = str(required).lower(),
 			options = options_php_array_string,
 			searchable = 'true' if extra_params.get('searchable', False) else 'false',
@@ -133,49 +133,107 @@ class ProductAttributeSnippet(Snippet):
 			is_visible_in_advanced_search = extra_params.get('is_visible_in_advanced_search','0'),
 			apply_to = apply_to,
 			backend = 'Magento\Eav\Model\Entity\Attribute\Backend\ArrayBackend' if frontend_input == 'multiselect' else '',
-			source_model = source_model
+			source_model = source_model,
+			sort_order = '30',
+			frontend = ''
 		)
 
 		setupType = 'Install'
+		# TODO: add Upgrade Attribute Support
 		if upgrade_data:
-			setupType = 'Upgrade'
+			setupType = 'Install'
 
-		install_data = Phpclass('Setup\\{}Data'.format(setupType),
-			implements=['{}DataInterface'.format(setupType)],
+		product_data = Phpclass('Setup\\ProductSetup'.format(setupType),
+			extends='EavSetup',
 			dependencies=[
-				'Magento\\Framework\\Setup\\{}DataInterface'.format(setupType),
-				'Magento\\Framework\\Setup\\ModuleContextInterface',
-				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
 				'Magento\\Eav\\Setup\\EavSetup',
-				'Magento\\Eav\\Setup\\EavSetupFactory'],
-			attributes=['private $eavSetupFactory;'])
+				'Magento\\Catalog\\Model\\ResourceModel\\Product\\Attribute\Collection',
+				'Magento\\Eav\\Model\\Entity\\Attribute\\ScopedAttributeInterface',
+				'Magento\\Catalog\\Setup\\CategorySetup',
+				'Magento\\Catalog\\Model\\ResourceModel\\Eav\\Attribute',
+				'Magento\\Catalog\\Model\\ResourceModel\\Product'
+			]
+		)
 
-		install_data.add_method(Phpmethod(
+		product_data.add_method(
+			Phpmethod('getDefaultEntities',body="""
+			return [\r
+			    'catalog_product' => [
+			        'entity_type_id' => CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID,
+			        'entity_model' => Product::class,
+			        'attribute_model' => Attribute::class,
+			        'table' => 'catalog_product_entity',
+			        'additional_attribute_table' => 'catalog_eav_attribute',
+			        'entity_attribute_collection' =>
+			        Collection::class,
+			        'attributes' => [""",
+					  end_body="""\r        ]\r    ]\r];\n"""))
+		product_data.add_method(
+			Phpmethod('getDefaultEntities', body=
+			methodBody.replace('\n', '\r    ')))
+
+		self.add_class(product_data)
+
+		install_patch = Phpclass('Setup\\Patch\\Data\\{}ProductAttributes'.format(setupType),
+			implements=['DataPatchInterface'],
+			dependencies=[
+				'Magento\\Framework\\Setup\\Patch\\DataPatchInterface',
+				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
+				'{}Factory'.format(product_data.class_namespace)
+			],
+			attributes=[
+				'private $moduleDataSetup;',
+				'private $productSetupFactory;'
+			]
+		)
+
+		install_patch.add_method(Phpmethod(
 			'__construct',
 			params=[
-				'EavSetupFactory $eavSetupFactory',
+				'ModuleDataSetupInterface $moduleDataSetup',
+				'{}Factory $productSetupFactory'.format(product_data.class_name)
 			],
-			body="$this->eavSetupFactory = $eavSetupFactory;",
+			body="$this->moduleDataSetup = $moduleDataSetup;\n$this->productSetupFactory = $productSetupFactory;",
 			docstring=[
 				'Constructor',
 				'',
-				'@param \\Magento\\Eav\\Setup\\EavSetupFactory $eavSetupFactory'
+				'@param ModuleDataSetupInterface $moduleDataSetup',
+				'@param {}Factory $productSetupFactory'.format(product_data.class_name)
 			]
-		)) 
-		install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
-			params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
-			body="$eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);",
-			docstring=['{@inheritdoc}']))
-		if upgrade_data:
-			install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
-				params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
-				body='if (version_compare($context->getVersion(), "' + from_version + '", "<")) {\n\n    ' + methodBody.replace('\n','\n    ') + '\n}\n'))
-		else:
-			install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
-				params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
-				body = methodBody))
+		))
 
-			# Catalog Attributes XML | Transport Attribute to Quote Item Product
+		install_patch.add_method(Phpmethod(
+			'apply',
+			body="""
+		/** @var {class_name} $productSetup */
+$productSetup = $this->productSetupFactory->create(['setup' => $this->moduleDataSetup]);
+$productSetup->installEntities();""".format(class_name=product_data.class_name),
+			docstring=[
+				'Do Upgrade',
+				'',
+				'@return void'
+			]
+		))
+		install_patch.add_method(Phpmethod(
+			'getAliases',
+			body="return [];",
+			docstring=[
+				'{@inheritdoc}'
+			]
+		))
+
+		install_patch.add_method(Phpmethod(
+			'getDependencies',
+			access='public static',
+			body="return [\n\n];",
+			docstring=[
+				'{@inheritdoc}'
+			]
+		))
+
+		self.add_class(install_patch)
+
+		# Catalog Attributes XML | Transport Attribute to Quote Item Product
 		transport_to_quote_item = extra_params.get('transport_to_quote_item', False)
 		if transport_to_quote_item:
 			config = Xmlnode('config', attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Catalog:etc/catalog_attributes.xsd"}, nodes=[
@@ -196,8 +254,6 @@ class ProductAttributeSnippet(Snippet):
 			])
 		])
 		self.add_xml('etc/module.xml', etc_module)
-
-		self.add_class(install_data)
 
 	def add_source_model(self, attribute_code, options_php_array_string, used_in_product_listing):
 		source_model = Phpclass('Model\\Product\\Attribute\Source\\{}'.format(upperfirst(attribute_code)),
@@ -262,20 +318,20 @@ class ProductAttributeSnippet(Snippet):
 	def params(cls):
 		 return [
 			 SnippetParam(
-				name='attribute_label', 
-				required=True, 
+				name='attribute_label',
+				required=True,
 				description='Example: color',
 				regex_validator= r'^[a-zA-Z\d\-_\s]+$',
 				error_message='Only alphanumeric'),
 			 SnippetParam(
-				 name='frontend_input', 
+				 name='frontend_input',
 				 choises=cls.FRONTEND_INPUT_TYPE,
-				 required=True,  
+				 required=True,
 				 default='text'),
 			 SnippetParam(
 				name='options',
-				depend= {'frontend_input': r'select|multiselect'}, 
-				required=False, 
+				depend= {'frontend_input': r'select|multiselect'},
+				required=False,
 				description='Dropdown or Multiselect options comma seperated',
 				error_message='Only alphanumeric'),
 			 SnippetParam(
@@ -286,19 +342,20 @@ class ProductAttributeSnippet(Snippet):
 				 yes_no=True),
 			 SnippetParam(
 				 name='scope',
-				 required=True,  
-				 choises=cls.SCOPE_CHOICES, 
+				 required=True,
+				 choises=cls.SCOPE_CHOICES,
 				 default='1'),
 			 SnippetParam(
 				 name='required',
-				 required=True,  
+				 required=True,
 				 default=True,
 				 yes_no=True),
-			 SnippetParam(
-				 name='upgrade_data',
-				 default=False,
-				 yes_no=True
-			 ),
+			 # TODO: add Upgrade Attribute Support
+			 # SnippetParam(
+				#  name='upgrade_data',
+				#  default=False,
+				#  yes_no=True
+			 # ),
 			 SnippetParam(
 				 name='from_version',
 				 description='1.0.1',
@@ -316,39 +373,39 @@ class ProductAttributeSnippet(Snippet):
 				error_message='Only alphanumeric and underscore characters are allowed, and need to start with a alphabetic character. And can\'t be longer then 30 characters'),
 			SnippetParam(
 				 name='apply_to',
-				 required=False,  
+				 required=False,
 				 default='',
 				 choises=cls.APPLY_TO_CHOICES,
 				 multiple_choices=True),
 			SnippetParam(
 				 name='searchable',
-				 required=True,  
+				 required=True,
 				 default=False,
 				 yes_no=True),
 			 SnippetParam(
 				 name='filterable',
-				 required=True,  
+				 required=True,
 				 default=False,
-				 depend= {'frontend_input': r'select|multiselect|price'}, 
+				 depend= {'frontend_input': r'select|multiselect|price'},
 				 yes_no=True),
 			 SnippetParam(
 				 name='visible_on_front',
-				 required=True,  
+				 required=True,
 				 default=False,
 				 yes_no=True),
 			 SnippetParam(
 				 name='comparable',
-				 required=True,  
+				 required=True,
 				 default=False,
 				 yes_no=True),
 			 SnippetParam(
 				 name='used_in_product_listing',
-				 required=True,  
+				 required=True,
 				 default=False,
 				 yes_no=True),
 			 SnippetParam(
 				 name='unique',
-				 required=True,  
+				 required=True,
 				 default=False,
 				 yes_no=True),
 			 SnippetParam(
