@@ -17,7 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
 from .. import Module, Phpclass, Phpmethod, Xmlnode, Snippet, SnippetParam, GraphQlSchema, GraphQlObjectType, \
-    GraphQlObjectItem
+    GraphQlObjectItem, StaticFile
 from ..utils import upperfirst, lowerfirst
 
 
@@ -220,6 +220,22 @@ return ${0}Data;""".format(identifier, item_identifier)
             ])
         ])
         self.add_xml('etc/module.xml', etc_module)
+
+        if base_type == 'Query':
+
+            path = os.path.join('src', 'queries', self._module.package)
+            self.add_static_file(path, StaticFile(
+                    'get{}.graphql'.format(item_identifier),
+                    body="""query {identifier}() {{
+    {identifier}() {{
+        {object_fields_string}
+    }}
+}}""".format(
+                        identifier=identifier,
+                        object_fields_string="\n\t".join(object_fields.split(","))
+                )
+            )
+            )
 
     @classmethod
     def params(cls):
