@@ -95,9 +95,17 @@ class PluginSnippet(Snippet):
 		split_classname = classname.split('\\')
 
 		if len(split_classname) > 1:
-			data = self.get_mage2methods()
-			if (methodname in data.keys()) and (classname in data[methodname].keys()):
-				parameters = data[methodname][classname]['params']
+			try:
+				data = self.get_mage2methods()
+				parameters = data[methodname][classname]
+				for key, value in parameters.items():
+					param = '$' + key
+					returnParams.append(param)
+					if value != '':
+						param += ' = ' + value
+					params.append(param)
+			except KeyError:
+				pass
 		else:
 			params.append('//$functionParam')
 
