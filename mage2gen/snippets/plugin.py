@@ -18,8 +18,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
 from .. import Phpclass, Phpmethod, Xmlnode, Snippet, SnippetParam
-from django.db import connection
-import json
+try:
+    import ujson as json
+except:
+    import json as json
 
 
 class PluginSnippet(Snippet):
@@ -74,6 +76,11 @@ class PluginSnippet(Snippet):
 		(SCOPE_WEBAPI, 'Webapi'),
 	]
 
+	def get_mage2methods(self):
+		with open(os.path.dirname(__file__) + '/mage2methods.json', 'r') as f:
+			data = json.load(f)
+		return data
+
 	def add(self, classname, methodname, plugintype=TYPE_AFTER, scope=SCOPE_ALL, sortorder=10, disabled=False, extra_params=None):
 		# Add class
 		plugin = Phpclass('Plugin\\{}'.format(classname))
@@ -86,18 +93,13 @@ class PluginSnippet(Snippet):
 			params.append('\Closure $proceed')
 
 		split_classname = classname.split('\\')
+
 		if len(split_classname) > 1:
-			with connection.cursor() as cursor:
-				cursor.execute("SELECT parameters FROM mage2gen_mage2methods WHERE main_version = 2 AND full_classname = %s AND method = %s", [classname, methodname])
-				row = cursor.fetchone()
-				if row:
-					parametersJson = json.loads(row[0])
-					for key, value in parametersJson.items():
-						param = '$' + key
-						returnParams.append(param)
-						if value != '':
-							param += ' = ' + value
-						params.append(param)
+			data = self.get_mage2methods()
+			if (methodname in data.keys()) and (classname in data[methodname].keys()):
+				parameters = data[methodname][classname]['params']
+				print(parameters)
+
 		else:
 			params.append('//$functionParam')
 
