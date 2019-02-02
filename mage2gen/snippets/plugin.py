@@ -98,8 +98,6 @@ class PluginSnippet(Snippet):
 			data = self.get_mage2methods()
 			if (methodname in data.keys()) and (classname in data[methodname].keys()):
 				parameters = data[methodname][classname]['params']
-				print(parameters)
-
 		else:
 			params.append('//$functionParam')
 
