@@ -38,3 +38,4 @@ from .configurationtype import ConfigurationTypeSnippet
 from .block import BlockSnippet
 from .helper import HelperSnippet
 from .graphql import GraphQlSnippet
+from .preference import PreferenceSnippet
