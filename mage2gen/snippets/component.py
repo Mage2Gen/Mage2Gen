@@ -22,7 +22,15 @@ class ComponentSnippet(Snippet):
 
 	description = """Create React Component"""
 
-	def add(self, component_name, extra_params=None):
+	STYLE_CSS = 'css'
+	STYLE_SCSS = 'scss'
+
+	STYLES_CHOISES = [
+		(STYLE_CSS, 'css'),
+		(STYLE_SCSS, 'sass'),
+	]
+
+	def add(self, component_name, style_type, extra_params=None):
 		# Add Component File
 		path = os.path.join('src', 'components', self._module.package, self._module.name)
 		self.add_static_file(path, StaticFile(
@@ -39,7 +47,7 @@ class ComponentSnippet(Snippet):
 import React, {{ Component }} from 'react';
 import PropTypes, {{ shape, string }} from 'prop-types';
 import classify from 'src/classify';
-import defaultClasses from './{component_name}.scss';
+import defaultClasses from './{component_name}.{style_type}';
 import Placeholder from "./placeholder";
 
 class {class_name} extends Component {{
@@ -59,12 +67,13 @@ class {class_name} extends Component {{
 }}
 				""".format(
 					component_name=component_name,
-					class_name=component_name
+					class_name=component_name,
+					style_type=style_type
 				)
 			)
 		)
 
-		scssFile = '{}.scss'.format(component_name)
+		scssFile = '{}.{}'.format(component_name, style_type)
 		self.add_static_file(path, StaticFile(
 			scssFile,
 			body="""
@@ -82,4 +91,7 @@ class {class_name} extends Component {{
 				description='Example: carousel',
 				regex_validator=r'^[\w\\]+$',
 				error_message='Only alphanumeric, underscore and backslash characters are allowed'),
+			SnippetParam(name='style_type',
+				choises=cls.STYLES_CHOISES,
+				default=cls.STYLE_CSS),
 		]
