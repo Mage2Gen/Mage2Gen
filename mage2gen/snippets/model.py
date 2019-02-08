@@ -449,7 +449,9 @@ class ModelSnippet(Snippet):
 		model_repository_class.add_method(Phpmethod('delete', access=Phpmethod.PUBLIC,
 			params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],
 			body="""try {{
-					    $this->resource->delete(${variable});
+						    ${variable}Model = $this->{variable}Factory->create();
+						    $this->resource->load(${variable}Model, ${variable}->get{model_id}());
+						    $this->resource->delete(${variable}Model);
 					}} catch (\Exception $exception) {{
 					    throw new CouldNotDeleteException(__(
 					        'Could not delete the {model_name}: %1',
@@ -457,7 +459,7 @@ class ModelSnippet(Snippet):
 					    ));
 					}}
 					return true;
-			""".format(variable=model_name_capitalized_after,model_name=model_name),
+			""".format(variable=model_name_capitalized_after,model_name=model_name,model_id=model_id_capitalized),
 			docstring=['{@inheritdoc}']
 		))
 		model_repository_class.add_method(Phpmethod('deleteById', access=Phpmethod.PUBLIC,
