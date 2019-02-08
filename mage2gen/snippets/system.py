@@ -252,7 +252,7 @@ class SystemSnippet(Snippet):
 					],
 					body="""
 						if (!isset($to['email']) || empty($to['email'])) {
-						    throw new ocalizedException(
+						    throw new LocalizedException(
 						        __('We could not send the email because the receiver data is invalid.')
 						    );
 						}
