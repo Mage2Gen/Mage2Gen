@@ -139,8 +139,8 @@ class ModelSnippet(Snippet):
 			attributes['precision'] = extra_params.get('precision')
 		if extra_params.get('scale'):
 			attributes['scale'] = extra_params.get('scale')
-		if extra_params.get('field_size') :
-			attributes['length'] = '{}'.extra_params.get('field_size')
+		if extra_params.get('field_size'):
+			attributes['length'] = '{}'.format(extra_params.get('field_size'))
 		elif field_type == 'decimal':
 			attributes['scale'] = '4'
 			attributes['precision'] = '12'
