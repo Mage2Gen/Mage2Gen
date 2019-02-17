@@ -1,0 +1,32 @@
+<!--@subject {{{{trans "{subject}"}}}} @-->
+<!--@vars {{}} @-->
+
+{{{{template config_path="design/email/header_template"}}}}
+
+<table>
+    <tr class="email-intro">
+        <td>
+            <p class="greeting">{{{{trans "Dear Sir / Madam"}}}}</p>
+            <p>
+                {{{{trans "Example Email Intro"}}}}
+            </p>
+        </td>
+    </tr>
+    <tr class="email-summary">
+        <td>
+            <h1>{{{{trans "{subject}"}}}}</h1>
+            <p>
+                {{{{trans "Example Email Summary"}}}}
+            </p>
+        </td>
+    </tr>
+    <tr class="email-information">
+        <td>
+            <p>
+                {{{{trans "Example Email Information"}}}}
+            </p>
+        </td>
+    </tr>
+</table>
+
+{{{{template config_path="design/email/footer_template"}}}}

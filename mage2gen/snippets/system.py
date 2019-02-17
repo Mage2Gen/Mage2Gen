@@ -147,6 +147,8 @@ class SystemSnippet(Snippet):
 			config_path_xml = False
 
 
+		label = extra_params.get('field_label',field) or field
+
 		config = Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Config:etc/system_file.xsd"}, nodes=[
 				Xmlnode('system',  nodes=[
 					tabxml,
@@ -175,7 +177,7 @@ class SystemSnippet(Snippet):
 									'showInStore': 1 if extra_params.get('field_show_in_store',True) else 0,
 									'showInDefault': 1 if extra_params.get('field_show_in_default',True) else 0,
 									'translate':'label'},match_attributes={'id'},nodes=[
-								Xmlnode('label',node_text=extra_params.get('field_label',field) or field),
+								Xmlnode('label',node_text=label),
 								Xmlnode('comment',node_text=extra_params.get('field_comment')),
 								source_model_xml,
 								backend_model_xml,
@@ -185,8 +187,129 @@ class SystemSnippet(Snippet):
 					])
 				])
 		])
-
+		
 		self.add_xml(file, config)
+
+
+		if source_model == 'Magento\\Config\\Model\\Config\\Source\\Email\\Template':
+			# email_templates xml
+			email_templates_file = 'etc/email_templates.xml'
+			email_template = '{}.html'.format(field_code)
+
+			email_template_identifier = '{}_{}_{}'.format(section_code, group_code, field_code)
+			email_template_config_identifier = '{}/{}/{}'.format(section_code, group_code, field_code)
+			email_templates = Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Email:etc/email_templates.xsd"}, nodes=[
+				Xmlnode('template',attributes={'id': email_template_identifier,'label': label, 'file': email_template, 'type':'html', 'module': self.module_name, 'area':'frontend'},match_attributes={'id'})
+			]);
+
+			self.add_xml(email_templates_file, email_templates)
+			self.add_static_file('view/frontend/email/', StaticFile(email_template, template_file='email.tmpl', context_data={'subject': label}))
+
+			mail_helper = Phpclass(
+				'Helper\\Mail',
+				extends='AbstractHelper',
+				dependencies=[
+					'Magento\Framework\App\Helper\AbstractHelper',
+					'Magento\Store\Model\ScopeInterface',
+					'Magento\Framework\Exception\LocalizedException'
+				],
+				attributes=[
+					'protected $transportBuilder;',
+					'protected $storeManager;'
+				]
+			)
+
+			mail_helper.add_method(
+				Phpmethod(
+					'__construct',
+					params=[
+						'\\Magento\\Framework\\App\\Helper\\Context $context',
+						'\\Magento\\Framework\\Mail\\Template\\TransportBuilder $transportBuilder',
+						'\\Magento\\Store\Model\\StoreManagerInterface $storeManager'
+					],
+					body="""
+							$this->transportBuilder = $transportBuilder;
+							$this->storeManager = $storeManager;
+							parent::__construct($context);
+					""",
+					docstring=[
+						'@param \Magento\Framework\App\Helper\Context $context',
+						'@param \Magento\Framework\Mail\Template\TransportBuilder $transportBuilder'
+						'@param \Magento\Store\Model\StoreManagerInterface $storeManager'
+					]
+				)
+			)
+
+			mail_helper.add_method(
+				Phpmethod(
+					'sendEmailTemplate',
+					params=[
+						'$template',
+						'$sender',
+						'$to = []',
+						'$templateParams = []',
+						'$storeId = null'
+					],
+					body="""
+						if (!isset($to['email']) || empty($to['email'])) {
+						    throw new ocalizedException(
+						        __('We could not send the email because the receiver data is invalid.')
+						    );
+						}
+						$storeId = $storeId ? $storeId : $this->storeManager->getStore()->getId();
+						$name = isset($to['name']) ? $to['name'] : '';
+						
+						/** @var \Magento\Framework\Mail\TransportInterface $transport */
+						$transport = $this->transportBuilder->setTemplateIdentifier(
+						    $this->scopeConfig->getValue($template, ScopeInterface::SCOPE_STORE, $storeId)
+						)->setTemplateOptions(
+						    ['area' => \Magento\Framework\App\Area::AREA_FRONTEND, 'store' => $storeId]
+						)->setTemplateVars(
+						    $templateParams
+						)->setScopeId(
+						    $storeId
+						)->setFrom(
+						    $this->scopeConfig->getValue($sender, ScopeInterface::SCOPE_STORE, $storeId)
+						)->addTo(
+						    $to['email'],
+						    $name
+						)->getTransport();
+						$transport->sendMessage();
+					""",
+					docstring=[
+						'@param string $template configuration path of email template',
+						'@param string $sender configuration path of email identity',
+						'@param array $to email and name of the receiver',
+						'@param array $templateParams',
+						'@param int|null $storeId',
+						'@throws \\Magento\\Framework\\Exception\\MailException',
+						'@throws \\Magento\\Framework\\Exception\\NoSuchEntityException'
+					],
+					access='protected'
+				)
+			)
+
+			email_name = ''.join(f.capitalize() for f in field_code.split('_'))
+			mail_helper.add_method(
+				Phpmethod(
+					'send{}Email'.format(email_name),
+					params=[
+						'$sender = \'example@example.com\'',
+						'$to = [\'email\' => \'\', \'name\' => \'\']'
+					],
+					body="""
+						$this->sendEmailTemplate(
+						    '{}',
+						    $sender,
+						    $to
+						);
+					""".format(email_template_config_identifier),
+					docstring=[
+						'Send the {} Email'.format(email_name)
+					]
+				)
+			)
+			self.add_class(mail_helper)
 
 		# acl xml
 		aclfile = 'etc/acl.xml'
