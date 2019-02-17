@@ -98,7 +98,7 @@ class ProductAttributeSnippet(Snippet):
 		if not attribute_code:
 			attribute_code = attribute_label.lower().replace(' ','_')[:30]
 
-		if source_model:
+		if source_model and frontend_input in ['multiselect', 'select']:
 			source_model = "\{}\{}\Model\Product\Attribute\Source\{}::class".format(self._module.package, self._module.name, upperfirst(attribute_code))
 			options_array = []
 			for val in options:
@@ -107,7 +107,7 @@ class ProductAttributeSnippet(Snippet):
 			self.add_source_model(attribute_code, options_php_array, extra_params.get('used_in_product_listing', False))
 			options_php_array_string = ""
 		else:
-			source_model = ""
+			source_model = "''"
 
 		templatePath = os.path.join(os.path.dirname(__file__), '../templates/attributes/productattribute.tmpl')
 
