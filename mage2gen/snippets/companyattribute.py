@@ -186,7 +186,7 @@ class CompanyAttributeSnippet(Snippet):
                  name='frontend_input', 
                  choises=cls.FRONTEND_INPUT_TYPE,
                  required=True,  
-                 default='text'),
+                 default='input'),
 			SnippetParam(
 				name='upgrade_data',
 				default=False,
