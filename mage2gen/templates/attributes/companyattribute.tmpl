@@ -1,0 +1,9 @@
+$setup->getConnection()->addColumn(
+    $setup->getTable('company'),
+    '{attribute_code}',
+    [
+        'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+        'length' => 255,
+        'comment' =>'{attribute_label}'
+    ]
+);

@@ -39,3 +39,4 @@ from .block import BlockSnippet
 from .helper import HelperSnippet
 from .preference import PreferenceSnippet
 from .viewmodel import ViewModelSnippet
+from .companyattribute import CompanyAttributeSnippet
