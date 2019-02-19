@@ -126,6 +126,38 @@ class CompanyAttributeSnippet(Snippet):
 
 		self.add_plugin('Magento\\Company\\Model\\Company\\DataProvider', 'getGeneralData', "$result['{attribute_code}'] = $company->getData('{attribute_code}');".format(attribute_code=attribute_code), extra_params=['\\Magento\\Company\\Api\\Data\\CompanyInterface $company'])
 		self.add_plugin('Magento\\Company\\Controller\\Adminhtml\\Index\Save', 'setCompanyRequestData', "$result->setData('{attribute_code}', $subject->getRequest()->getParam('general')['{attribute_code}']);".format(attribute_code=attribute_code))
+		self.add_plugin('Magento\\Company\\Api\\CompanyRepositoryInterface', 'get',
+						"$companyExtension->setData('{attribute_code}', $company->getData('{attribute_code}'));".format(attribute_code=attribute_code),
+						body_return="$company->setExtensionAttributes($companyExtension);\n\t\treturn $company;",
+						body_start="""
+		$company = $result;
+		$extensionAttributes = $company->getExtensionAttributes();
+		$companyExtension = $extensionAttributes ? $extensionAttributes : $this->companyExtensionFactory->create();
+		""",
+						construct=True
+		)
+		self.add_plugin('Magento\\Company\\Api\\CompanyRepositoryInterface', 'save',
+						"$company->setData('{attribute_code}', $extensionAttributes->getData('{attribute_code}'));".format(
+							attribute_code=attribute_code),
+						body_return="$company->save();\n\t\treturn $company;",
+						body_start="""
+		$company = $result;
+		$extensionAttributes = $company->getExtensionAttributes();
+		if (!$extensionAttributes) {
+			return $company;
+		}
+		"""
+		)
+		self.add_plugin('Magento\\Company\\Api\\CompanyRepositoryInterface', 'getList',
+						"",
+						body_return="return $result;",
+						body_start="""
+		foreach ($result->getItems() as $company) {
+			$this->afterGet($subject, $company);
+		}
+		"""
+		)
+
 
 		etc_module = Xmlnode('config', attributes={
 			'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Module/etc/module.xsd"}, nodes=[
@@ -137,18 +169,47 @@ class CompanyAttributeSnippet(Snippet):
 		])
 		self.add_xml('etc/module.xml', etc_module)
 
-	def add_plugin(self, classname, methodname, body, extra_params=[]):
+	def add_plugin(self, classname, methodname, body, extra_params=[], body_return='return $result;', body_start=False, construct=False):
 		plugin = Phpclass('Plugin\\{}'.format(classname))
+		if construct:
+			plugin = Phpclass('Plugin\\{}'.format(classname),attributes=[
+				'protected $companyRepository;',
+				'protected $companyExtensionFactory;'
+			])
+			plugin.add_method(
+				Phpmethod(
+					'__construct',
+					params=[
+						'\\Magento\\Company\\Model\\CompanyRepository $companyRepository',
+						'\\Magento\\Company\\Api\\Data\\CompanyExtensionFactory $companyExtensionFactory'
+					],
+					body="""
+								$this->companyRepository = $companyRepository;
+								$this->companyExtensionFactory = $companyExtensionFactory;
+								""",
+					docstring=[
+						'@param \\Magento\\Company\\Model\\CompanyRepository $companyRepository',
+						'@param \\Magento\\Company\\Api\\Data\\CompanyExtensionFactory $companyExtensionFactory'
+					]
+				)
+			)
 
 		plugin.add_method(Phpmethod(
 			'after' + methodname[0].capitalize() + methodname[1:],
 			body=body,
-			body_return='return $result;',
+			body_return=body_return,
+			body_start=body_start,
 			params=[
 				'\\' + classname + ' $subject',
 				'$result'
-			] + extra_params
+			] + extra_params,
+			docstring=[
+				'@param \\' + classname + ' $subject',
+				'@param $result',
+				'@return mixed'
+			]
 		))
+
 
 		# Add plug first will add the module namespace to PhpClass
 		self.add_class(plugin)
