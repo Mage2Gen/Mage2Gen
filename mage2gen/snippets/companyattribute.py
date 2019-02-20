@@ -123,22 +123,24 @@ class CompanyAttributeSnippet(Snippet):
 		])
 
 		self.add_xml('view/base/ui_component/company_form.xml', company_form_xml)
+		transformed_attribute_code = "".join([x[0].upper() + x[1:] for x in attribute_code.split("_")])
 
 		self.add_plugin('Magento\\Company\\Model\\Company\\DataProvider', 'getGeneralData', "$result['{attribute_code}'] = $company->getData('{attribute_code}');".format(attribute_code=attribute_code), extra_params=['\\Magento\\Company\\Api\\Data\\CompanyInterface $company'])
 		self.add_plugin('Magento\\Company\\Controller\\Adminhtml\\Index\Save', 'setCompanyRequestData', "$result->setData('{attribute_code}', $subject->getRequest()->getParam('general')['{attribute_code}']);".format(attribute_code=attribute_code))
 		self.add_plugin('Magento\\Company\\Api\\CompanyRepositoryInterface', 'get',
-						"$companyExtension->setData('{attribute_code}', $company->getData('{attribute_code}'));".format(attribute_code=attribute_code),
+						"$companyExtension->set{transformed_attribute_code}($company->getData('{attribute_code}'));".format(attribute_code=attribute_code, transformed_attribute_code=transformed_attribute_code),
 						body_return="$company->setExtensionAttributes($companyExtension);\n\t\treturn $company;",
 						body_start="""
 		$company = $result;
 		$extensionAttributes = $company->getExtensionAttributes();
 		$companyExtension = $extensionAttributes ? $extensionAttributes : $this->companyExtensionFactory->create();
+		
 		""",
 						construct=True
 		)
 		self.add_plugin('Magento\\Company\\Api\\CompanyRepositoryInterface', 'save',
-						"$company->setData('{attribute_code}', $extensionAttributes->getData('{attribute_code}'));".format(
-							attribute_code=attribute_code),
+						"$company->setData('{attribute_code}', $extensionAttributes->get{transformed_attribute_code}());".format(
+							attribute_code=attribute_code, transformed_attribute_code=transformed_attribute_code),
 						body_return="$company->save();\n\t\treturn $company;",
 						body_start="""
 		$company = $result;
@@ -146,6 +148,7 @@ class CompanyAttributeSnippet(Snippet):
 		if (!$extensionAttributes) {
 			return $company;
 		}
+		
 		"""
 		)
 		self.add_plugin('Magento\\Company\\Api\\CompanyRepositoryInterface', 'getList',
@@ -173,8 +176,16 @@ class CompanyAttributeSnippet(Snippet):
 		plugin = Phpclass('Plugin\\{}'.format(classname))
 		if construct:
 			plugin = Phpclass('Plugin\\{}'.format(classname),attributes=[
-				'protected $companyRepository;',
-				'protected $companyExtensionFactory;'
+				"""
+	/**
+	 * @var \Magento\Company\Model\CompanyRepository
+	 */
+	protected $companyRepository;""",
+				"""
+    /**
+     * @var \Magento\Company\Api\Data\CompanyExtensionFactory
+     */
+    protected $companyExtensionFactory;"""
 			])
 			plugin.add_method(
 				Phpmethod(
