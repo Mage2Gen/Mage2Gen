@@ -27,7 +27,7 @@ class PreferenceSnippet(Snippet):
 	def add(self, classname, extra_params=None):
 		# Add class
 		preference_classname = 'Rewrite\\{}'.format(classname)
-		preference_class = Phpclass(preference_classname, classname)
+		preference_class = Phpclass(preference_classname, "\\{}".format(classname))
 		
 		# Add plug first will add the module namespace to PhpClass
 		self.add_class(preference_class)
@@ -36,7 +36,7 @@ class PreferenceSnippet(Snippet):
 		config = Xmlnode('config', attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:framework:ObjectManager/etc/config.xsd"}, nodes=[
 			Xmlnode('preference', attributes={
 				'for': classname,
-				'type': preference_class
+				'type': preference_class.class_namespace
 			})
 		])
 
@@ -48,7 +48,7 @@ class PreferenceSnippet(Snippet):
 				'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Module/etc/module.xsd"}, nodes=[
 				Xmlnode('module', attributes={'name': self.module_name}, nodes=[
 					Xmlnode('sequence', attributes={}, nodes=[
-						Xmlnode('module', attributes={'name': '{}_{}'.format(split_classname[0], split_classname[1] )})
+						Xmlnode('module', attributes={'name': '{}_{}'.format(split_classname[0], split_classname[1])})
 					])
 				])
 			])
