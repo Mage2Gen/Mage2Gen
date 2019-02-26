@@ -30,11 +30,11 @@ class ProductAttributeSnippet(Snippet):
 		("multiselect","Multiple Select"),
 		("select","Dropdown"),
 		("price","Price"),
-		("static","Static")
+		("static","Static"),
 		#("media_image","Media Image"),
 		#("weee","Fixed Product Tax"),
-		#("swatch_visual","Visual Swatch"),
-		#("swatch_text","Text Swatch")
+		("swatch_visual","Visual Swatch"),
+		("swatch_text","Text Swatch")
 	]
 
 	STATIC_FIELD_TYPES = [
@@ -54,8 +54,8 @@ class ProductAttributeSnippet(Snippet):
 		"price":"decimal",
 		#"media_image":"",
 		#"weee":"",
-		#"swatch_visual":"",
-		#"swatch_text":""
+		"swatch_visual":"int",
+		"swatch_text":"int"
 	}
 
 	SCOPE_CHOICES = [
@@ -92,13 +92,13 @@ class ProductAttributeSnippet(Snippet):
 		user_defined = 'true'
 		options = options.split(',') if options else []
 		options_php_array = '"'+'","'.join(x.strip() for x in options) + '"'
-		options_php_array_string = "array('values' => array("+options_php_array+"))"
+		options_php_array_string = "['values' => ["+options_php_array+"]]"
 
 		attribute_code = extra_params.get('attribute_code', None)
 		if not attribute_code:
 			attribute_code = attribute_label.lower().replace(' ','_')[:30]
 
-		if source_model:
+		if source_model and frontend_input in ['multiselect', 'select']:
 			source_model = "\{}\{}\Model\Product\Attribute\Source\{}::class".format(self._module.package, self._module.name, upperfirst(attribute_code))
 			options_array = []
 			for val in options:
@@ -107,18 +107,31 @@ class ProductAttributeSnippet(Snippet):
 			self.add_source_model(attribute_code, options_php_array, extra_params.get('used_in_product_listing', False))
 			options_php_array_string = ""
 		else:
-			source_model = ""
+			source_model = "''"
 
 		templatePath = os.path.join(os.path.dirname(__file__), '../templates/attributes/productattribute.tmpl')
 
 		with open(templatePath, 'rb') as tmpl:
 			template = tmpl.read().decode('utf-8')
 
+		split_attribute_code = attribute_code.split('_')
+		attribute_code_capitalized = ''.join(upperfirst(item) for item in split_attribute_code)
+		attribute_code_capitalized_after = attribute_code_capitalized[0].lower() + attribute_code_capitalized[1:]
+
+		is_swatch_option = frontend_input == 'swatch_visual' or frontend_input == 'swatch_text'
+
+		if frontend_input == 'swatch_visual':
+			options_php_array_string = "['values' => ['Black' => '#000000', 'White' => '#ffffff']]"
+		elif frontend_input == 'swatch_text' :
+			options_php_array_string = "['values' => ['Sample' => 'Sample']]"
+		else:
+			options_php_array_string = options_php_array_string
+
 		methodBody = template.format(
 			attribute_code=attribute_code,
 			attribute_label=attribute_label,
 			value_type=value_type,
-			frontend_input=frontend_input,
+			frontend_input= frontend_input if not is_swatch_option else 'select',
 			user_defined = user_defined,
 			scope = scope,
 			required = str(required).lower(),
@@ -133,35 +146,77 @@ class ProductAttributeSnippet(Snippet):
 			is_visible_in_advanced_search = extra_params.get('is_visible_in_advanced_search','0'),
 			apply_to = apply_to,
 			backend = 'Magento\Eav\Model\Entity\Attribute\Backend\ArrayBackend' if frontend_input == 'multiselect' else '',
-			source_model = source_model
+			source_model = source_model,
+			call_convert_method = '$this->convert' + attribute_code_capitalized + 'ToSwatches();' if is_swatch_option else ''
 		)
 
 		setupType = 'Install'
 		if upgrade_data:
 			setupType = 'Upgrade'
 
-		install_data = Phpclass('Setup\\{}Data'.format(setupType),
-			implements=['{}DataInterface'.format(setupType)],
-			dependencies=[
-				'Magento\\Framework\\Setup\\{}DataInterface'.format(setupType),
-				'Magento\\Framework\\Setup\\ModuleContextInterface',
-				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
-				'Magento\\Eav\\Setup\\EavSetup',
-				'Magento\\Eav\\Setup\\EavSetupFactory'],
-			attributes=['private $eavSetupFactory;'])
+		if is_swatch_option:
+			install_data = Phpclass(
+				'Setup\\{}Data'.format(setupType),
+				implements=['{}DataInterface'.format(setupType)],
+				dependencies=[
+					'Magento\\Framework\\Setup\\{}DataInterface'.format(setupType),
+					'Magento\\Framework\\Setup\\ModuleContextInterface',
+					'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
+					'Magento\\Eav\\Setup\\EavSetup',
+					'Magento\\Eav\\Setup\\EavSetupFactory',
+					'Magento\\Catalog\\Model\\ResourceModel\\Eav\\Attribute as eavAttribute'
+				],
+				attributes=[
+					"private $eavSetupFactory;",
+					"protected $optionCollection = [];",
+					"protected $colorMap = ['Black' => '#000000', 'White' => '#ffffff'];",
+					"protected $attrOptionCollectionFactory;",
+					"protected $eavConfig;"
+				]
+			)
+			install_data.add_method(Phpmethod(
+				'__construct',
+				params=[
+					'EavSetupFactory $eavSetupFactory',
+					'\\Magento\\Eav\\Model\\ResourceModel\\Entity\\Attribute\\Option\\CollectionFactory $attrOptionCollectionFactory',
+					'\\Magento\\Eav\\Model\\Config $eavConfig'
+				],
+				body="""
+					$this->eavSetupFactory = $eavSetupFactory;
+					$this->attrOptionCollectionFactory = $attrOptionCollectionFactory;
+					$this->eavConfig = $eavConfig;
+					""",
+				docstring=[
+					'Constructor',
+					'',
+					'@param \\Magento\\Eav\\Setup\\EavSetupFactory $eavSetupFactory',
+					'@param \\Magento\\Eav\\Model\\ResourceModel\\Entity\\Attribute\\Option\\CollectionFactory $attrOptionCollectionFactory',
+					'@param \\Magento\\Eav\\Model\\Config $eavConfig',
+				]
+			))
+		else:
+			install_data = Phpclass('Setup\\{}Data'.format(setupType),
+				implements=['{}DataInterface'.format(setupType)],
+				dependencies=[
+					'Magento\\Framework\\Setup\\{}DataInterface'.format(setupType),
+					'Magento\\Framework\\Setup\\ModuleContextInterface',
+					'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
+					'Magento\\Eav\\Setup\\EavSetup',
+					'Magento\\Eav\\Setup\\EavSetupFactory'],
+				attributes=['private $eavSetupFactory;'])
+			install_data.add_method(Phpmethod(
+				'__construct',
+				params=[
+					'EavSetupFactory $eavSetupFactory',
+				],
+				body="$this->eavSetupFactory = $eavSetupFactory;",
+				docstring=[
+					'Constructor',
+					'',
+					'@param \\Magento\\Eav\\Setup\\EavSetupFactory $eavSetupFactory'
+				]
+			))
 
-		install_data.add_method(Phpmethod(
-			'__construct',
-			params=[
-				'EavSetupFactory $eavSetupFactory',
-			],
-			body="$this->eavSetupFactory = $eavSetupFactory;",
-			docstring=[
-				'Constructor',
-				'',
-				'@param \\Magento\\Eav\\Setup\\EavSetupFactory $eavSetupFactory'
-			]
-		)) 
 		install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
 			params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
 			body="$eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);",
@@ -175,7 +230,151 @@ class ProductAttributeSnippet(Snippet):
 				params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
 				body = methodBody))
 
-			# Catalog Attributes XML | Transport Attribute to Quote Item Product
+		# Swatches Converter | \Magento\SwatchesSampleData\Model\Swatches
+		if is_swatch_option:
+			install_data.add_method(Phpmethod(
+				'convert{}ToSwatches'.format(attribute_code_capitalized),
+				body="""$attribute = $this->eavConfig->getAttribute('catalog_product', '{attribute_code}');
+				if (!$attribute) {{
+				    return;
+				}}
+				$attributeData['option'] = $this->addExistingOptions($attribute);
+				$attributeData['frontend_input'] = 'select';
+				$attributeData['swatch_input_type'] = '{visual_type}';
+				$attributeData['update_product_preview_image'] = 1;
+				$attributeData['use_product_image_for_swatch'] = 0;
+				$attributeData['{key_option}'] = $this->getOptionSwatch($attributeData);
+				$attributeData['{key_default}'] = $this->{get_default_option}($attributeData);
+				$attributeData['{key_swatch}'] = $this->{get_option_swatch}($attributeData);
+				$attribute->addData($attributeData);
+				$attribute->save();
+				""".format(
+					attribute_code=attribute_code,
+					visual_type = 'visual' if frontend_input == 'swatch_visual' else 'text',
+					key_option = 'optionvisual' if frontend_input == 'swatch_visual' else 'optiontext',
+					key_default = 'defaultvisual' if frontend_input == 'swatch_visual' else 'defaulttext',
+					key_swatch = 'swatchvisual' if frontend_input == 'swatch_visual' else 'swatchtext',
+					get_default_option = 'getOptionDefaultVisual' if frontend_input == 'swatch_visual' else 'getOptionDefaultText',
+					get_option_swatch = 'getOptionSwatchVisual' if frontend_input == 'swatch_visual' else 'getOptionSwatchText',
+				),
+				docstring=[
+					'Convert {} to swatches'.format(attribute_code)
+				]
+			))
+			install_data.add_method(Phpmethod(
+				'getOptionSwatch',
+				params=['array $attributeData'],
+				body="""$optionSwatch = ['order' => [], 'value' => [], 'delete' => []];
+				$i = 0;
+				foreach ($attributeData['option'] as $optionKey => $optionValue) {
+				    $optionSwatch['delete'][$optionKey] = '';
+				    $optionSwatch['order'][$optionKey] = (string)$i++;
+				    $optionSwatch['value'][$optionKey] = [$optionValue, ''];
+				}
+				return $optionSwatch;
+				""",
+				docstring=[
+					'@param array $attributeData',
+					'@return array'
+				]
+			))
+			install_data.add_method(Phpmethod(
+				'getOptionSwatchVisual',
+				access='private',
+				params=['array $attributeData'],
+				body="""$optionSwatch = ['value' => []];
+				foreach ($attributeData['option'] as $optionKey => $optionValue) {
+				    if (substr($optionValue, 0, 1) == '#' && strlen($optionValue) == 7) {
+				        $optionSwatch['value'][$optionKey] = $optionValue;
+				    } else if ($this->colorMap[$optionValue]) {
+				        $optionSwatch['value'][$optionKey] = $this->colorMap[$optionValue];
+				    } else {
+				        $optionSwatch['value'][$optionKey] = $this->colorMap['White'];
+				    }
+				}
+				return $optionSwatch;
+				""",
+				docstring=[
+					'@param array $attributeData',
+					'@return array'
+				]
+			))
+			install_data.add_method(Phpmethod(
+				'getOptionDefaultVisual',
+				access='private',
+				params=['array $attributeData'],
+				body="""$optionSwatch = $this->getOptionSwatchVisual($attributeData);
+				return [array_keys($optionSwatch['value'])[0]];
+				""",
+				docstring=[
+					'@param array $attributeData',
+					'@return array'
+				]
+			))
+			install_data.add_method(Phpmethod(
+				'getOptionSwatchText',
+				access='private',
+				params=['array $attributeData'],
+				body="""$optionSwatch = ['value' => []];
+				foreach ($attributeData['option'] as $optionKey => $optionValue) {
+				    $optionSwatch['value'][$optionKey] = [$optionValue, ''];
+				}
+				return $optionSwatch;
+				""",
+				docstring=[
+					'@param array $attributeData',
+					'@return array'
+				]
+			))
+			install_data.add_method(Phpmethod(
+				'getOptionDefaultText',
+				access='private',
+				params=['array $attributeData'],
+				body="""$optionSwatch = $this->getOptionSwatchText($attributeData);
+				return [array_keys($optionSwatch['value'])[0]];
+				""",
+				docstring=[
+					'@param array $attributeData',
+					'@return array'
+				]
+			))
+			install_data.add_method(Phpmethod(
+				'loadOptionCollection',
+				access='private',
+				params=['$attributeId'],
+				body="""if (empty($this->optionCollection[$attributeId])) {
+				    $this->optionCollection[$attributeId] = $this->attrOptionCollectionFactory->create()
+				        ->setAttributeFilter($attributeId)
+				        ->setPositionOrder('asc', true)
+				        ->load();
+				}
+				""",
+				docstring=[
+					'@param $attributeId',
+					'@return void'
+				]
+			))
+			install_data.add_method(Phpmethod(
+				'addExistingOptions',
+				access='private',
+				params=['eavAttribute $attribute'],
+				body="""$options = [];
+				$attributeId = $attribute->getId();
+				if ($attributeId) {
+				    $this->loadOptionCollection($attributeId);
+				    /** @var \Magento\Eav\Model\Entity\Attribute\Option $option */
+				    foreach ($this->optionCollection[$attributeId] as $option) {
+				        $options[$option->getId()] = $option->getValue();
+				    }
+				}
+				return $options;
+				""",
+				docstring=[
+					'@param eavAttribute $attribute',
+					'@return array'
+				]
+			))
+		# Catalog Attributes XML | Transport Attribute to Quote Item Product
 		transport_to_quote_item = extra_params.get('transport_to_quote_item', False)
 		if transport_to_quote_item:
 			config = Xmlnode('config', attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Catalog:etc/catalog_attributes.xsd"}, nodes=[
