@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-import os, locale
+import os, locale, re
 from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 from ..utils import upperfirst
 
@@ -30,11 +30,11 @@ class ProductAttributeSnippet(Snippet):
 		("multiselect","Multiple Select"),
 		("select","Dropdown"),
 		("price","Price"),
-		("static","Static")
+		("static","Static"),
 		#("media_image","Media Image"),
 		#("weee","Fixed Product Tax"),
-		#("swatch_visual","Visual Swatch"),
-		#("swatch_text","Text Swatch")
+		("swatch_visual","Visual Swatch"),
+		("swatch_text","Text Swatch")
 	]
 
 	STATIC_FIELD_TYPES = [
@@ -54,8 +54,8 @@ class ProductAttributeSnippet(Snippet):
 		"price":"decimal",
 		#"media_image":"",
 		#"weee":"",
-		#"swatch_visual":"",
-		#"swatch_text":""
+		"swatch_visual":"int",
+		"swatch_text":"int"
 	}
 
 	SCOPE_CHOICES = [
@@ -79,6 +79,11 @@ class ProductAttributeSnippet(Snippet):
 		The attribute is automatically added to all the attribute sets.
 	"""
 
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.is_default_added = False
+		self.is_swatches_added = False
+
 	def add(self, attribute_label, frontend_input='text', scope=1, required=False, upgrade_data=False, from_version='1.0.1', options=None, source_model=False, extra_params=None):
 		extra_params = extra_params if extra_params else {}
 		apply_to = extra_params.get('apply_to', [])
@@ -92,7 +97,8 @@ class ProductAttributeSnippet(Snippet):
 		user_defined = 'true'
 		options = options.split(',') if options else []
 		options_php_array = '"'+'","'.join(x.strip() for x in options) + '"'
-		options_php_array_string = "array('values' => array("+options_php_array+"))"
+		options_php_array_string = "['values' => ["+options_php_array+"]]"
+		version_number = re.sub("[^0-9]", "", from_version);
 
 		attribute_code = extra_params.get('attribute_code', None)
 		if not attribute_code:
@@ -114,11 +120,24 @@ class ProductAttributeSnippet(Snippet):
 		with open(templatePath, 'rb') as tmpl:
 			template = tmpl.read().decode('utf-8')
 
+		split_attribute_code = attribute_code.split('_')
+		attribute_code_capitalized = ''.join(upperfirst(item) for item in split_attribute_code)
+		attribute_code_capitalized_after = attribute_code_capitalized[0].lower() + attribute_code_capitalized[1:]
+
+		is_swatch_option = frontend_input == 'swatch_visual' or frontend_input == 'swatch_text'
+
+		if frontend_input == 'swatch_visual':
+			options_php_array_string = "['values' => ['Black' => '#000000', 'White' => '#ffffff']]"
+		elif frontend_input == 'swatch_text':
+			options_php_array_string = "['values' => ['Sample' => 'Sample']]"
+		else:
+			options_php_array_string = options_php_array_string
+
 		methodBody = template.format(
 			attribute_code=attribute_code,
 			attribute_label=attribute_label,
 			value_type=value_type,
-			frontend_input=frontend_input,
+			frontend_input=frontend_input if not is_swatch_option else 'select',
 			user_defined=user_defined,
 			scope=scope,
 			required = str(required).lower(),
@@ -147,7 +166,7 @@ class ProductAttributeSnippet(Snippet):
 			extends='EavSetup',
 			dependencies=[
 				'Magento\\Eav\\Setup\\EavSetup',
-				'Magento\\Catalog\\Model\\ResourceModel\\Product\\Attribute\Collection',
+				'Magento\\Catalog\\Model\\ResourceModel\\Product\\Attribute\\Collection',
 				'Magento\\Eav\\Model\\Entity\\Attribute\\ScopedAttributeInterface',
 				'Magento\\Catalog\\Setup\\CategorySetup',
 				'Magento\\Catalog\\Model\\ResourceModel\\Eav\\Attribute',
@@ -174,46 +193,319 @@ class ProductAttributeSnippet(Snippet):
 
 		self.add_class(product_data)
 
-		install_patch = Phpclass('Setup\\Patch\\Data\\{}ProductAttributes'.format(setupType),
-			implements=['DataPatchInterface'],
-			dependencies=[
-				'Magento\\Framework\\Setup\\Patch\\DataPatchInterface',
-				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
-				'{}Factory'.format(product_data.class_namespace)
-			],
-			attributes=[
-				'private $moduleDataSetup;',
-				'private $productSetupFactory;'
-			]
-		)
+		install_version = 'install' if not upgrade_data else 'upgrade' + version_number;
 
-		install_patch.add_method(Phpmethod(
-			'__construct',
-			params=[
-				'ModuleDataSetupInterface $moduleDataSetup',
-				'{}Factory $productSetupFactory'.format(product_data.class_name)
-			],
-			body="$this->moduleDataSetup = $moduleDataSetup;\n$this->productSetupFactory = $productSetupFactory;",
-			docstring=[
-				'Constructor',
-				'',
-				'@param ModuleDataSetupInterface $moduleDataSetup',
-				'@param {}Factory $productSetupFactory'.format(product_data.class_name)
-			]
-		))
+		if is_swatch_option:
+			swatch_installer_model = Phpclass('Model\\Swatches',
+				dependencies=[
+					'Magento\\Eav\\Model\\ResourceModel\\Entity\\Attribute\\Option\\CollectionFactory as AttributeOptionCollectionFactory',
+					'Magento\\Eav\\Model\\Config as EavModelConfig',
+					'Magento\\Catalog\\Model\\ResourceModel\\Eav\\Attribute as eavAttribute'
+				],
+				attributes=[
+					"protected $optionCollection = [];",
+					"protected $colorMap = ['Black' => '#000000', 'White' => '#ffffff'];",
+					"protected $attrOptionCollectionFactory;",
+					"protected $eavConfig;"
+				]
+			)
+			swatch_installer_model.add_method(Phpmethod(
+				'__construct',
+				params=[
+					'CollectionFactory $attrOptionCollectionFactory',
+					'EavModelConfig $eavConfig'
+				],
+				body="$this->attrOptionCollectionFactory = $attrOptionCollectionFactory;\n$this->eavConfig = $eavConfig;",
+				docstring=[
+					'Constructor',
+					'',
+					'@param AttributeOptionCollectionFactory $attrOptionCollectionFactory',
+					'@param EavModelConfig $eavConfig',
+				]
+			))
+			swatch_installer_model.add_method(Phpmethod(
+				install_version,
+				body="""$this->convert{attribute_code_capitalized}ToSwatches();
+				""".format(
+					attribute_code_capitalized=attribute_code_capitalized
+				),
+				docstring=[
+					'{@inheritdoc}'
+				]
+			))
+			swatch_installer_model.add_method(Phpmethod(
+				'convert{}ToSwatches'.format(attribute_code_capitalized),
+				body="""$attribute = $this->eavConfig->getAttribute('catalog_product', '{attribute_code}');
+				if (!$attribute) {{
+				    return;
+				}}
+				$attributeData['option'] = $this->addExistingOptions($attribute);
+				$attributeData['frontend_input'] = 'select';
+				$attributeData['swatch_input_type'] = '{visual_type}';
+				$attributeData['update_product_preview_image'] = 1;
+				$attributeData['use_product_image_for_swatch'] = 0;
+				$attributeData['{key_option}'] = $this->getOptionSwatch($attributeData);
+				$attributeData['{key_default}'] = $this->{get_default_option}($attributeData);
+				$attributeData['{key_swatch}'] = $this->{get_option_swatch}($attributeData);
+				$attribute->addData($attributeData);
+				$attribute->save();
+				""".format(
+					attribute_code=attribute_code,
+					visual_type='visual' if frontend_input == 'swatch_visual' else 'text',
+					key_option='optionvisual' if frontend_input == 'swatch_visual' else 'optiontext',
+					key_default='defaultvisual' if frontend_input == 'swatch_visual' else 'defaulttext',
+					key_swatch='swatchvisual' if frontend_input == 'swatch_visual' else 'swatchtext',
+					get_default_option='getOptionDefaultVisual' if frontend_input == 'swatch_visual' else 'getOptionDefaultText',
+					get_option_swatch='getOptionSwatchVisual' if frontend_input == 'swatch_visual' else 'getOptionSwatchText',
+				),
+				docstring=[
+					'Convert {} to swatches'.format(attribute_code)
+				]
+			))
+			swatch_installer_model.add_method(Phpmethod(
+				'getOptionSwatch',
+				params=['array $attributeData'],
+				body="""$optionSwatch = ['order' => [], 'value' => [], 'delete' => []];
+				$i = 0;
+				foreach ($attributeData['option'] as $optionKey => $optionValue) {
+				    $optionSwatch['delete'][$optionKey] = '';
+				    $optionSwatch['order'][$optionKey] = (string)$i++;
+				    $optionSwatch['value'][$optionKey] = [$optionValue, ''];
+				}
+				return $optionSwatch;
+				""",
+				docstring=[
+					'@param array $attributeData',
+					'@return array'
+				]
+			))
+			swatch_installer_model.add_method(Phpmethod(
+				'getOptionSwatchVisual',
+				access='private',
+				params=['array $attributeData'],
+				body="""$optionSwatch = ['value' => []];
+				foreach ($attributeData['option'] as $optionKey => $optionValue) {
+				    if (substr($optionValue, 0, 1) == '#' && strlen($optionValue) == 7) {
+				        $optionSwatch['value'][$optionKey] = $optionValue;
+				    } else if ($this->colorMap[$optionValue]) {
+				        $optionSwatch['value'][$optionKey] = $this->colorMap[$optionValue];
+				    } else {
+				        $optionSwatch['value'][$optionKey] = $this->colorMap['White'];
+				    }
+				}
+				return $optionSwatch;
+				""",
+				docstring=[
+					'@param array $attributeData',
+					'@return array'
+				]
+			))
+			swatch_installer_model.add_method(Phpmethod(
+				'getOptionDefaultVisual',
+				access='private',
+				params=['array $attributeData'],
+				body="""$optionSwatch = $this->getOptionSwatchVisual($attributeData);
+				return [array_keys($optionSwatch['value'])[0]];
+				""",
+				docstring=[
+					'@param array $attributeData',
+					'@return array'
+				]
+			))
+			swatch_installer_model.add_method(Phpmethod(
+				'getOptionSwatchText',
+				access='private',
+				params=['array $attributeData'],
+				body="""$optionSwatch = ['value' => []];
+				foreach ($attributeData['option'] as $optionKey => $optionValue) {
+				    $optionSwatch['value'][$optionKey] = [$optionValue, ''];
+				}
+				return $optionSwatch;
+				""",
+				docstring=[
+					'@param array $attributeData',
+					'@return array'
+				]
+			))
+			swatch_installer_model.add_method(Phpmethod(
+				'getOptionDefaultText',
+				access='private',
+				params=['array $attributeData'],
+				body="""$optionSwatch = $this->getOptionSwatchText($attributeData);
+				return [array_keys($optionSwatch['value'])[0]];
+				""",
+				docstring=[
+					'@param array $attributeData',
+					'@return array'
+				]
+			))
+			swatch_installer_model.add_method(Phpmethod(
+				'loadOptionCollection',
+				access='private',
+				params=['$attributeId'],
+				body="""if (empty($this->optionCollection[$attributeId])) {
+				    $this->optionCollection[$attributeId] = $this->attrOptionCollectionFactory->create()
+				        ->setAttributeFilter($attributeId)
+				        ->setPositionOrder('asc', true)
+				        ->load();
+				}
+				""",
+				docstring=[
+					'@param $attributeId',
+					'@return void'
+				]
+			))
+			swatch_installer_model.add_method(Phpmethod(
+				'addExistingOptions',
+				access='private',
+				params=['eavAttribute $attribute'],
+				body="""$options = [];
+				$attributeId = $attribute->getId();
+				if ($attributeId) {
+				    $this->loadOptionCollection($attributeId);
+				    /** @var \Magento\Eav\Model\Entity\Attribute\Option $option */
+				    foreach ($this->optionCollection[$attributeId] as $option) {
+				        $options[$option->getId()] = $option->getValue();
+				    }
+				}
+				return $options;
+				""",
+				docstring=[
+					'@param eavAttribute $attribute',
+					'@return array'
+				]
+			))
+			self.add_class(swatch_installer_model)
 
-		install_patch.add_method(Phpmethod(
-			'apply',
-			body="""
-		/** @var {class_name} $productSetup */
-$productSetup = $this->productSetupFactory->create(['setup' => $this->moduleDataSetup]);
-$productSetup->installEntities();""".format(class_name=product_data.class_name),
-			docstring=[
-				'Do Upgrade',
-				'',
-				'@return void'
-			]
-		))
+			product_data = Phpclass('Setup\\ProductSetup'.format(setupType),
+				extends='EavSetup',
+				dependencies=[
+					'Magento\\Eav\\Setup\\EavSetup',
+					'Magento\\Catalog\\Model\\ResourceModel\\Product\\Attribute\\Collection',
+					'Magento\\Eav\\Model\\Entity\\Attribute\\ScopedAttributeInterface',
+					'Magento\\Catalog\\Setup\\CategorySetup',
+					'Magento\\Catalog\\Model\\ResourceModel\\Eav\\Attribute',
+					'Magento\\Catalog\\Model\\ResourceModel\\Product',
+					'Magento\\Eav\Model\\Entity\Setup\\Context',
+					'Magento\\Eav\Model\\ResourceModel\\Entity\\Attribute\\Group\\CollectionFactory',
+					'Magento\\Framework\\App\\CacheInterface',
+					'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
+					'{}'.format(swatch_installer_model.class_namespace)
+				],
+				attributes=[
+					"protected $swatches;"
+				]
+			)
+
+		if is_swatch_option:
+			install_patch = Phpclass('Setup\\Patch\\Data\\{}ProductAttributes'.format(setupType),
+				implements=['DataPatchInterface'],
+				dependencies=[
+					'Magento\\Framework\\Setup\\Patch\\DataPatchInterface',
+					'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
+					'{}'.format(swatch_installer_model.class_namespace),
+					'{}Factory'.format(product_data.class_namespace)
+				],
+				attributes=[
+					'private $moduleDataSetup;',
+					'private $productSetupFactory;',
+					'protected $swatches;'
+				]
+			)
+			install_patch.add_method(Phpmethod(
+				'__construct',
+				params=[
+					'ModuleDataSetupInterface $moduleDataSetup',
+					'{} $swatches'.format(swatch_installer_model.class_name),
+					'{}Factory $productSetupFactory'.format(product_data.class_name)
+				],
+				body="""
+				$this->moduleDataSetup = $moduleDataSetup;
+				$this->swatches = $swatches;
+				$this->productSetupFactory = $productSetupFactory;
+				""",
+				docstring=[
+					'Constructor',
+					'',
+					'@param ModuleDataSetupInterface $moduleDataSetup',
+					'@param {} $swatches'.format(swatch_installer_model.class_name),
+					'@param {}Factory $productSetupFactory'.format(product_data.class_name)
+				]
+			))
+			if self.is_default_added == False:
+				install_patch.add_method(Phpmethod(
+					'apply',
+					body="""
+						/** @var {class_name} $productSetup */
+						$productSetup = $this->productSetupFactory->create(['setup' => $this->moduleDataSetup]);
+						$productSetup->installEntities();
+						$this->swatches->{install_version}();
+						""".format(class_name=product_data.class_name, install_version=install_version),
+					docstring=[
+						'Do Upgrade',
+						'',
+						'@return void'
+					]
+				))
+			else:
+				install_patch.add_method(Phpmethod(
+					'apply',
+					body="""
+						$this->swatches->{install_version}();
+						""".format(install_version=install_version),
+					docstring=[
+						'Do Upgrade',
+						'',
+						'@return void'
+					]
+				))
+			self.is_swatches_added = True;
+		else:
+			install_patch = Phpclass('Setup\\Patch\\Data\\{}ProductAttributes'.format(setupType),
+				implements=['DataPatchInterface'],
+				dependencies=[
+					'Magento\\Framework\\Setup\\Patch\\DataPatchInterface',
+					'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
+					'{}Factory'.format(product_data.class_namespace)
+				],
+				attributes=[
+					'private $moduleDataSetup;',
+					'private $productSetupFactory;'
+				]
+			)
+
+			install_patch.add_method(Phpmethod(
+				'__construct',
+				params=[
+					'ModuleDataSetupInterface $moduleDataSetup',
+					'{}Factory $productSetupFactory'.format(product_data.class_name)
+				],
+				body="$this->moduleDataSetup = $moduleDataSetup;\n$this->productSetupFactory = $productSetupFactory;",
+				docstring=[
+					'Constructor',
+					'',
+					'@param ModuleDataSetupInterface $moduleDataSetup',
+					'@param {}Factory $productSetupFactory'.format(product_data.class_name)
+				]
+			))
+
+
+		if self.is_swatches_added == False:
+			install_patch.add_method(Phpmethod(
+				'apply',
+				body="""
+					/** @var {class_name} $productSetup */
+					$productSetup = $this->productSetupFactory->create(['setup' => $this->moduleDataSetup]);
+					$productSetup->installEntities();
+					""".format(class_name=product_data.class_name),
+				docstring=[
+					'Do Upgrade',
+					'',
+					'@return void'
+				]
+			))
+			self.is_default_added = True;
+
 		install_patch.add_method(Phpmethod(
 			'getAliases',
 			body="return [];",
