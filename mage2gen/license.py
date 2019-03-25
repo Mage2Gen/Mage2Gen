@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-import os
+import os, datetime
 from .utils import DefaultFormatter
 
 LICENCE_DIR = os.path.join(os.path.dirname(__file__), 'licenses')
@@ -29,14 +29,27 @@ class License:
 		self.copyright = copyright
 		self.module_name = module_name
 		self.description = description
+		self.license_year = datetime.now().year
 	
 	def get_text(self):
 		formatter = DefaultFormatter()
-		return formatter.format(self.license_text, copyright=self.copyright, module_name=self.module_name, description=self.description)
+		return formatter.format(
+			self.license_text,
+			copyright=self.copyright,
+			module_name=self.module_name,
+			description=self.description,
+			license_year=self.license_year
+		)
 	
 	def get_short_text(self):
 		formatter = DefaultFormatter()
-		return formatter.format(self.short_license_text, copyright=self.copyright, module_name=self.module_name, description=self.description)
+		return formatter.format(
+			self.short_license_text,
+			copyright=self.copyright,
+			module_name=self.module_name,
+			description=self.description,
+			license_year=self.license_year
+		)
 	
 	def get_php_docstring(self):
 		license = '/**'
