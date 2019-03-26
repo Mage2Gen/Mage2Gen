@@ -104,6 +104,7 @@ class ModelSnippet(Snippet):
 			field_element_type = 'textarea'
 
 		top_level_menu = extra_params.get('top_level_menu', True)
+		is_use_index = extra_params.get('is_use_index', False)
 
 		install_class = Phpclass('Setup\\InstallSchema',implements=['InstallSchemaInterface'],dependencies=[
 			'Magento\\Framework\\Setup\\InstallSchemaInterface',
@@ -182,6 +183,16 @@ class ModelSnippet(Snippet):
 			options=options,
 			comment=extra_params.get('comment') or field_name
 		))
+
+		# Add Index field
+		if is_use_index:
+			install_method.body.append("""$table_{table}->addIndex(
+			    $setup->getIdxName('{table}', ['{field}']),
+			    ['{field}']
+			);""".format(
+			table=model_table,
+			field=field_name
+			))
 
 		# End setup + create table 
 		install_method.end_body.append('$setup->getConnection()->createTable($table_{});'.format(model_table))
@@ -1545,6 +1556,13 @@ class ModelSnippet(Snippet):
 				yes_no=True,
 				default=True,
 				repeat=True
+			),
+			SnippetParam(
+				name='is_use_index',
+				description='Add Index for current field',
+				yes_no=True,
+				default=False,
+				depend={'field_type': r'smallint|integer|bigint|float|decimal|numeric'}
 			),
 		]
 
