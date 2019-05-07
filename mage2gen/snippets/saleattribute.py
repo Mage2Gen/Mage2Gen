@@ -23,14 +23,23 @@ from ..utils import upperfirst
 class SalesAttributeSnippet(Snippet):
 	snippet_label = 'Sales Attribute'
 
-	FIELD_TYPES = [
-		("varchar","Varchar"),
-		("text","Text"),
-		("int","Int"),
-		("decimal","Decimal"),
-		("timestamp","Timestamp"),
-		("datetime","Datetime")
+	FRONTEND_INPUT_TYPE = [
+		("text", "Text Field"),
+		("textarea", "Text Area"),
+		("date", "Date"),
+		# ("boolean", "Yes/No"),
+		# ("multiselect", "Multiple Select"),
+		# ("select", "Dropdown"),
 	]
+
+	FRONTEND_INPUT_VALUE_TYPE = {
+		"text": "varchar",
+		"textarea": "text",
+		"date": "date",
+		"boolean": "int",
+		"multiselect": "varchar",
+		"select": "int",
+	}
 
 	SALES_ENTITIES = [
 		("quote", "Quote"),
@@ -59,8 +68,9 @@ class SalesAttributeSnippet(Snippet):
 		Install Magento 2 sales order attributes programmatically.
 	"""
 	
-	def add(self, attribute_label, sales_entity='quote', field_type='varchar', required=False, upgrade_data=False, from_version='1.0.1', extra_params=None):
+	def add(self, attribute_label, sales_entity='quote', frontend_input='varchar', required=False, upgrade_data=False, from_version='1.0.1', extra_params=None):
 		extra_params = extra_params if extra_params else {}
+		value_type = self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input)
 
 		setup_type = 'sales'
 		if sales_entity.__contains__('quote'):
@@ -70,37 +80,29 @@ class SalesAttributeSnippet(Snippet):
 		if not attribute_code:
 			attribute_code = attribute_label.lower().replace(' ','_')[:30]
 
-		templatePath = os.path.join(os.path.dirname(__file__), '../templates/attributes/sales/options.tmpl')
-
-		with open(templatePath, 'rb') as tmpl:
-			template = tmpl.read().decode('utf-8')
-
 		if extra_params.get('field_size') :
 			size = extra_params.get('field_size')
-		elif field_type=='decimal':
+		elif value_type=='decimal':
 			size = '\'12,4\''
-		elif field_type=='varchar' and not extra_params.get('field_size'):
+		elif value_type=='varchar' and not extra_params.get('field_size'):
 			size = '255'
 		else:
 			size = 'null'
-
-		methodBody = template.format(
-			type=attribute_code,
-			length=size,
-			visible='true' if extra_params.get('visible', False) else 'false',
-			required='true' if required else 'false',
-			grid='true' if extra_params.get('used_in_admin_grid', False) else 'false'
-		)
 
 		templatePath = os.path.join(os.path.dirname(__file__), '../templates/attributes/sales/attribute.tmpl')
 
 		with open(templatePath, 'rb') as tmpl:
 			template = tmpl.read().decode('utf-8')
 
-		methodBody += template.format(
+		methodBody = template.format(
 			attribute_code=attribute_code,
 			setup_type=setup_type,
 			sales_entity=sales_entity,
+			type=value_type,
+			length=size,
+			visible='true' if extra_params.get('visible', False) else 'false',
+			required='true' if required else 'false',
+			grid='true' if extra_params.get('used_in_admin_grid', False) else 'false'
 		)
 
 		setupType = 'Install'
@@ -244,15 +246,15 @@ class SalesAttributeSnippet(Snippet):
 				error_message='Only alphanumeric',
 				repeat=True),
 			 SnippetParam(
-				 name='field_type',
-				 choises=cls.FIELD_TYPES,
+				 name='frontend_input',
+				 choises=cls.FRONTEND_INPUT_TYPE,
 				 required=True,  
-				 default='varchar',
+				 default='text',
 				 repeat=True),
 			 SnippetParam(
 				 name='required',
 				 required=True,  
-				 default=True,
+				 default=False,
 				 yes_no=True,
 				 repeat=True),
 			 SnippetParam(
@@ -284,7 +286,7 @@ class SalesAttributeSnippet(Snippet):
 				 required=False,
 				 regex_validator=r'^\d+$',
 				 error_message='Only numeric value allowed.',
-				 depend={'field_type': r'text|blob|decimal|numeric',},
+				 depend={'frontend_input': r'text|blob|decimal|numeric',},
 				 repeat=True
 			 ),
 			SnippetParam(

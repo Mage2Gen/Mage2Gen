@@ -1,2 +1,10 @@
 ${setup_type}Setup = $this->{setup_type}SetupFactory->create(['setup' => $setup]);
-${setup_type}Setup->addAttribute('{sales_entity}', '{attribute_code}', $options);
+${setup_type}Setup->addAttribute('{sales_entity}', '{attribute_code}',
+    [
+        'type' => '{type}',
+        'length' => {length},
+        'visible' => {visible},
+        'required' => {required},
+        'grid' => {grid}
+    ]
+);
