@@ -115,7 +115,7 @@ class SalesAttributeSnippet(Snippet):
 				'Magento\\Framework\\Setup\\{}DataInterface'.format(setupType),
 				'Magento\\Framework\\Setup\\ModuleContextInterface',
 				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
-				'Magento\\Sales\\Setup\\{}SetupFactory'.format(upperfirst(setup_type))],
+				'Magento\\{setup_type_class}\\Setup\\{setup_type_class}SetupFactory'.format(setup_type_class=upperfirst(setup_type))],
 			attributes=['private ${}SetupFactory;'.format(setup_type)])
 
 		install_data.add_method(Phpmethod(
@@ -127,7 +127,7 @@ class SalesAttributeSnippet(Snippet):
 			docstring=[
 				'Constructor',
 				'',
-				'@param \\Magento\\Sales\\Setup\\{setup_type_class}SetupFactory ${setup_type}SetupFactory'.format(
+				'@param \\Magento\\{setup_type_class}\\Setup\\{setup_type_class}SetupFactory ${setup_type}SetupFactory'.format(
 					setup_type_class=upperfirst(setup_type),
 					setup_type=setup_type
 				)
