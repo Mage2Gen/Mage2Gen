@@ -135,7 +135,6 @@ class SalesAttributeSnippet(Snippet):
 		)) 
 		install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
 			params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
-			body="$eavSetup = $this->{}SetupFactory->create(['setup' => $setup]);".format(setup_type),
 			docstring=['{@inheritdoc}']))
 		if upgrade_data:
 			install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
