@@ -121,7 +121,7 @@ class SalesAttributeSnippet(Snippet):
 		install_data.add_method(Phpmethod(
 			'__construct',
 			params=[
-				'{setup_type}SetupFactory ${setup_type}SetupFactory'.format(setup_type=setup_type),
+				'{setup_type_class}SetupFactory ${setup_type}SetupFactory'.format(setup_type_class=upperfirst(setup_type), setup_type=setup_type),
 			],
 			body="$this->{setup_type}SetupFactory = ${setup_type}SetupFactory;".format(setup_type=setup_type),
 			docstring=[
