@@ -98,13 +98,16 @@ class ProductAttributeSnippet(Snippet):
 		if not attribute_code:
 			attribute_code = attribute_label.lower().replace(' ','_')[:30]
 
+		split_attribute_code = attribute_code.split('_')
+		attribute_code_capitalized = ''.join(upperfirst(item) for item in split_attribute_code)
+
 		if source_model and frontend_input in ['multiselect', 'select']:
-			source_model = "\{}\{}\Model\Product\Attribute\Source\{}::class".format(self._module.package, self._module.name, upperfirst(attribute_code))
+			source_model = "\{}\{}\Model\Product\Attribute\Source\{}::class".format(self._module.package, self._module.name, attribute_code_capitalized)
 			options_array = []
 			for val in options:
 				options_array.append("['value' => '" + val.lower() + "', 'label' => __('" + val + "')]")
 			options_php_array = '[\n' + ',\n'.join(x.strip() for x in options_array) + '\n]'
-			self.add_source_model(attribute_code, options_php_array, extra_params.get('used_in_product_listing', False))
+			self.add_source_model(attribute_code_capitalized, options_php_array, extra_params.get('used_in_product_listing', False))
 			options_php_array_string = "''"
 		else:
 			source_model = "''"
@@ -113,10 +116,6 @@ class ProductAttributeSnippet(Snippet):
 
 		with open(templatePath, 'rb') as tmpl:
 			template = tmpl.read().decode('utf-8')
-
-		split_attribute_code = attribute_code.split('_')
-		attribute_code_capitalized = ''.join(upperfirst(item) for item in split_attribute_code)
-		attribute_code_capitalized_after = attribute_code_capitalized[0].lower() + attribute_code_capitalized[1:]
 
 		is_swatch_option = frontend_input == 'swatch_visual' or frontend_input == 'swatch_text'
 
@@ -398,8 +397,8 @@ class ProductAttributeSnippet(Snippet):
 
 		self.add_class(install_data)
 
-	def add_source_model(self, attribute_code, options_php_array_string, used_in_product_listing):
-		source_model = Phpclass('Model\\Product\\Attribute\Source\\{}'.format(upperfirst(attribute_code)),
+	def add_source_model(self, attribute_code_capitalized, options_php_array_string, used_in_product_listing):
+		source_model = Phpclass('Model\\Product\\Attribute\Source\\{}'.format(upperfirst(attribute_code_capitalized)),
 			extends='\\Magento\\Eav\\Model\\Entity\\Attribute\\Source\\AbstractSource')
 
 		source_model.add_method(Phpmethod(
