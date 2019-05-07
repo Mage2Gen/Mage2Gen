@@ -105,7 +105,7 @@ class ProductAttributeSnippet(Snippet):
 				options_array.append("['value' => '" + val.lower() + "', 'label' => __('" + val + "')]")
 			options_php_array = '[\n' + ',\n'.join(x.strip() for x in options_array) + '\n]'
 			self.add_source_model(attribute_code, options_php_array, extra_params.get('used_in_product_listing', False))
-			options_php_array_string = ""
+			options_php_array_string = "''"
 		else:
 			source_model = "''"
 
