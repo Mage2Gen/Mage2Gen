@@ -37,3 +37,7 @@ from .cache import CacheSnippet
 from .configurationtype import ConfigurationTypeSnippet
 from .block import BlockSnippet
 from .helper import HelperSnippet
+from .preference import PreferenceSnippet
+from .viewmodel import ViewModelSnippet
+from .companyattribute import CompanyAttributeSnippet
+from .saleattribute import SalesAttributeSnippet

@@ -128,6 +128,7 @@ class Phpmethod:
 		self.docstring = kwargs.get('docstring',[])
 		self.body = [kwargs.get('body', '')]
 		self.end_body = [kwargs.get('end_body', '')]
+		self.body_start = kwargs.get('body_start', '')
 		self.body_return = kwargs.get('body_return', '')
 		self.template_file = os.path.join(TEMPLATE_DIR, 'method.tmpl')
 	def __eq__(self, other):
@@ -172,6 +173,8 @@ class Phpmethod:
 
 	def body_code(self):
 		body_string = ''
+		if self.body_start:
+			body_string += self.body_start
 		for body_code in self.body:
 			if body_code:
 				body_string += '\n\t\t'.join(s.strip('\t') for s in body_code.splitlines()) + '\n\n\t\t'
