@@ -84,7 +84,7 @@ class CategoryAttributeSnippet(Snippet):
 		Install Magento 2 category attributes programmatically. 
 	"""
 	
-	def add(self,attribute_label, frontend_input='text', scope=1, required=False, source_model=False, source_model_options=False, extra_params=None):
+	def add(self,attribute_label, frontend_input='text', scope=1, required=False, upgrade_data=False, from_version='1.0.1', source_model=False, source_model_options=False, extra_params=None):
 		extra_params = extra_params if extra_params else {}
 		
 		value_type = self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int')
@@ -179,10 +179,14 @@ class CategoryAttributeSnippet(Snippet):
 			backend_model = backend_model
 		)
 
-		install_data = Phpclass('Setup\\InstallData',
-			implements=['InstallDataInterface'],
+		setupType = 'Install'
+		if upgrade_data:
+			setupType = 'Upgrade'
+
+		install_data = Phpclass('Setup\\{}Data'.format(setupType),
+			implements=['{}DataInterface'.format(setupType)],
 			dependencies=[
-				'Magento\\Framework\\Setup\\InstallDataInterface',
+				'Magento\\Framework\\Setup\\{}DataInterface'.format(setupType),
 				'Magento\\Framework\\Setup\\ModuleContextInterface',
 				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
 				'Magento\\Eav\\Setup\\EavSetup',
@@ -202,13 +206,18 @@ class CategoryAttributeSnippet(Snippet):
 			]
 		)) 
 		
-		install_data.add_method(Phpmethod('install',
+		install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
 			params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
 			body="$eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);",
 			docstring=['{@inheritdoc}']))
-		install_data.add_method(Phpmethod('install',
-			params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
-			body=methodBody))
+		if upgrade_data:
+			install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
+				params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
+				body='if (version_compare($context->getVersion(), "' + from_version + '", "<")) {\n\n    ' + methodBody.replace('\n','\n    ') + '\n}\n'))
+		else:
+			install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
+				params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
+				body = methodBody))
 	
 		self.add_class(install_data)
 
@@ -262,6 +271,16 @@ class CategoryAttributeSnippet(Snippet):
 			])
 		])
 
+		etc_module = Xmlnode('config', attributes={
+			'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Module/etc/module.xsd"}, nodes=[
+			Xmlnode('module', attributes={'name': self.module_name}, nodes=[
+				Xmlnode('sequence', attributes={}, nodes=[
+					Xmlnode('module', attributes={'name': 'Magento_Catalog'})
+				])
+			])
+		])
+		self.add_xml('etc/module.xml', etc_module)
+
 		self.add_xml(category_form_file, category_form_xml)
 	
 	@classmethod
@@ -299,6 +318,16 @@ class CategoryAttributeSnippet(Snippet):
 				 required=True,  
 				 default=True,
 				 yes_no=True),
+			 SnippetParam(
+				 name='upgrade_data',
+				 default=False,
+				 yes_no=True
+			 ),
+			 SnippetParam(
+				 name='from_version',
+				 description='1.0.1',
+				 default='1.0.1'
+			 ),
 		]
 
 	@classmethod
