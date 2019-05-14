@@ -145,23 +145,11 @@ class SalesAttributeSnippet(Snippet):
 				params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
 				body = methodBody))
 
-			# Catalog Attributes XML | Transport Attribute to Quote Item Product
-		transport_to_quote_item = extra_params.get('transport_to_quote_item', False)
-		if transport_to_quote_item:
-			config = Xmlnode('config', attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Catalog:etc/catalog_attributes.xsd"}, nodes=[
-				Xmlnode('group', attributes={'name': 'quote_item'}, nodes=[
-					Xmlnode('attribute', attributes={
-						'name': attribute_code
-					})
-				])
-			])
-			self.add_xml('etc/catalog_attributes.xml', config)
-
 		etc_module = Xmlnode('config', attributes={
 			'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Module/etc/module.xsd"}, nodes=[
 			Xmlnode('module', attributes={'name': self.module_name}, nodes=[
 				Xmlnode('sequence', attributes={}, nodes=[
-					Xmlnode('module', attributes={'name': 'Magento_Catalog'})
+					Xmlnode('module', attributes={'name': 'Magento_Sales'})
 				])
 			])
 		])
