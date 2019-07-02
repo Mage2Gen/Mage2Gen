@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, GraphQlSchema, GraphQlObjectType, GraphQlObjectItem
 
 class SystemSnippet(Snippet):
 	snippet_label = 'System / Config / Setting'
@@ -87,7 +87,7 @@ class SystemSnippet(Snippet):
 		('custom','Create Your own')
 	]
 
-	def add(self, tab, section, group, field, field_type='text', new_tab=False, extra_params=None, source_model=False, source_model_options=False):
+	def add(self, tab, section, group, field, field_type='text', new_tab=False, extra_params=None, source_model=False, source_model_options=False, graphql=False):
 		resource_id = self.module_name+'::config_'+self.module_name.lower()
 		extra_params = extra_params if extra_params else {}
 
@@ -205,7 +205,7 @@ class SystemSnippet(Snippet):
 					])
 				])
 			])
-		]);
+		])
 
 		self.add_xml(aclfile, acl)
 
@@ -220,9 +220,45 @@ class SystemSnippet(Snippet):
 					])
 				])
 			])
-		]);
+		])
 		
 		self.add_xml(config_file, default_config)
+
+		if graphql:
+			object_field = '{}_{}_{}'.format(section, group, field)
+			# default config values xml
+			graphql_di_file = 'etc/graphql/di.xml'
+
+			graphql_di = Xmlnode('config', attributes={
+				'xsi:noNamespaceSchemaLocation': "urn:magento:framework:ObjectManager/etc/config.xsd"}, nodes=[
+				Xmlnode('type', attributes={'name':'Magento\StoreGraphQl\Model\Resolver\Store\StoreConfigDataProvider'}, nodes=[
+					Xmlnode('arguments', attributes={'xsi:type': 'array'},nodes=[
+						Xmlnode('argument', attributes={'name':'extendedConfigData'}, nodes=[
+							Xmlnode('item', attributes={'name':object_field, 'xsi:type':'string'}, node_text='{}/{}/{}'.format(section, group, field))
+						])
+					])
+				])
+			])
+
+			self.add_xml(graphql_di_file, graphql_di)
+
+			schema = GraphQlSchema()
+
+			item_definition = GraphQlObjectType(
+				'StoreConfig'
+			)
+
+			item_definition.add_objectitem(
+				GraphQlObjectItem(
+					object_field,
+					description=object_field
+				)
+			)
+
+			schema.add_objecttype(item_definition)
+
+			self.add_graphqlschema('etc/schema.graphqls', schema)
+
 
 	@classmethod
 	def params(cls):
@@ -273,8 +309,12 @@ class SystemSnippet(Snippet):
 				required=True,
 				depend= {'source_model': r'custom'},
 				description='comma seperated options. Example: yes,no.maybe',
-				error_message='Only alphanumeric')
-
+				error_message='Only alphanumeric'),
+			SnippetParam(
+				name='graphql',
+				default=False,
+				yes_no=True,
+				repeat=True)
 		]
 
 	@classmethod
