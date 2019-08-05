@@ -126,7 +126,7 @@ class CompanyAttributeSnippet(Snippet):
 		transformed_attribute_code = "".join([x[0].upper() + x[1:] for x in attribute_code.split("_")])
 
 		self.add_plugin('Magento\\Company\\Model\\Company\\DataProvider', 'getGeneralData', "$result['{attribute_code}'] = $company->getData('{attribute_code}');".format(attribute_code=attribute_code), extra_params=['\\Magento\\Company\\Api\\Data\\CompanyInterface $company'])
-		self.add_plugin('Magento\\Company\\Controller\\Adminhtml\\Index\Save', 'setCompanyRequestData', "$result->setData('{attribute_code}', $subject->getRequest()->getParam('general')['{attribute_code}']);".format(attribute_code=attribute_code))
+		self.add_plugin('Magento\\Company\\Controller\\Adminhtml\\Index\Save', 'setCompanyRequestData', "$result->setData('{attribute_code}', $subject->getRequest()->getPostValue('general')['{attribute_code}']);".format(attribute_code=attribute_code))
 		self.add_plugin('Magento\\Company\\Api\\CompanyRepositoryInterface', 'get',
 						"$companyExtension->set{transformed_attribute_code}($company->getData('{attribute_code}'));".format(attribute_code=attribute_code, transformed_attribute_code=transformed_attribute_code),
 						body_return="$company->setExtensionAttributes($companyExtension);\n\t\treturn $company;",
