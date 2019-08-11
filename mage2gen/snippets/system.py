@@ -26,27 +26,61 @@ class SystemSnippet(Snippet):
 
 	For example an option to enable and disable your module. 
 
-	Generated configuration can be found in Magento Adminpanel > Stores > Settings > Configuration
 
+	Snippet Instructions:
+	---------------------
+	
+	1. Fill in the Tab (can be found in Magento Adminpanel > Stores > Settings > Configuration)
+	2. Check the box to add your config to an existing Tab
+	3. Fill in the Section
+	4. Fill in the Group
+	5. Fill in the Field
+	6. Select the Field type
+	7. Check the box to make your config available in the Graphql *StoreConfig* endpoint
+	
+	Available Field Types:
+	----------------------
+	- Text
+	- Textarea
+	- Select
+	- Multiselect
+	- Encrypted (Obscure)
+
+	For Select and Multiselect you will need to define a source model. By default this will be this will be the core Magento yes/no.
+	
+	
+	Retrieve config value:
+	----------------------
 	To retrieve the value you can use the xml path yourmodulename/general/enabled
 
-	Example:
-	--------
 	.. code::
 
 		$this->_scopeConfig->getValue('yourmodulename/general/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
-	(Depends on \Magento\Framework\App\Config\ScopeConfigInterface)
-
-	Field Types:
-	------------
-	- Select
-	- Multiselect
-	- Text
-	- Textarea
-	- Encrypted (Obscure)
-
-	For Select and Multiselect you will need to define a source model. By default this will be this will be the core Magento yes/no.
+	(Depends on \\\Magento\\\Framework\\\App\\\Config\\\ScopeConfigInterface)
+	
+	More information:
+		
+	https://github.com/magento/magento2/blob/2.3-develop/lib/internal/Magento/Framework/App/Config/ScopeConfigInterface.php#L29
+	
+	
+	Retrieve config in GraphQl:
+	---------------------------
+	Query a store’s configuation
+	
+	The following call returns all details of a store’s configuration.
+	.. json::
+	
+		{
+			  storeConfig {
+					yourmodulename_general_enabled
+			  }
+		}
+	
+	More information
+	
+	https://devdocs.magento.com/guides/v2.3/graphql/reference/store-config.html#extend-configuration-data
+	
 	"""
 
 	TYPE_CHOISES = [
