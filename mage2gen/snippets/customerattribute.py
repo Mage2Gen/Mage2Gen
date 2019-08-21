@@ -171,58 +171,70 @@ class CustomerAttributeSnippet(Snippet):
 			backend_model = backend_model
 		)
 
-		setupType = 'Install'
+		patchType = 'add'
+		# TODO: add update Attribute Support
 		if upgrade_data:
-			setupType = 'Upgrade'
+			patchType = 'add'
 
+		split_attribute_code = attribute_code.split('_')
+		attribute_code_capitalized = ''.join(upperfirst(item) for item in split_attribute_code)
 
-		install_data = Phpclass(
-			'Setup\\{}Data'.format(setupType),
-			implements=['{}DataInterface'.format(setupType)],
-			dependencies=[
-				'Magento\\Framework\\Setup\\{}DataInterface'.format(setupType),
-				'Magento\\Framework\\Setup\\ModuleContextInterface',
-				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
-				'Magento\\Customer\\Model\\Customer',
-				'Magento\\Customer\\Setup\\CustomerSetupFactory'
-				],
-			attributes=[
-				'private $customerSetupFactory;'
-			]
-		)
+		install_patch = Phpclass('Setup\\Patch\\Data\\{}{}CustomerAttribute'.format(patchType, attribute_code_capitalized),
+			 implements=['DataPatchInterface'],
+			 dependencies=[
+				 'Magento\\Framework\\Setup\\Patch\\DataPatchInterface',
+				 'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
+				 'Magento\\Customer\\Setup\\CustomerSetupFactory',
+				'Magento\\Customer\\Setup\\CustomerSetup'
+			 ],
+			 attributes=[
+				 "/**\n\t * @var ModuleDataSetupInterface\n\t */\n\tprivate $moduleDataSetup;",
+				 "/**\n\t * @var CustomerSetup\n\t */\n\tprivate $customerSetupFactory;"
+			 ]
+		 )
 
-		install_data.add_method(Phpmethod(
+		install_patch.add_method(Phpmethod(
 			'__construct',
 			params=[
+				'ModuleDataSetupInterface $moduleDataSetup',
 				'CustomerSetupFactory $customerSetupFactory'
 			],
-			body="$this->customerSetupFactory = $customerSetupFactory;",
+			body="$this->moduleDataSetup = $moduleDataSetup;\n$this->customerSetupFactory = $customerSetupFactory;",
 			docstring=[
 				'Constructor',
 				'',
-				'@param \\Magento\\Customer\\Setup\\CustomerSetupFactory $customerSetupFactory'
+				'@param ModuleDataSetupInterface $moduleDataSetup',
+				'@param CustomerSetupFactory $customerSetupFactory'
 			]
 		))
 
-		install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
-			params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
-			body="$customerSetup = $this->customerSetupFactory->create(['setup' => $setup]);",
-			docstring=['{@inheritdoc}']))
 
 		if forms_php_array:
-			attribute_form_data = "\n\n$attribute = $customerSetup->getEavConfig()->getAttribute('{customer_entity}', '{attribute_code}')\n->addData(['used_in_forms' => [{forms_php_array}]\n]);\n$attribute->save();".format(customer_entity=customer_entity, attribute_code=attribute_code, forms_php_array=forms_php_array)
+			attribute_form_data = "\n\n$attribute = $customerSetup->getEavConfig()->getAttribute('{customer_entity}', '{attribute_code}')->addData([\n    'used_in_forms' => [{forms_php_array}]\n]);\n$attribute->save();".format(customer_entity=customer_entity, attribute_code=attribute_code, forms_php_array=forms_php_array)
 			methodBody = methodBody + attribute_form_data
 
-		if upgrade_data:
-			install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
-				params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
-				body='if (version_compare($context->getVersion(), "' + from_version + '", "<")) {\n\n    ' + methodBody.replace('\n','\n    ') + '\n}\n'))
-		else:
-			install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
-				params=['ModuleDataSetupInterface $setup','ModuleContextInterface $context'],
-				body=methodBody))
+		install_patch.add_method(Phpmethod('apply',
+			body="$customerSetup = $this->customerSetupFactory->create(['setup' => $this->moduleDataSetup]);\n" + methodBody,
+			docstring=['{@inheritdoc}']))
 
-		self.add_class(install_data)	
+		install_patch.add_method(Phpmethod(
+			'getAliases',
+			body="return [];",
+			docstring=[
+				'{@inheritdoc}'
+			]
+		))
+
+		install_patch.add_method(Phpmethod(
+			'getDependencies',
+			access='public static',
+			body="return [\n\n];",
+			docstring=[
+				'{@inheritdoc}'
+			]
+		))
+
+		self.add_class(install_patch)
 
 		extension_attributes_file = 'etc/extension_attributes.xml'
 
@@ -519,11 +531,12 @@ class CustomerAttributeSnippet(Snippet):
                 depend= {'frontend_input': r'static'}, 
                 required=True,
                 ),
-			SnippetParam(
-				name='upgrade_data',
-				default=False,
-				yes_no=True
-			),
+			# TODO: add Upgrade Attribute Support
+			# SnippetParam(
+			#  name='upgrade_data',
+			#  default=False,
+			#  yes_no=True
+			# )
 			SnippetParam(
 				name='checkout_billing',
 				default=False,
@@ -535,12 +548,7 @@ class CustomerAttributeSnippet(Snippet):
 				default=False,
 				depend={'customer_entity': r'^customer_address'},
 				yes_no=True
-			),
-			SnippetParam(
-				name='from_version',
-				description='1.0.1',
-				default='1.0.1'
-			),
+			)
          ]
 
 	@classmethod
