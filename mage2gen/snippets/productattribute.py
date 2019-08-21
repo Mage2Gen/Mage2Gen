@@ -150,52 +150,22 @@ class ProductAttributeSnippet(Snippet):
 			frontend = ''
 		)
 
-		setupType = 'Install'
+		patchType = 'add'
 		# TODO: add Upgrade Attribute Support
 		if upgrade_data:
-			setupType = 'Install'
+			patchType = 'add'
 
-		product_data = Phpclass('Setup\\ProductSetup'.format(setupType),
-			extends='EavSetup',
-			dependencies=[
-				'Magento\\Eav\\Setup\\EavSetup',
-				'Magento\\Catalog\\Model\\ResourceModel\\Product\\Attribute\Collection',
-				'Magento\\Eav\\Model\\Entity\\Attribute\\ScopedAttributeInterface',
-				'Magento\\Catalog\\Setup\\CategorySetup',
-				'Magento\\Catalog\\Model\\ResourceModel\\Eav\\Attribute',
-				'Magento\\Catalog\\Model\\ResourceModel\\Product'
-			]
-		)
-
-		product_data.add_method(
-			Phpmethod('getDefaultEntities',body="""
-			return [\r
-			    'catalog_product' => [
-			        'entity_type_id' => CategorySetup::CATALOG_PRODUCT_ENTITY_TYPE_ID,
-			        'entity_model' => Product::class,
-			        'attribute_model' => Attribute::class,
-			        'table' => 'catalog_product_entity',
-			        'additional_attribute_table' => 'catalog_eav_attribute',
-			        'entity_attribute_collection' =>
-			        Collection::class,
-			        'attributes' => [""",
-					  end_body="""\r        ]\r    ]\r];\n"""))
-		product_data.add_method(
-			Phpmethod('getDefaultEntities', body=
-			methodBody.replace('\n', '\r    ')))
-
-		self.add_class(product_data)
-
-		install_patch = Phpclass('Setup\\Patch\\Data\\{}ProductAttributes'.format(setupType),
+		install_patch = Phpclass('Setup\\Patch\\Data\\{}{}ProductAttribute'.format(patchType, attribute_code_capitalized),
 			implements=['DataPatchInterface'],
 			dependencies=[
 				'Magento\\Framework\\Setup\\Patch\\DataPatchInterface',
 				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
-				'{}Factory'.format(product_data.class_namespace)
+				'Magento\\Eav\\Setup\\EavSetupFactory',
+				'Magento\\Eav\\Setup\\EavSetup',
 			],
 			attributes=[
-				'private $moduleDataSetup;',
-				'private $productSetupFactory;'
+				"/**\n\t * @var ModuleDataSetupInterface\n\t */\n\tprivate $moduleDataSetup;",
+				"/**\n\t * @var EavSetupFactory\n\t */\n\tprivate $eavSetupFactory;"
 			]
 		)
 
@@ -203,27 +173,25 @@ class ProductAttributeSnippet(Snippet):
 			'__construct',
 			params=[
 				'ModuleDataSetupInterface $moduleDataSetup',
-				'{}Factory $productSetupFactory'.format(product_data.class_name)
+				'EavSetupFactory $eavSetupFactory'
 			],
-			body="$this->moduleDataSetup = $moduleDataSetup;\n$this->productSetupFactory = $productSetupFactory;",
+			body="$this->moduleDataSetup = $moduleDataSetup;\n$this->eavSetupFactory = $eavSetupFactory;",
 			docstring=[
 				'Constructor',
 				'',
 				'@param ModuleDataSetupInterface $moduleDataSetup',
-				'@param {}Factory $productSetupFactory'.format(product_data.class_name)
+				'@param EavSetupFactory $eavSetupFactory'
 			]
 		))
 
 		install_patch.add_method(Phpmethod(
 			'apply',
 			body="""
-		/** @var {class_name} $productSetup */
-$productSetup = $this->productSetupFactory->create(['setup' => $this->moduleDataSetup]);
-$productSetup->installEntities();""".format(class_name=product_data.class_name),
+		/** @var EavSetup $eavSetup */
+$eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
+""" + methodBody,
 			docstring=[
-				'Do Upgrade',
-				'',
-				'@return void'
+				'{@inheritdoc}',
 			]
 		))
 		install_patch.add_method(Phpmethod(
@@ -356,7 +324,7 @@ $productSetup->installEntities();""".format(class_name=product_data.class_name),
 				 name='scope',
 				 required=True,
 				 choises=cls.SCOPE_CHOICES,
-				 default='1'),
+				 default='ScopedAttributeInterface::SCOPE_STOR'),
 			 SnippetParam(
 				 name='required',
 				 required=True,
@@ -367,12 +335,7 @@ $productSetup->installEntities();""".format(class_name=product_data.class_name),
 				#  name='upgrade_data',
 				#  default=False,
 				#  yes_no=True
-			 # ),
-			 SnippetParam(
-				 name='from_version',
-				 description='1.0.1',
-				 default='1.0.1'
-			 ),
+			 # )
 					  ]
 
 	@classmethod
