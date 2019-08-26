@@ -178,11 +178,15 @@ class CustomerAttributeSnippet(Snippet):
 
 		split_attribute_code = attribute_code.split('_')
 		attribute_code_capitalized = ''.join(upperfirst(item) for item in split_attribute_code)
+		entity_type = 'Customer'
+		if customer_entity == 'customer_address':
+			entity_type = 'CustomerAddress'
 
-		install_patch = Phpclass('Setup\\Patch\\Data\\{}{}CustomerAttribute'.format(patchType, attribute_code_capitalized),
-			 implements=['DataPatchInterface'],
+		install_patch = Phpclass('Setup\\Patch\\Data\\{}{}{}Attribute'.format(patchType, attribute_code_capitalized, entity_type),
+			 implements=['DataPatchInterface', 'PatchRevertableInterface'],
 			 dependencies=[
 				 'Magento\\Framework\\Setup\\Patch\\DataPatchInterface',
+				 'Magento\\Framework\\Setup\\Patch\\PatchRevertableInterface',
 				 'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
 				 'Magento\\Customer\\Setup\\CustomerSetupFactory',
 				'Magento\\Customer\\Setup\\CustomerSetup'
@@ -214,8 +218,24 @@ class CustomerAttributeSnippet(Snippet):
 			methodBody = methodBody + attribute_form_data
 
 		install_patch.add_method(Phpmethod('apply',
-			body="$customerSetup = $this->customerSetupFactory->create(['setup' => $this->moduleDataSetup]);\n" + methodBody,
+			body_start='$this->moduleDataSetup->getConnection()->startSetup();',
+			body_return='$this->moduleDataSetup->getConnection()->endSetup();',
+			body="""
+			/** @var CustomerSetup $customerSetup */
+			$customerSetup = $this->customerSetupFactory->create(['setup' => $this->moduleDataSetup]);
+			""" + methodBody,
 			docstring=['{@inheritdoc}']))
+
+		install_patch.add_method(Phpmethod(
+			'revert',
+			body_start='$this->moduleDataSetup->getConnection()->startSetup();',
+			body_return='$this->moduleDataSetup->getConnection()->endSetup();',
+			body="""
+				/** @var CustomerSetup $customerSetup */
+				$customerSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
+				$customerSetup->removeAttribute(\Magento\Customer\Model\Customer::ENTITY, '{attribute_code}');""".format(
+				attribute_code=attribute_code)
+		))
 
 		install_patch.add_method(Phpmethod(
 			'getAliases',

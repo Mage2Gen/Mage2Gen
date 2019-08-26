@@ -156,7 +156,7 @@ class ProductAttributeSnippet(Snippet):
 			patchType = 'add'
 
 		install_patch = Phpclass('Setup\\Patch\\Data\\{}{}ProductAttribute'.format(patchType, attribute_code_capitalized),
-			implements=['DataPatchInterface'],
+			implements=['DataPatchInterface', 'PatchRevertableInterface'],
 			dependencies=[
 				'Magento\\Framework\\Setup\\Patch\\DataPatchInterface',
 				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
@@ -186,6 +186,8 @@ class ProductAttributeSnippet(Snippet):
 
 		install_patch.add_method(Phpmethod(
 			'apply',
+			body_start='$this->moduleDataSetup->getConnection()->startSetup();',
+			body_return='$this->moduleDataSetup->getConnection()->endSetup();',
 			body="""
 		/** @var EavSetup $eavSetup */
 $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
@@ -193,6 +195,16 @@ $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
 			docstring=[
 				'{@inheritdoc}',
 			]
+		))
+
+		install_patch.add_method(Phpmethod(
+			'revert',
+			body_start='$this->moduleDataSetup->getConnection()->startSetup();',
+			body_return='$this->moduleDataSetup->getConnection()->endSetup();',
+			body="""
+				/** @var EavSetup $eavSetup */
+		$eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
+		$eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, '{attribute_code}');""".format(attribute_code=attribute_code)
 		))
 		install_patch.add_method(Phpmethod(
 			'getAliases',
