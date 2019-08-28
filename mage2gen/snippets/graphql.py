@@ -35,7 +35,12 @@ class GraphQlSnippet(Snippet):
     ]
 
     def add(self, base_type, identifier, custom_type=False, description='', object_arguments=False, object_fields=False,
-            data_provider_dependency=False, extra_params=None):
+            data_provider_dependency=False, add_cache_identity=False, extra_params=None):
+
+        if not object_fields:
+            object_fields = 'id'
+            if object_arguments:
+                object_fields = object_arguments
 
         if custom_type:
             identifier = custom_type
@@ -44,10 +49,45 @@ class GraphQlSnippet(Snippet):
         resolver_graphqlformat = '{}\\\{}\\\Model\\\Resolver\\\{}'.format(self._module.package, self._module.name,
                                                                           item_identifier)
 
+        cache_identity_graphqlformat = ''
+        if add_cache_identity and item_identifier and base_type == 'Query':
+            object_id = object_fields.split(',')[0]
+            cache_identity_graphqlformat = '{}\\\{}\\\Model\\\Resolver\\\{}\\Identity'.format(self._module.package, self._module.name,
+                                                                          item_identifier)
+            if add_cache_identity:
+                cacheIdentity = Phpclass(
+                    'Model\\Resolver\\{}\\Identity'.format(item_identifier),
+                    implements=['IdentityInterface'],
+                    dependencies=[
+                        'Magento\\Framework\\GraphQl\\Query\\Resolver\\IdentityInterface',
+                    ],
+                    attributes=[
+                        'private $cacheTag = \Magento\Framework\App\Config::CACHE_TAG;'
+                    ]
+                )
+                cacheIdentity.add_method(
+                    Phpmethod(
+                        'getIdentities',
+                        params=[
+                            'array $resolvedData'
+                        ],
+                        body="""
+            $ids =  empty($resolvedData['{object_id}']) ?
+                [] : [$this->cacheTag, sprintf('%s_%s', $this->cacheTag, $resolvedData['{object_id}'])];
+
+            return $ids;""".format(object_id=object_id),
+                        docstring=[
+                            '@param array $resolvedData',
+                            '@return string[]'
+                        ]
+                    )
+                )
+                self.add_class(cacheIdentity)
+
         item_type = 'String'
         if base_type == 'Custom':
             item_type = identifier
-        
+
         if base_type == 'Query':
             item_type = item_identifier
 
@@ -64,6 +104,7 @@ class GraphQlSnippet(Snippet):
                     item_arguments=object_arguments,
                     item_type=item_type,
                     item_resolver=resolver_graphqlformat,
+                    item_cache_identity=cache_identity_graphqlformat,
                     description=description
                 )
             )
@@ -75,9 +116,6 @@ class GraphQlSnippet(Snippet):
         item_definition = GraphQlObjectType(
             item_identifier
         )
-
-        if not object_fields:
-            object_fields = 'id'
 
         for object_field in object_fields.split(','):
             item_definition.add_objectitem(
@@ -223,9 +261,9 @@ return ${0}Data;""".format(identifier, item_identifier)
 
         if base_type == 'Query':
 
-            path = os.path.join('src', 'queries', self._module.package)
+            path = os.path.join('src', 'queries')
             self.add_static_file(path, StaticFile(
-                    'get{}.graphql'.format(item_identifier),
+                    'get{}{}.graphql'.format(upperfirst(self._module.package), item_identifier),
                     body="""query {identifier}() {{
     {identifier}() {{
         {object_fields_string}
@@ -281,7 +319,13 @@ return ${0}Data;""".format(identifier, item_identifier)
                 description='Example: Magento\Store\Api\StoreConfigManagerInterface',
                 regex_validator=r'^[\w\\]+$',
                 error_message='Only alphanumeric, underscore and backslash characters are allowed'
-            )
+            ),
+			 SnippetParam(
+				name='add_cache_identity',
+				required=True,
+                depend={'base_type': 'Query'},
+				default=False,
+				yes_no=True),
         ]
 
 
