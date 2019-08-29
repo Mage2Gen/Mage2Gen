@@ -44,4 +44,4 @@ from .companyattribute import CompanyAttributeSnippet
 from .component import ComponentSnippet
 from .saleattribute import SalesAttributeSnippet
 from .eaventity import EavEntitySnippet
-from .eaventityattribute import EavAttributeSnippet
+from .eaventityattribute import EavEntityAttributeSnippet

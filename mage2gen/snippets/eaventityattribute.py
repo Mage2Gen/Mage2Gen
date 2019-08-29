@@ -19,7 +19,7 @@ import os, locale
 from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
 from ..utils import upperfirst
 
-class EavAttributeSnippet(Snippet):
+class EavEntityAttributeSnippet(Snippet):
 	snippet_label = 'EAV Attribute (custom)'
 
 	FRONTEND_INPUT_TYPE = [
