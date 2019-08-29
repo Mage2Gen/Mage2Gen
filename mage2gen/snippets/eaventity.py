@@ -50,7 +50,7 @@ class EavEntitySnippet(Snippet):
 		self.count += 1
 		extra_params = extra_params if extra_params else {}
 
-		entity_table = '{}_{}_{}_entity'.format(self._module.package.lower(), self._module.name.lower(), entity_name.lower())
+		entity_table = '{}_{}_entity'.format(self._module.package.lower(), entity_name.lower())
 		entity_id = 'entity_id'.format(entity_name.lower())
 
 		field_element_type = 'input'
@@ -68,7 +68,7 @@ class EavEntitySnippet(Snippet):
 
 		collection_entity_class_name = "\\{}\\{}\\Model\\ResourceModel\\{}\\Collection".format(self._module.package,
 			self._module.name,
-		  	entity_name_capitalized.replace('_', '\\')
+		  	entity_name_capitalized.replace('_', '\\'),
 		)
 
 		extension_interface_class_name = "\\{}\\{}\\Api\\Data\\{}ExtensionInterface".format(self._module.package,
@@ -89,7 +89,115 @@ class EavEntitySnippet(Snippet):
 			attributes['unsigned'] = 'true'
 			attributes['length'] = '255'
 
-		# Create di.xml preferences
+		for eav_type in ['datetime', 'decimal', 'int', 'text', 'varchar']:
+			eav_entity_type_table = "{}_{}".format(entity_table, eav_type)
+			eav_entity_type_table_upper = eav_entity_type_table.upper()
+			additionalIndex = []
+			if eav_type != 'text':
+				additionalIndex += Xmlnode('index', attributes={
+							'referenceId': "{}_ENTITY_ID_ATTRIBUTE_ID_VALUE".format(eav_entity_type_table_upper),
+							'indexType': "btree"
+						}, match_attributes=["referenceId"], nodes=[
+							Xmlnode('column', attributes={
+								'name': "entity_id",
+							}),
+							Xmlnode('column', attributes={
+								'name': "attribute_id",
+							}),
+							Xmlnode('column', attributes={
+								'name': "value",
+							})
+						]),
+			self.add_xml('etc/db_schema.xml', Xmlnode('schema', nodes=[
+				Xmlnode('table', attributes={
+					'name': "{}_{}".format(entity_table, eav_type),
+					'resource': "default",
+					'engine': "innodb",
+					'comment': "{} Table".format(eav_entity_type_table)
+				},  nodes=[
+
+					Xmlnode('column', attributes={
+						'xsi:type': "int",
+						'name': "value_id",
+						'padding': "11",
+						'unsigned': "false",
+						'nullable': "false",
+						'identity': "true",
+						'comment': "Value ID",
+					}),
+					Xmlnode('column', attributes={
+						'xsi:type': "smallint",
+						'name': "attribute_id",
+						'padding': "5",
+						'unsigned': "true",
+						'nullable': "false",
+						'identity': "false",
+						'default': "0",
+						'comment': "Attribute ID",
+					}),
+					Xmlnode('column', attributes={
+						'xsi:type': "int",
+						'name': "entity_id",
+						'padding': "10",
+						'unsigned': "true",
+						'nullable': "false",
+						'identity': "false",
+						'default': "0",
+						'comment': "Entity ID",
+					}),
+					Xmlnode('constraint', attributes={
+						'xsi:type': "primary",
+						'referenceId': "PRIMARY".format(entity_id)
+					}, match_attributes=["referenceId"], nodes=[
+						Xmlnode('column', attributes={
+							'name': "value_id"
+						})
+					]),
+					Xmlnode('constraint', attributes={
+						'xsi:type': "foreign",
+						'referenceId': "{}_ATTRIBUTE_ID_EAV_ATTRIBUTE_ATTRIBUTE_ID".format(eav_entity_type_table_upper),
+						'table': eav_entity_type_table,
+						'column': "attribute_id",
+						'referenceTable': "eav_attribute",
+						'referenceColumn': "attribute_id",
+						'onDelete': "CASCADE",
+					},match_attributes=["referenceId"]),
+					Xmlnode('constraint', attributes={
+						'xsi:type': "foreign",
+						'referenceId': "{}_ENTITY_ID_{}_ENTITY_ID".format(eav_entity_type_table_upper, entity_table.upper()),
+						'table': eav_entity_type_table,
+						'column': "entity_id",
+						'referenceTable': entity_table,
+						'referenceColumn': entity_id,
+						'onDelete': "CASCADE",
+					}, match_attributes=["referenceId"]),
+					Xmlnode('constraint', attributes={
+						'xsi:type': "unique",
+						'referenceId': "{}_ENTITY_ID_ATTRIBUTE_ID".format(eav_entity_type_table_upper)
+					}, match_attributes=["referenceId"], nodes=[
+						Xmlnode('column', attributes={
+							'name': "entity_id",
+						}),
+						Xmlnode('column', attributes={
+							'name': "attribute_id",
+						})
+					]),
+					Xmlnode('index', attributes={
+						'referenceId': "{}_ATTRIBUTE_ID".format(eav_entity_type_table_upper),
+						'indexType': "btree"
+					}, match_attributes=["referenceId"], nodes=[
+						Xmlnode('column', attributes={
+							'name': "attribute_id",
+						})
+					]),
+					] +
+					additionalIndex
+				)
+			]))
+
+
+
+		# update db_schema.xml preferences
 		self.add_xml('etc/db_schema.xml', Xmlnode('schema', attributes={
 			'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd"}, nodes=[
 			Xmlnode('table', attributes={
@@ -99,10 +207,10 @@ class EavEntitySnippet(Snippet):
 				'comment': "{} Table".format(entity_table)
 			}, match_attributes=["name"], nodes=[
 				Xmlnode('column', attributes={
-					'xsi:type': "{}".format('smallint'),
-					'name': "{}".format(entity_id),
-					'padding': "{}".format('6'),
-					'unsigned': "{}".format('false'),
+					'xsi:type': "{}".format('int'),
+					'name': entity_id,
+					'padding': "{}".format('10'),
+					'unsigned': "{}".format('true'),
 					'nullable': "{}".format('false'),
 					'identity': "{}".format('true'),
 					'comment': "{}".format('Entity Id')
@@ -112,7 +220,7 @@ class EavEntitySnippet(Snippet):
 					'referenceId': "PRIMARY".format(entity_id)
 				}, match_attributes=["referenceId"], nodes=[
 					Xmlnode('column', attributes={
-						'name': "{}".format(entity_id)
+						'name': entity_id
 					})
 				]),
 				Xmlnode('column', attributes=attributes)
@@ -172,7 +280,7 @@ class EavEntitySnippet(Snippet):
 						Xmlnode('column', attributes={
 							'xsi:type': "text",
 							'name': "value",
-							'nullable': "false",
+							'nullable': "true",
 							'comment': "Value",
 						})
 					]
@@ -192,124 +300,11 @@ class EavEntitySnippet(Snippet):
 			),
 		]))
 
-		for eav_type in ['datetime', 'decimal', 'int', 'text', 'varchar']:
-			eav_entity_type_table = "{}_{}".format(entity_table, eav_type)
-			eav_entity_type_table_upper = eav_entity_type_table.upper()
-			self.add_xml('etc/db_schema.xml', Xmlnode('schema', nodes=[
-				Xmlnode('table', attributes={
-					'name': "{}_{}".format(entity_table, eav_type),
-					'resource': "default",
-					'engine': "innodb",
-					'comment': "{} Table".format(eav_entity_type_table)
-				}, match_attributes=["name"], nodes=[
-
-					Xmlnode('column', attributes={
-						'xsi:type': "int",
-						'name': "value_id",
-						'padding': "11",
-						'unsigned': "false",
-						'nullable': "false",
-						'identity': "true",
-						'comment': "comment",
-					}),
-					Xmlnode('column', attributes={
-						'xsi:type': "smallint",
-						'name': "attribute_id",
-						'padding': "5",
-						'unsigned': "true",
-						'nullable': "false",
-						'identity': "false",
-						'default': "0",
-						'comment': "Attribute ID",
-					}),
-					Xmlnode('column', attributes={
-						'xsi:type': "int",
-						'name': "entity_id",
-						'padding': "10",
-						'unsigned': "true",
-						'nullable': "false",
-						'identity': "false",
-						'default': "0",
-						'comment': "Entity ID",
-					}),
-					Xmlnode('constraint', attributes={
-						'xsi:type': "primary",
-						'referenceId': "PRIMARY".format(entity_id)
-					}, match_attributes=["referenceId"], nodes=[
-						Xmlnode('column', attributes={
-							'name': "value_id"
-						})
-					]),
-					Xmlnode('constraint', attributes={
-						'xsi:type': "foreign",
-						'referenceId': "{}_ATTRIBUTE_ID_EAV_ATTRIBUTE_ATTRIBUTE_ID".format(eav_entity_type_table_upper),
-						'table': format(eav_entity_type_table),
-						'column': "attribute_id",
-						'referenceTable': "eav_attribute",
-						'referenceColumn': "attribute_id",
-						'onDelete': "CASCADE",
-					},match_attributes=["referenceId"]),
-					Xmlnode('constraint', attributes={
-						'xsi:type': "foreign",
-						'referenceId': "{}_ENTITY_ID_CUSTOMER_ENTITY_ENTITY_ID".format(eav_entity_type_table_upper),
-						'table': format(eav_entity_type_table),
-						'column': "entity_id",
-						'referenceTable': "{}".format(entity_id),
-						'referenceColumn': "entity_id",
-						'onDelete': "CASCADE",
-					}, match_attributes=["referenceId"]),
-					Xmlnode('constraint', attributes={
-						'xsi:type': "unique",
-						'referenceId': "{}_ENTITY_ID_ATTRIBUTE_ID".format(eav_entity_type_table_upper)
-					}, match_attributes=["referenceId"], nodes=[
-						Xmlnode('column', attributes={
-							'name': "entity_id",
-						}),
-						Xmlnode('column', attributes={
-							'name': "attribute_id",
-						})
-					]),
-					Xmlnode('constraint', attributes={
-						'xsi:type': "unique",
-						'referenceId': "{}_ENTITY_ID_ATTRIBUTE_ID".format(eav_entity_type_table_upper)
-					}, match_attributes=["referenceId"], nodes=[
-						Xmlnode('column', attributes={
-							'name': "entity_id",
-						}),
-						Xmlnode('column', attributes={
-							'name': "attribute_id",
-						})
-					]),
-					Xmlnode('index', attributes={
-						'referenceId': "{}_ATTRIBUTE_ID".format(eav_entity_type_table_upper),
-						'indexType': "btree"
-					}, match_attributes=["referenceId"], nodes=[
-						Xmlnode('column', attributes={
-							'name': "attribute_id",
-						})
-					]),
-					Xmlnode('index', attributes={
-						'referenceId': "{}_ENTITY_ID_ATTRIBUTE_ID_VALUE".format(eav_entity_type_table_upper),
-						'indexType': "btree"
-					}, match_attributes=["referenceId"], nodes=[
-						Xmlnode('column', attributes={
-							'name': "entity_id",
-						}),
-						Xmlnode('column', attributes={
-							'name': "attribute_id",
-						}),
-						Xmlnode('column', attributes={
-							'name': "value",
-						})
-					]),
-				])
-			]))
-
 		# Create resource class
-		resource_entity_class = Phpclass('Model\\ResourceModel\\' + entity_name_capitalized.replace('_', '\\'), extends='\\Magento\\Framework\\Model\\ResourceModel\\Db\\AbstractDb')
+		resource_entity_class = Phpclass('Model\\ResourceModel\\' + entity_name_capitalized.replace('_', '\\'), extends='\\Magento\\Eav\\Model\\Entity\\AbstractEntity')
 		resource_entity_class.add_method(Phpmethod('_construct',
 			access=Phpmethod.PROTECTED,
-			body="$this->_init('{}', '{}');".format(entity_table, entity_id),
+			body="$this->setType('{}');".format(entity_table),
 			docstring=[
 				'Define resource model',
 				'',
@@ -365,7 +360,7 @@ class EavEntitySnippet(Snippet):
 			],
 			extends='\\Magento\\Framework\\Model\\AbstractModel',
 			attributes=[
-				"const ENTITY = '{}'".format(entity_table),
+				"const ENTITY = '{}';".format(entity_table),
 				'protected ${}DataFactory;\n'.format(entity_name.lower()),
 				'protected $dataObjectHelper;\n',
 				'protected $_eventPrefix = \'{}\';'.format(entity_table),
@@ -416,15 +411,15 @@ class EavEntitySnippet(Snippet):
 		entity_setup = Phpclass('Setup\\{}Setup'.format(entity_name_capitalized.replace('_', '\\')),
 								extends='EavSetup',
 								dependencies=[
-									entity_class.class_namespace
+									'Magento\\Eav\\Setup\\EavSetup'
 								]
 								)
 
 		entity_setup.add_method(
 			Phpmethod('getDefaultEntities', body="""
 							return [\r
-							     {entity_class}::ENTITY => [
-							        'entity_model' => {entity_class}::class,
+							     \{entity_class}::ENTITY => [
+							        'entity_model' => \{resource_class}::class,
 							        'table' => '{entity_table}',
 							        'attributes' => [
 							        	'title' => [
@@ -432,7 +427,7 @@ class EavEntitySnippet(Snippet):
 							        	]
 							    	]
 							    ]
-							];""".format(entity_class=entity_name_capitalized.replace('_', '\\'), entity_table=entity_table))
+							];""".format(entity_class=entity_class.class_namespace, entity_table=entity_table, resource_class=resource_entity_class.class_namespace))
 		)
 
 		self.add_class(entity_setup)
@@ -443,8 +438,8 @@ class EavEntitySnippet(Snippet):
 			dependencies=[
 				'Magento\\Framework\\Setup\\Patch\\DataPatchInterface',
 				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
-				"{}Factory".format(entity_setup.namespace),
-				entity_setup.namespace
+				"{}Factory".format(entity_setup.class_namespace),
+				entity_setup.class_namespace
 			],
 			attributes=[
 				"/**\n\t * @var ModuleDataSetupInterface\n\t */\n\tprivate $moduleDataSetup;",
@@ -472,7 +467,7 @@ class EavEntitySnippet(Snippet):
 										   body_return='$this->moduleDataSetup->getConnection()->endSetup();',
 										   body="""
 					/** @var {class_name}Setup $customerSetup */
-					${variable}rSetup = $this->{variable}SetupFactory->create(['setup' => $this->moduleDataSetup]);
+					${variable}Setup = $this->{variable}SetupFactory->create(['setup' => $this->moduleDataSetup]);
 					${variable}Setup->installEntities();
 					""".format(variable=lowerfirst(entity_name_capitalized.replace('_', '\\')), class_name=entity_name_capitalized.replace('_', '\\')),
 										   docstring=['{@inheritdoc}']))
@@ -510,7 +505,7 @@ class EavEntitySnippet(Snippet):
 		
 		# Create collection
 		collection_entity_class = Phpclass('Model\\ResourceModel\\' + entity_name_capitalized.replace('_', '\\') + '\\Collection',
-				extends='\\Magento\\Framework\\Model\\ResourceModel\\Db\\Collection\\AbstractCollection')
+				extends='\\Magento\\Eav\\Model\\Entity\\Collection\\AbstractCollectionn')
 		collection_entity_class.add_method(Phpmethod('_construct',
 			access=Phpmethod.PROTECTED,
 			body="$this->_init(\n    \{}::class,\n    \{}::class\n);".format(
@@ -1369,6 +1364,7 @@ class EavEntitySnippet(Snippet):
 				'array $meta = []',
 				'array $data = []'],
 			body="""$this->collection = $collectionFactory->create();
+					$this->collection->addAttributeToSelect('*');
 					$this->dataPersistor = $dataPersistor;
 					parent::__construct($name, $primaryFieldName, $requestFieldName, $meta, $data);""",
 			docstring=[
@@ -1533,7 +1529,7 @@ class EavEntitySnippet(Snippet):
 			]),
 			Xmlnode('fieldset', attributes={'name': 'general'}, nodes=[
 				Xmlnode('settings', nodes=[
-					Xmlnode('label'),
+					Xmlnode('label', node_text='General'),
 				]),
 				Xmlnode('field', attributes={'name': field_name, 'formElement': field_element_type, 'sortOrder': str(10 * self.count)}, nodes=[
 					Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
