@@ -57,11 +57,16 @@ class EavAttributeSnippet(Snippet):
 	description = """
 		Install Magento 2 custom eav entity attributes programmatically.
 	"""
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.count = 1
 
-	def add(self, entity_model_class, attribute_label, frontend_input='text', required=False, options=None, source_model=False, extra_params=None):
+	def add(self, entity_model_class, attribute_label, frontend_input='text', required=False, options=None, source_model=False, extend_adminhtml_form=False, extra_params=None):
 		entity_type = "\{}::ENTITY".format(entity_model_class)
+		entity_table = '{}_{}_entity'.format(self._module.package.lower(), entity_model_class.split('\\')[-1].lower())
 		extra_params = extra_params if extra_params else {}
 
+		self.count += 1
 		value_type = self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int')
 		value_type = value_type if value_type != 'date' else 'datetime'
 		user_defined = 'true'
@@ -195,6 +200,32 @@ $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
 		])
 		self.add_xml('etc/module.xml', etc_module)
 
+		if extend_adminhtml_form:
+			# UI Component Form
+			ui_form = Xmlnode('form', nodes=[
+				Xmlnode('fieldset', attributes={'name': 'general'}, nodes=[
+					Xmlnode('field', attributes={'name': attribute_code, 'formElement': value_type,
+												 'sortOrder': str(10 * self.count)}, nodes=[
+						Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
+							Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
+								Xmlnode('item', attributes={'name': 'source', 'xsi:type': 'string'},
+										node_text=attribute_code),
+							]),
+						]),
+						Xmlnode('settings', nodes=[
+							Xmlnode('dataType', node_text='text'),
+							Xmlnode('label', attributes={'translate': 'true'}, node_text=attribute_label),
+							Xmlnode('dataScope', node_text=attribute_code),
+							Xmlnode('validation', nodes=[
+								Xmlnode('rule', attributes={'name': 'required-entry', 'xsi:type': 'boolean'},
+										node_text='true' if required else 'false'),
+							]),
+						]),
+					]),
+				]),
+			])
+			self.add_xml('view/adminhtml/ui_component/{}_form.xml'.format(entity_table), ui_form)
+
 	def add_source_model(self, attribute_code_capitalized, options_php_array_string):
 		source_model = Phpclass('Model\\Attribute\Source\\{}'.format(upperfirst(attribute_code_capitalized)),
 			extends='\\Magento\\Eav\\Model\\Entity\\Attribute\\Source\\AbstractSource')
@@ -248,7 +279,9 @@ $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
 				 required=True,
 				 default=True,
 				 yes_no=True),
-	  	]
+			 SnippetParam(name='extend_adminhtml_form', yes_no=True, description='Extend the admin ui based on the Entity Model Class'),
+
+		 ]
 
 	@classmethod
 	def extra_params(cls):

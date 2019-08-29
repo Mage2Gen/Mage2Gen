@@ -1,0 +1,17 @@
+$eavSetup->addAttribute(
+    {entity_type},
+    '{attribute_code}',
+    [
+        'type' => '{value_type}',
+        'label' => '{attribute_label}',
+        'input' => '{frontend_input}',
+        'source' => {source_model},
+        'frontend' => '{frontend}',
+        'required' => {required},
+        'backend' => '{backend}',
+        'default' => {default},
+        'user_defined' => {user_defined},
+        'unique' => {unique},
+        'group' => 'General',
+    ]
+);
