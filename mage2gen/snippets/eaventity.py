@@ -505,7 +505,7 @@ class EavEntitySnippet(Snippet):
 		
 		# Create collection
 		collection_entity_class = Phpclass('Model\\ResourceModel\\' + entity_name_capitalized.replace('_', '\\') + '\\Collection',
-				extends='\\Magento\\Eav\\Model\\Entity\\Collection\\AbstractCollectionn')
+				extends='\\Magento\\Eav\\Model\\Entity\\Collection\\AbstractCollection')
 		collection_entity_class.add_method(Phpmethod('_construct',
 			access=Phpmethod.PROTECTED,
 			body="$this->_init(\n    \{}::class,\n    \{}::class\n);".format(
