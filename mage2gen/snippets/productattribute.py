@@ -79,7 +79,7 @@ class ProductAttributeSnippet(Snippet):
 		The attribute is automatically added to all the attribute sets.
 	"""
 
-	def add(self, attribute_label, frontend_input='text', scope=1, required=False, upgrade_data=False, from_version='1.0.1', options=None, source_model=False, extra_params=None):
+	def add(self, attribute_label, frontend_input='text', scope="ScopedAttributeInterface::SCOPE_STORE", required=False, upgrade_data=False, from_version='1.0.1', options=None, source_model=False, extra_params=None):
 		extra_params = extra_params if extra_params else {}
 		apply_to = extra_params.get('apply_to', [])
 		try:
@@ -159,6 +159,7 @@ class ProductAttributeSnippet(Snippet):
 			implements=['DataPatchInterface', 'PatchRevertableInterface'],
 			dependencies=[
 				'Magento\\Framework\\Setup\\Patch\\DataPatchInterface',
+				'Magento\\Framework\\Setup\\Patch\\PatchRevertableInterface',
 				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
 				'Magento\\Eav\\Setup\\EavSetupFactory',
 				'Magento\\Eav\\Setup\\EavSetup',
