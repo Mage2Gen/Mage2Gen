@@ -204,7 +204,7 @@ $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
 			# UI Component Form
 			ui_form = Xmlnode('form', nodes=[
 				Xmlnode('fieldset', attributes={'name': 'general'}, nodes=[
-					Xmlnode('field', attributes={'name': attribute_code, 'formElement': value_type,
+					Xmlnode('field', attributes={'name': attribute_code, 'formElement': frontend_input,
 												 'sortOrder': str(10 * self.count)}, nodes=[
 						Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
 							Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
