@@ -1309,7 +1309,7 @@ class ModelSnippet(Snippet):
 			]),
 			Xmlnode('fieldset', attributes={'name': 'general'}, nodes=[
 				Xmlnode('settings', nodes=[
-					Xmlnode('label'),
+					Xmlnode('label', node_text='General'),
 				]),
 				Xmlnode('field', attributes={'name': field_name, 'formElement': field_element_type, 'sortOrder': str(10 * self.count)}, nodes=[
 					Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
