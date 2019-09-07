@@ -124,6 +124,9 @@ class Snippet(metaclass=MetaClass):
 	def add_class(self, phpclass):
 		return self._module.add_class(phpclass)
 
+	def add_graphqlschema(self, graphqschema_file, graphqlschema):
+		return self._module.add_graphqlschema(graphqschema_file, graphqlschema)
+
 	def add_xml(self, xml_file, node):
 		return self._module.add_xml(xml_file, node)
 

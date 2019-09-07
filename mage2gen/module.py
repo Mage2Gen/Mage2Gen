@@ -128,8 +128,10 @@ class Phpmethod:
 		self.docstring = kwargs.get('docstring',[])
 		self.body = [kwargs.get('body', '')]
 		self.end_body = [kwargs.get('end_body', '')]
+		self.body_start = kwargs.get('body_start', '')
 		self.body_return = kwargs.get('body_return', '')
 		self.template_file = os.path.join(TEMPLATE_DIR, 'method.tmpl')
+
 	def __eq__(self, other):
 		return self.name == other.name
 
@@ -163,7 +165,7 @@ class Phpmethod:
 		docstring = '/**'
 		docstring +=  '\n\t *' + '\n\t *'.join(" {}".format(line.strip()) if len(line.strip()) else '' for line in self.docstring)
 		docstring += '\n\t */\n\t'
-		return docstring			
+		return docstring
 
 
 	def add_body_code(self,code):
@@ -172,6 +174,8 @@ class Phpmethod:
 
 	def body_code(self):
 		body_string = ''
+		if self.body_start:
+			body_string += self.body_start
 		for body_code in self.body:
 			if body_code:
 				body_string += '\n\t\t'.join(s.strip('\t') for s in body_code.splitlines()) + '\n\n\t\t'
@@ -287,7 +291,7 @@ class StaticFile:
 		for code in other._context_data['body']:
 			if code not in self._context_data['body']:
 				self._context_data['body'].append(code)	
-		return self	
+		return self
 
 	def context_data(self):
 		data = self._context_data
@@ -313,6 +317,168 @@ class StaticFile:
 
 
 ###############################################################################
+# GraphQl Object Type
+###############################################################################
+class GraphQlSchema:
+	template_file = os.path.join(TEMPLATE_DIR, 'graphqlschema.tmpl')
+
+	def __init__(self):
+		self.object_types = []
+
+	def __add__(self, other):
+		for object_type in other.object_types:
+			self.add_objecttype(object_type)
+		return self
+
+	def add_objecttype(self, object_type):
+		if object_type in self.object_types:
+			object_type_index = self.object_types.index(object_type)
+			self.object_types[object_type_index] = self.object_types[object_type_index] + object_type
+		else:
+			self.object_types.append(object_type)
+
+	def context_data(self):
+		object_types = '\n\n'.join(t.generate() for t in self.object_types)
+		if object_types:
+			object_types = '\n' + object_types
+
+		return {
+			'object_types': object_types
+		}
+
+	def generate(self):
+		with open(self.template_file, 'rb') as tmpl:
+			template = tmpl.read().decode('utf-8')
+
+		return template.format(
+			**self.context_data()
+		).replace('\t', '    ')  # Make generated code PSR2 compliant
+
+	def save(self, path):
+		try:
+			os.makedirs(os.path.dirname(path))
+		except Exception:
+			pass
+
+		with open(path, 'w+', encoding='utf-8') as class_file:
+			class_file.writelines(self.generate())
+
+
+class GraphQlObjectType:
+
+	def __init__(self, type, **kwargs):
+
+		self.type = type
+		self.body = [kwargs.get('body', '')]
+		self.end_body = [kwargs.get('end_body', '')]
+		self.template_file = os.path.join(TEMPLATE_DIR, 'graphqlobject.tmpl')
+		self.object_items = []
+
+	def __eq__(self, other):
+		return self.type == other.type
+
+	def __add__(self, other):
+		for item in other.object_items:
+			self.add_objectitem(item)
+		for code in other.body:
+			if code not in self.body:
+				self.body.append(code)
+		for code in other.end_body:
+			if code not in self.end_body:
+				self.end_body.insert(0, code)
+		return self
+
+	def __hash__(self):
+		return hash(self.type)
+
+	def add_objectitem(self, object_item):
+		if object_item in self.object_items:
+			object_type_index = self.object_items.index(object_item)
+			self.object_items[object_type_index] = self.object_items[object_type_index] + object_item
+		else:
+			self.object_items.append(object_item)
+
+	def body_code(self):
+		body_string = ''
+		for body_code in self.body:
+			if body_code:
+				body_string += '\n\t'.join(s.strip('\t') for s in body_code.splitlines()) + '\n\n\t'
+		return body_string.strip()
+
+	def context_data(self):
+		object_items = '\n'.join(i.generate() for i in self.object_items)
+		if object_items:
+			object_items = '\n' + object_items
+
+		return {
+			'type': self.type,
+			'object_items': object_items
+		}
+
+	def generate(self):
+		with open(self.template_file, 'rb') as tmpl:
+			template = tmpl.read().decode('utf-8')
+
+		return template.format(
+			**self.context_data()
+		).replace('\t', '    ') # Make generated code PSR2 compliant
+
+
+class GraphQlObjectItem:
+
+	def __init__(self, item_identifier, **kwargs):
+
+		self.item_identifier = item_identifier
+		self.item_type = kwargs.get('item_type', 'String')
+		self.item_arguments = kwargs.get('item_arguments', '')
+		self.item_resolver = kwargs.get('item_resolver', '')
+		self.item_description = kwargs.get('description', '')
+		self.item_cache_identity = kwargs.get('item_cache_identity', '')
+		self.body = [kwargs.get('body', '')]
+		self.end_body = [kwargs.get('end_body', '')]
+		self.template_file = os.path.join(TEMPLATE_DIR, 'graphqlobjectitem.tmpl')
+		if self.item_resolver:
+			self.item_resolver = '@resolver( class: "{item_resolver}")'.format(item_resolver=self.item_resolver)
+		if self.item_cache_identity:
+			self.item_cache_identity = '@cache( cacheIdentity: "{item_cache_identity}")'.format(item_cache_identity=self.item_cache_identity)
+		if self.item_arguments:
+			arguments = []
+			for argument in self.item_arguments.split(','):
+				arguments.append('\t\t{argument}: String @doc(description: "Query by {argument}.")'.format(argument=argument))
+			self.item_arguments = '(\n' + "\n".join(arguments) + '\n\t)'
+
+	def __eq__(self, other):
+		return self.item_identifier == other.item_identifier
+
+	def __add__(self, other):
+		for code in other.body:
+			if code not in self.body:
+				self.body.append(code)
+		for code in other.item_identifier:
+			if code not in self.item_identifier:
+				self.body.append(code)
+		for code in other.end_body:
+			if code not in self.end_body:
+				self.end_body.insert(0, code)
+		return self
+
+	def __hash__(self):
+		return hash(self.item_type)
+
+	def generate(self):
+		with open(self.template_file, 'rb') as tmpl:
+			template = tmpl.read().decode('utf-8')
+
+		return template.format(
+			item_identifier=self.item_identifier,
+			item_type=self.item_type,
+			item_resolver=self.item_resolver,
+			item_description=self.item_description,
+			item_cache_identity=self.item_cache_identity,
+			item_arguments=self.item_arguments
+		).replace('\t', '    ')  # Make generated code PSR2 compliant
+
+###############################################################################
 # Module
 ###############################################################################
 class Module:
@@ -322,6 +488,7 @@ class Module:
 		self.name = upperfirst(name)
 		self.description = description
 		self.license = license
+		self._graphqlschemas = {}
 		self._xmls = {}
 		self._classes = {}
 		self._static_files = {}
@@ -385,6 +552,10 @@ class Module:
 		for class_name, phpclass in self._classes.items():
 			phpclass.save(root_location)
 
+		for graphqlschema_file, graphqlobjecttype in self._graphqlschemas.items():
+			path = os.path.join(location, graphqlschema_file)
+			graphqlobjecttype.save(path)
+
 		for xml_file, node in self._xmls.items():
 			path = os.path.join(location, xml_file)
 			node.save(path)
@@ -407,6 +578,13 @@ class Module:
 		current_class.license = self.license
 		
 		self._classes[current_class.class_namespace] = current_class
+
+	def add_graphqlschema(self, graphqlschema_file, schema):
+		current_schema = self._graphqlschemas.get(graphqlschema_file)
+		if current_schema:
+			current_schema += schema
+		else:
+			self._graphqlschemas[graphqlschema_file] = schema
 
 	def add_xml(self, xml_file, node):
 		current_xml = self._xmls.get(xml_file)

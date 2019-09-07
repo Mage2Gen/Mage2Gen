@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-from .module import Module, Phpclass, Phpmethod, Xmlnode, StaticFile
+from .module import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, GraphQlSchema, GraphQlObjectType, GraphQlObjectItem
 from .snippet import Snippet, SnippetParam
 
 # Load snippets
