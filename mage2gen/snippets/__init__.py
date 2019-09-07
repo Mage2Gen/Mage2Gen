@@ -40,4 +40,8 @@ from .helper import HelperSnippet
 from .graphql import GraphQlSnippet
 from .preference import PreferenceSnippet
 from .viewmodel import ViewModelSnippet
+from .companyattribute import CompanyAttributeSnippet
 from .component import ComponentSnippet
+from .saleattribute import SalesAttributeSnippet
+from .eaventity import EavEntitySnippet
+from .eaventityattribute import EavEntityAttributeSnippet

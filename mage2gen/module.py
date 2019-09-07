@@ -128,6 +128,7 @@ class Phpmethod:
 		self.docstring = kwargs.get('docstring',[])
 		self.body = [kwargs.get('body', '')]
 		self.end_body = [kwargs.get('end_body', '')]
+		self.body_start = kwargs.get('body_start', '')
 		self.body_return = kwargs.get('body_return', '')
 		self.template_file = os.path.join(TEMPLATE_DIR, 'method.tmpl')
 
@@ -173,6 +174,8 @@ class Phpmethod:
 
 	def body_code(self):
 		body_string = ''
+		if self.body_start:
+			body_string += self.body_start
 		for body_code in self.body:
 			if body_code:
 				body_string += '\n\t\t'.join(s.strip('\t') for s in body_code.splitlines()) + '\n\n\t\t'
@@ -430,11 +433,14 @@ class GraphQlObjectItem:
 		self.item_arguments = kwargs.get('item_arguments', '')
 		self.item_resolver = kwargs.get('item_resolver', '')
 		self.item_description = kwargs.get('description', '')
+		self.item_cache_identity = kwargs.get('item_cache_identity', '')
 		self.body = [kwargs.get('body', '')]
 		self.end_body = [kwargs.get('end_body', '')]
 		self.template_file = os.path.join(TEMPLATE_DIR, 'graphqlobjectitem.tmpl')
 		if self.item_resolver:
 			self.item_resolver = '@resolver( class: "{item_resolver}")'.format(item_resolver=self.item_resolver)
+		if self.item_cache_identity:
+			self.item_cache_identity = '@cache( cacheIdentity: "{item_cache_identity}")'.format(item_cache_identity=self.item_cache_identity)
 		if self.item_arguments:
 			arguments = []
 			for argument in self.item_arguments.split(','):
@@ -468,6 +474,7 @@ class GraphQlObjectItem:
 			item_type=self.item_type,
 			item_resolver=self.item_resolver,
 			item_description=self.item_description,
+			item_cache_identity=self.item_cache_identity,
 			item_arguments=self.item_arguments
 		).replace('\t', '    ')  # Make generated code PSR2 compliant
 
