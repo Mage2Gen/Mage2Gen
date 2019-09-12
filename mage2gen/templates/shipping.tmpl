@@ -83,6 +83,6 @@ class {class_name} extends \Magento\Shipping\Model\Carrier\AbstractCarrier imple
      */
     public function getAllowedMethods()
     {{
-        return ['flatrate' => $this->getConfigData('name')];
+        return [$this->_code => $this->getConfigData('name')];
     }}
 }}
