@@ -83,7 +83,12 @@ class PluginSnippet(Snippet):
 
 	def add(self, classname, methodname, plugintype=TYPE_AFTER, scope=SCOPE_ALL, sortorder=10, disabled=False, extra_params=None):
 		# Add class
-		plugin = Phpclass('Plugin\\{}'.format(classname))
+		plugin_folder = ['Plugin']
+		if scope != self.SCOPE_ALL:
+			plugin_folder.extend([scope])
+		plugin_folder.extend([classname])
+
+		plugin = Phpclass('\\'.join(plugin_folder))
 
 		params = ['\\' + classname + ' $subject']
 		returnParams = []
