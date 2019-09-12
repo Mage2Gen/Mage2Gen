@@ -120,10 +120,15 @@ class ModelSnippet(Snippet):
 		# create options
 		required = False
 		attributes = {
-			'xsi:type': "{}".format(field_type),
 			'name': "{}".format(field_name),
-			'nullable': "true"
+			'nullable': "true",
+			'xsi:type': field_type
 		}
+		if field_type == 'integer' or field_type == 'bigint':
+			attributes['xsi:type'] = "int"
+		elif field_type == 'numeric':
+			attributes['xsi:type'] = "real"
+
 		if extra_params.get('default'):
 			attributes['default'] = "{}".format(extra_params.get('default'))
 		if not extra_params.get('nullable'):
@@ -146,6 +151,7 @@ class ModelSnippet(Snippet):
 			attributes['precision'] = '12'
 		elif field_type == 'varchar' and not extra_params.get('field_size'):
 			attributes['length'] = '255'
+
 
 		# Create di.xml preferences
 		self.add_xml('etc/db_schema.xml', Xmlnode('schema', attributes={
