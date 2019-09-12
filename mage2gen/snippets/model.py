@@ -134,10 +134,10 @@ class ModelSnippet(Snippet):
 		if not extra_params.get('nullable'):
 			attributes['nullable'] = 'false'
 			required = not attributes['nullable']
-		if extra_params.get('identity'):
-			attributes['identity'] = 'true'
-		if extra_params.get('auto_increment'):
-			attributes['auto_increment'] = 'true'
+		if field_type in {'mallint','integer','bigint'}:
+			attributes['identity'] = 'false'
+			if extra_params.get('identity'):
+				attributes['identity'] = 'true'
 		if extra_params.get('unsigned'):
 			attributes['unsigned'] = 'true'
 		if extra_params.get('precision'):
@@ -1504,8 +1504,7 @@ class ModelSnippet(Snippet):
 			SnippetParam('comment', required=False, description='Description of database field'),
 			SnippetParam('default', required=False, description='Default value of field'),
 			SnippetParam('nullable', yes_no=True, default=True),
-			SnippetParam('identity', yes_no=True),
-			SnippetParam('auto_increment', yes_no=True),
+			SnippetParam('identity', yes_no=True, depend={'field_type': r'smallint|integer|bigint'}),
 			'Extra',
 			SnippetParam(
 				name='field_size',
