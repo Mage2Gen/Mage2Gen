@@ -17,7 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os, locale
 from collections import OrderedDict
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, Readme
 from ..utils import upperfirst, lowerfirst
 from ..module import TEMPLATE_DIR
 
@@ -1446,6 +1446,13 @@ class ModelSnippet(Snippet):
 		])
 
 		self.add_xml('etc/webapi.xml', webapi_xml)
+
+		self.add_static_file(
+			'.',
+			Readme(
+				specifications=" - Model\n\t- {}".format(model_name),
+			)
+		)
 
 
 	def add_acl(self,model_name):

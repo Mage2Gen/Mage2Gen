@@ -50,7 +50,7 @@ class Phpclass:
 		self.implements = set(list(self.implements) + list(other.implements))
 		self.dependencies = set(list(self.dependencies) + list(other.dependencies))
 		for method in other.methods :
-			self.add_method(method)		
+			self.add_method(method)
 		return self
 
 	@property
@@ -63,7 +63,7 @@ class Phpclass:
 
 	def upper_class_namespace(self, class_namespace):
 		return '\\'.join(upperfirst(n) for n in class_namespace.strip('\\').split('\\'))
-	
+
 	def add_method(self, method):
 		if method in self.methods:
 			method_index = self.methods.index(method)
@@ -83,7 +83,7 @@ class Phpclass:
 
 		dependencies = ';\n'.join("use %s" %(dependency) for dependency in self.dependencies)
 		if dependencies:
-			dependencies = '\n' + dependencies + ';\n'	
+			dependencies = '\n' + dependencies + ';\n'
 
 		return {
 			'license': self.license.get_php_docstring() if self.license else '',
@@ -111,7 +111,7 @@ class Phpclass:
 			os.makedirs(os.path.dirname(path))
 		except Exception:
 			pass
-		
+
 		with open(path, 'w+', encoding='utf-8') as class_file:
 			class_file.writelines(self.generate())
 
@@ -205,8 +205,8 @@ class Phpmethod:
 class Xmlnode:
 
 	def __init__(self, node_name, attributes=None, nodes=None, node_text=None, match_attributes=None, xsd=False):
-		
-		if nodes : 
+
+		if nodes :
 			nodes = [x for x in nodes if x]
 
 		self.node_name = node_name
@@ -222,7 +222,7 @@ class Xmlnode:
 	def __eq__(self, other):
 		if self.node_name != other.node_name:
 			return False
-		for key in self.match_attributes:	
+		for key in self.match_attributes:
 			if key in self.attributes and self.attributes[key] != other.attributes[key]:
 					return False
 		return True
@@ -271,7 +271,7 @@ class Xmlnode:
 			os.makedirs(os.path.dirname(xml_path))
 		except Exception:
 			pass
-		
+
 		with open(xml_path, 'w+', encoding='utf-8') as xml_file:
 			xml_file.writelines(self.generate())
 
@@ -290,7 +290,7 @@ class StaticFile:
 	def __add__(self, other):
 		for code in other._context_data['body']:
 			if code not in self._context_data['body']:
-				self._context_data['body'].append(code)	
+				self._context_data['body'].append(code)
 		return self
 
 	def context_data(self):
@@ -311,7 +311,61 @@ class StaticFile:
 			os.makedirs(os.path.dirname(file_path))
 		except Exception:
 			pass
-		
+
+		with open(file_path, 'w+', encoding='utf-8') as static_file:
+			static_file.writelines(self.generate())
+
+###############################################################################
+# Template files
+###############################################################################
+class Readme:
+
+	def __init__(self, file_name='README.md', body=None, template_file='readme.tmpl', context_data=None, configuration=None, specifications=None, attributes=None):
+		self.file_name = file_name
+		self.template_file = os.path.join(TEMPLATE_DIR, template_file)
+		self._context_data = context_data if context_data else {}
+		self._context_data['body'] = [body] if body else []
+		self._context_data['configuration'] = [configuration] if configuration else []
+		self._context_data['specifications'] = [specifications] if specifications else []
+		self._context_data['attributes'] = [attributes] if attributes else []
+
+	def __add__(self, other):
+		for code in other._context_data['body']:
+			if code not in self._context_data['body']:
+				self._context_data['body'].append(code)
+		for code in other._context_data['configuration']:
+			if code not in self._context_data['configuration']:
+				self._context_data['configuration'].append(code)
+		for code in other._context_data['specifications']:
+			if code not in self._context_data['specifications']:
+				self._context_data['specifications'].append(code)
+		for code in other._context_data['attributes']:
+			if code not in self._context_data['attributes']:
+				self._context_data['attributes'].append(code)
+		return self
+
+	def context_data(self):
+		data = self._context_data
+		data['body'] = "\n\n".join(self._context_data['body'])
+		data['configuration'] = "\n\n".join(self._context_data['configuration'])
+		data['specifications'] = "\n\n".join(self._context_data['specifications'])
+		data['attributes'] = "\n\n".join(self._context_data['attributes'])
+		return self._context_data
+
+	def generate(self):
+		with open(self.template_file, 'rb') as tmpl:
+			template = tmpl.read().decode('utf-8')
+
+		return template.format(
+			**self.context_data()
+		)
+
+	def save(self, file_path):
+		try:
+			os.makedirs(os.path.dirname(file_path))
+		except Exception:
+			pass
+
 		with open(file_path, 'w+', encoding='utf-8') as static_file:
 			static_file.writelines(self.generate())
 
@@ -499,9 +553,22 @@ class Module:
 		])
 		self.add_xml('etc/module.xml', etc_module)
 
+		composer_name = '{}/module-{}'.format(self.package.lower(), self.name.lower())
+		self.add_static_file(
+			'.',
+			Readme(
+				context_data={
+					'package_name': upperfirst(self.package),
+					'name': upperfirst(self.name),
+					'module_name': self.module_name,
+					'composer_name': composer_name,
+					'description': self.description,
+				}
+			)
+		)
 		self.add_static_file('.', StaticFile('registration.php', template_file='registration.tmpl', context_data={'module_name':self.module_name}))
 		self._composer = OrderedDict()
-		self._composer['name'] = '{}/module-{}'.format(self.package.lower(), self.name.lower())
+		self._composer['name'] = composer_name
 		self._composer['description'] = self.description
 		self._composer['type'] = 'magento2-module'
 		self._composer['license'] = 'proprietary'
@@ -576,7 +643,7 @@ class Module:
 			current_class = phpclass
 
 		current_class.license = self.license
-		
+
 		self._classes[current_class.class_namespace] = current_class
 
 	def add_graphqlschema(self, graphqlschema_file, schema):
@@ -604,4 +671,4 @@ class Module:
 		else:
 			current_staticfile = staticfile
 
-		self._static_files[full_name] = current_staticfile	
+		self._static_files[full_name] = current_staticfile

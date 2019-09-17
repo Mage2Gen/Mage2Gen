@@ -17,7 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
 
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, Readme
 from ..utils import upperfirst
 
 
@@ -103,6 +103,13 @@ class ObserverSnippet(Snippet):
 
 		xml_path.append('events.xml')
 		self.add_xml(os.path.join(*xml_path), config)
+
+		self.add_static_file(
+			'.',
+			Readme(
+				specifications=" - Observer\n\t- {} > {}".format(event, observer.class_namespace),
+			)
+		)
 
 	@classmethod
 	def params(cls):

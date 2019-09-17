@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os, locale
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, utils
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, utils, Readme
 
 class ConfigurationTypeSnippet(Snippet):
 	snippet_label = 'Configuration Type'
@@ -133,6 +133,13 @@ class ConfigurationTypeSnippet(Snippet):
 			"""))
 
 		self.add_class(reader_class)
+
+		self.add_static_file(
+			'.',
+			Readme(
+				specifications=" - Configuration Type\n\t- {}".format(config_name),
+			)
+		)
 		
 
 	@classmethod

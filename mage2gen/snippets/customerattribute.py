@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import os, locale
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, Readme
 from ..utils import upperfirst
 
 class CustomerAttributeSnippet(Snippet):
@@ -448,6 +448,13 @@ class CustomerAttributeSnippet(Snippet):
 			])
 		])
 		self.add_xml('etc/module.xml', etc_module)
+
+		self.add_static_file(
+			'.',
+			Readme(
+				attributes=" - {} - {} ({})".format(entity_type,attribute_label, attribute_code),
+			)
+		)
 
 	def add_plugin(self, attribute_code, type='shipping'):
 		classname = 'Magento\\Quote\\Model\\{}AddressManagement'.format(upperfirst(type))
