@@ -228,7 +228,7 @@ class ModelSnippet(Snippet):
 		# Create api data interface class
 		api_repository_class =  InterfaceClass('Api\\' + model_name_capitalized.replace('_', '\\') + 'RepositoryInterface',dependencies=['Magento\Framework\Api\SearchCriteriaInterface'])
 		api_repository_class.add_method(InterfaceMethod('save',params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],docstring=['Save {}'.format(model_name),'@param \{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after),'@return \{}'.format(api_data_class.class_namespace),'@throws \Magento\Framework\Exception\LocalizedException']))
-		api_repository_class.add_method(InterfaceMethod('getById',params=['${}'.format(model_id_capitalized_after)],docstring=['Retrieve {}'.format(model_name),'@param string ${}'.format(model_id_capitalized_after),'@return \{}'.format(api_data_class.class_namespace),'@throws \Magento\Framework\Exception\LocalizedException']))
+		api_repository_class.add_method(InterfaceMethod('get',params=['${}'.format(model_id_capitalized_after)],docstring=['Retrieve {}'.format(model_name),'@param string ${}'.format(model_id_capitalized_after),'@return \{}'.format(api_data_class.class_namespace),'@throws \Magento\Framework\Exception\LocalizedException']))
 		api_repository_class.add_method(InterfaceMethod('getList',params= ['\Magento\Framework\Api\SearchCriteriaInterface $searchCriteria'], docstring=['Retrieve {} matching the specified criteria.'.format(model_name),'@param \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria','@return \{}'.format(api_data_search_class.class_namespace),'@throws \Magento\Framework\Exception\LocalizedException']))
 		api_repository_class.add_method(InterfaceMethod('delete',params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],docstring=['Delete {}'.format(model_name),'@param \{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after),'@return bool true on success','@throws \Magento\Framework\Exception\LocalizedException']))
 		api_repository_class.add_method(InterfaceMethod('deleteById',params=['${}'.format(model_id_capitalized_after)],docstring=['Delete {} by ID'.format(model_name),'@param string ${}'.format(model_id_capitalized_after),'@return bool true on success','@throws \\Magento\\Framework\\Exception\\NoSuchEntityException','@throws \\Magento\\Framework\\Exception\\LocalizedException']))
@@ -404,7 +404,7 @@ class ModelSnippet(Snippet):
 			""".format(data_interface=api_data_class.class_namespace, variable=model_name_capitalized_after),
 			docstring=['{@inheritdoc}']
 		))
-		model_repository_class.add_method(Phpmethod('getById', access=Phpmethod.PUBLIC,
+		model_repository_class.add_method(Phpmethod('get', access=Phpmethod.PUBLIC,
 			params=['${}Id'.format(model_name_capitalized_after)],
 			body="""${variable} = $this->{variable}Factory->create();
 			$this->resource->load(${variable}, ${variable}Id);
@@ -458,7 +458,7 @@ class ModelSnippet(Snippet):
 		))
 		model_repository_class.add_method(Phpmethod('deleteById', access=Phpmethod.PUBLIC,
 			params=['${}Id'.format(model_name_capitalized_after)],
-			body="""return $this->delete($this->getById(${variable}Id));
+			body="""return $this->delete($this->get(${variable}Id));
 			""".format(variable=model_name_capitalized_after,model_name=model_name),
 			docstring=['{@inheritdoc}']
 		))
@@ -1426,7 +1426,7 @@ class ModelSnippet(Snippet):
 				])
 			]),
 			Xmlnode('route', attributes={'url': api_url + model_name.lower() + '/:' + model_id_capitalized_after, 'method': 'GET'},match_attributes={'url','method'},nodes=[
-				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'getById'}),
+				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'get'}),
 		 		Xmlnode('resources',nodes=[
 		 			Xmlnode('resource', attributes={'ref':resource + 'view'})
 				])
