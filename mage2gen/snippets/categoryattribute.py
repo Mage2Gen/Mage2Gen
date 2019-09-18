@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os, locale
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, Readme
 
 class CategoryAttributeSnippet(Snippet):
 	snippet_label = 'Category Attribute'
@@ -282,6 +282,13 @@ class CategoryAttributeSnippet(Snippet):
 		self.add_xml('etc/module.xml', etc_module)
 
 		self.add_xml(category_form_file, category_form_xml)
+
+		self.add_static_file(
+			'.',
+			Readme(
+				attributes=" - Category - {} ({})".format(attribute_label, attribute_code),
+			)
+		)
 	
 	@classmethod
 	def params(cls):

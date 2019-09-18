@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, Readme
 
 class CacheSnippet(Snippet):
 	description = """
@@ -56,6 +56,13 @@ class CacheSnippet(Snippet):
 		])
 
 		self.add_xml('etc/cache.xml', cache_xml)
+
+		self.add_static_file(
+			'.',
+			Readme(
+				specifications=" - Cache\n\t- {} - {} > {}".format(name, cache_id, cache_class.class_namespace),
+			)
+		)
 
 	@classmethod
 	def params(cls):

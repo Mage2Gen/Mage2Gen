@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from .. import Phpclass, Phpmethod, Xmlnode, Snippet, SnippetParam
+from .. import Phpclass, Phpmethod, Xmlnode, Snippet, SnippetParam, Readme
 try:
     import ujson as json
 except:
@@ -91,7 +91,6 @@ class PluginSnippet(Snippet):
 		plugin_folder.extend([classname])
 
 		plugin = Phpclass('\\'.join(plugin_folder))
-
 		params = ['\\' + classname + ' $subject']
 		returnParams = []
 		if plugintype == self.TYPE_AFTER:
@@ -125,8 +124,9 @@ class PluginSnippet(Snippet):
 		elif plugintype == self.TYPE_AFTER:
 			body += "\nreturn $result;"
 
+		pluginmethodname = plugintype + methodname[0].capitalize() + methodname[1:]
 		plugin.add_method(Phpmethod(
-			plugintype + methodname[0].capitalize() + methodname[1:],
+			pluginmethodname,
 			body=body,
 			params=params
 		))
@@ -175,6 +175,13 @@ class PluginSnippet(Snippet):
 			self.add_xml('etc/module.xml', etc_module)
 
 		self.add_xml(os.path.join(*xml_path), config)
+
+		self.add_static_file(
+			'.',
+			Readme(
+				specifications=" - Plugin\n\t- {} - {} > {}".format(pluginmethodname, classname, plugin.class_namespace),
+			)
+		)
 
 	@classmethod
 	def params(cls):

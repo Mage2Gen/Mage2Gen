@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os, locale
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, Readme
 from ..utils import upperfirst
 
 class ProductAttributeSnippet(Snippet):
@@ -247,6 +247,13 @@ $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
 			])
 		])
 		self.add_xml('etc/module.xml', etc_module)
+
+		self.add_static_file(
+			'.',
+			Readme(
+				attributes=" - Product - {} ({})".format(attribute_label, attribute_code),
+			)
+		)
 
 	def add_source_model(self, attribute_code_capitalized, options_php_array_string, used_in_product_listing):
 		source_model = Phpclass('Model\\Product\\Attribute\Source\\{}'.format(upperfirst(attribute_code_capitalized)),

@@ -17,7 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
 
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, Readme
 from ..utils import upperfirst
 
 
@@ -69,6 +69,13 @@ class WidgetSnippet(Snippet):
 
 		path = os.path.join('view','frontend','templates')
 		self.add_static_file(path, StaticFile("{}/{}.phtml".format('widget', name.lower()),body="<?php if($block->getData('{name}')): ?>\n\t<h2 class='{name}'><?php echo $block->getData('{name}'); ?></h2>\n<?php endif; ?>".format(name=field.lower(),classname=widget_block.class_namespace)))
+
+		self.add_static_file(
+			'.',
+			Readme(
+				specifications=" - Widget\n\t- {}".format(name),
+			)
+		)
 
 	@classmethod
 	def params(cls):

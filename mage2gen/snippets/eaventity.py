@@ -17,7 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os, locale
 from collections import OrderedDict
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, Readme
 from ..utils import upperfirst, lowerfirst
 from ..module import TEMPLATE_DIR
 
@@ -1620,6 +1620,13 @@ class EavEntitySnippet(Snippet):
 		])
 
 		self.add_xml('view/adminhtml/ui_component/{}_listing.xml'.format(entity_table), ui_listing)
+
+		self.add_static_file(
+			'.',
+			Readme(
+				specifications=" - Eav Entity\n\t- {}".format(entity_name),
+			)
+		)
 
 	def add_web_api(self, entity_name, field_name, entity_table, entity_id, collection_entity_class, entity_class, required, field_element_type, api_repository_class, entity_id_capitalized_after):
 

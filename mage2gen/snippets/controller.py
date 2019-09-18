@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, Readme
 
 class ControllerSnippet(Snippet):
 	description = """
@@ -242,6 +242,13 @@ class ControllerSnippet(Snippet):
 				])
 
 				self.add_xml('etc/acl.xml', acl_xml)
+
+		self.add_static_file(
+			'.',
+			Readme(
+				specifications=" - Controller\n\t- {} > {}/{}/{}".format('adminhtml' if adminhtml else 'frontend', frontname, section, action),
+			)
+		)
 
 
 	@classmethod

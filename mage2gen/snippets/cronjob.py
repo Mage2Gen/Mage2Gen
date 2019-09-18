@@ -16,7 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, Readme
 from ..utils import upperfirst
 
 class CronjobSnippet(Snippet):
@@ -91,6 +91,13 @@ class CronjobSnippet(Snippet):
 		]);
 
 		self.add_xml('etc/crontab.xml', crontab_xml)
+
+		self.add_static_file(
+			'.',
+			Readme(
+				specifications=" - Cronjob\n\t- {}".format("{}_{}".format(self.module_name, cronjob_class).lower()),
+			)
+		)
 
 	@classmethod
 	def params(cls):

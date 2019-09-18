@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from .. import Phpclass, Phpmethod, Xmlnode, Snippet, SnippetParam
+from .. import Phpclass, Phpmethod, Xmlnode, Snippet, SnippetParam, Readme
 
 class CompanyAttributeSnippet(Snippet):
 	snippet_label = 'Company Attribute'
@@ -172,6 +172,13 @@ class CompanyAttributeSnippet(Snippet):
 		])
 		self.add_xml('etc/module.xml', etc_module)
 
+		self.add_static_file(
+			'.',
+			Readme(
+				attributes=" - Company - {} ({})".format(attribute_label, attribute_code),
+			)
+		)
+
 	def add_plugin(self, classname, methodname, body, extra_params=[], body_return='return $result;', body_start=False, construct=False):
 		plugin = Phpclass('Plugin\\{}'.format(classname))
 		if construct:
@@ -239,7 +246,6 @@ class CompanyAttributeSnippet(Snippet):
 		 ])
 
 		self.add_xml('etc/di.xml', config)
-
 
 	@classmethod
 	def params(cls):

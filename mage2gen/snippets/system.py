@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, GraphQlSchema, GraphQlObjectType, GraphQlObjectItem
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, GraphQlSchema, GraphQlObjectType, GraphQlObjectItem, Readme
 
 class SystemSnippet(Snippet):
 	snippet_label = 'System / Config / Setting'
@@ -425,6 +425,13 @@ class SystemSnippet(Snippet):
 				])
 			])
 			self.add_xml('etc/module.xml', etc_module)
+
+		self.add_static_file(
+			'.',
+			Readme(
+				configuration=" - {} ({})".format(label, '{}/{}/{}'.format(section, group, field)),
+			)
+		)
 
 	@classmethod
 	def params(cls):

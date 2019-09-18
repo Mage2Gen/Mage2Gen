@@ -17,7 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
 from .. import Module, Phpclass, Phpmethod, Xmlnode, Snippet, SnippetParam, GraphQlSchema, GraphQlObjectType, \
-    GraphQlObjectItem, StaticFile
+    GraphQlObjectItem, StaticFile, Readme
 from ..utils import upperfirst, lowerfirst
 
 
@@ -274,6 +274,13 @@ return ${0}Data;""".format(identifier, item_identifier)
                 )
             )
             )
+
+        self.add_static_file(
+            '.',
+            Readme(
+                specifications=" - GraphQl Endpoint\n\t- {}".format(item_identifier),
+            )
+        )
 
     @classmethod
     def params(cls):
