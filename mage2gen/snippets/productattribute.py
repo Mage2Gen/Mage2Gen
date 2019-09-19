@@ -163,6 +163,7 @@ class ProductAttributeSnippet(Snippet):
 				'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
 				'Magento\\Eav\\Setup\\EavSetupFactory',
 				'Magento\\Eav\\Setup\\EavSetup',
+				'Magento\\Eav\\Model\\Entity\\Attribute\\ScopedAttributeInterface'
 			],
 			attributes=[
 				"/**\n\t * @var ModuleDataSetupInterface\n\t */\n\tprivate $moduleDataSetup;",
