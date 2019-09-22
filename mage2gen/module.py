@@ -121,7 +121,10 @@ class Phpmethod:
 	PRIVATE = 'private'
 
 	def __init__(self, name, **kwargs):
+		"""
 
+		:rtype:
+		"""
 		self.name = name
 		self.access = kwargs.get('access', self.PUBLIC)
 		self.params = kwargs.get('params', [])
@@ -423,6 +426,7 @@ class GraphQlObjectType:
 	def __init__(self, type, **kwargs):
 
 		self.type = type
+		self.type_declaration = kwargs.get('type_declaration', 'type')
 		self.body = [kwargs.get('body', '')]
 		self.end_body = [kwargs.get('end_body', '')]
 		self.template_file = os.path.join(TEMPLATE_DIR, 'graphqlobject.tmpl')
@@ -465,8 +469,10 @@ class GraphQlObjectType:
 			object_items = '\n' + object_items
 
 		return {
+			'type_declaration': self.type_declaration,
 			'type': self.type,
-			'object_items': object_items
+			'object_items': object_items,
+			'body': self.body_code()
 		}
 
 	def generate(self):

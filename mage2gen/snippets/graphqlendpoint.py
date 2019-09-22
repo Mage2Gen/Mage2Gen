@@ -21,8 +21,8 @@ from .. import Module, Phpclass, Phpmethod, Xmlnode, Snippet, SnippetParam, Grap
 from ..utils import upperfirst, lowerfirst
 
 
-class GraphQlSnippet(Snippet):
-    snippet_label = 'GraphQl'
+class GraphQlEndpointSnippet(Snippet):
+    snippet_label = 'GraphQl Endpoint'
 
     description = """
 
@@ -200,6 +200,7 @@ return ${0}Data;""".format(identifier, item_identifier)
         data_provider_construct_body = ""
         data_provider_construct_docstring = []
         if data_provider_dependency:
+            data_provider_dependency = "\{}".format(data_provider_dependency)
             data_provider_dependency_variable = "{}".format(
                 lowerfirst(data_provider_dependency.split('\\')[-1]).replace('Interface', ''))
             data_provider_construct_params = [
