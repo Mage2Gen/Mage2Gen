@@ -28,7 +28,15 @@ class GraphQlRouteLocatorSnippet(Snippet):
 
 	"""
 
-    def add(self, pagetype, entity_model_class=None, id_parameter=None, frontname=None, section=None, action=None, extra_params=None):
+    STYLE_CSS = 'css'
+    STYLE_SCSS = 'scss'
+
+    STYLES_CHOISES = [
+        (STYLE_CSS, 'css'),
+        (STYLE_SCSS, 'sass'),
+    ]
+
+    def add(self, pagetype, style_type, entity_model_class=None, id_parameter=None, frontname=None, section=None, action=None, extra_params=None):
         splitted_pagetype = [upperfirst(word[0]) + word[1:] for word in pagetype.split('_')]
         pagetype_name = "".join(splitted_pagetype)
         classname = 'Model\\Resolver\\UrlRewrite\\{}RouteLocator'.format(pagetype_name)
@@ -157,6 +165,50 @@ class GraphQlRouteLocatorSnippet(Snippet):
         schema.add_objecttype(base_object_type)
 
         self.add_graphqlschema('etc/schema.graphqls', schema)
+        self.add_root_component(pagetype, pagetype_name, style_type)
+
+    def add_root_component(self, pagetype, pagetype_name, style_type):
+        path = os.path.join('src', 'RootComponents', pagetype_name)
+        rootComponentFile = '{}.js'.format(lowerfirst(pagetype_name))
+        self.add_static_file(path, StaticFile(
+            rootComponentFile,
+            body="""import React, {{ Component }} from 'react';
+
+export default class {pagetype_name} extends Component {{
+    render() {{
+        return 'Your rootComponent {pagetype_name} with id: ' + this.props.id;
+    }}
+}}""".format(
+                pagetype_name=pagetype_name,
+                )
+            )
+         )
+        self.add_static_file(path, StaticFile(
+            'index.js',
+            body="""/**
+ * @RootComponent
+ * description = 'Basic {pagetype_name}'
+ * pageTypes = {pagetype_upper}
+ */
+
+export {{ default }} from './{pagetype_name_lowerfirst}';
+""".format(
+                pagetype_name=pagetype_name,
+                pagetype_upper=pagetype.upper(),
+                pagetype_name_lowerfirst=lowerfirst(pagetype_name),
+                )
+            )
+        )
+
+        scssFile = '{}.{}'.format(lowerfirst(pagetype_name), style_type)
+        self.add_static_file(path, StaticFile(
+            scssFile,
+            body="""
+.root {
+
+}"""
+        )
+                             )
 
     def add_plugin(self, frontname, section, action, id_parameter, pagetype, entity_model_class):
             classname = 'Magento\\UrlRewriteGraphQl\\Model\\Resolver\\EntityUrl'
@@ -316,6 +368,9 @@ return ${entity_model_class_variable}->getId();""".format(entity_model_class=ent
                          depend={'entity_model_class': r'(.+)$'},
                          regex_validator=r'^[a-z]{1}\w+$',
                          error_message='Only lowercase alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
+            SnippetParam(name='style_type',
+                         choises=cls.STYLES_CHOISES,
+                         default=cls.STYLE_CSS),
         ]
 
 
