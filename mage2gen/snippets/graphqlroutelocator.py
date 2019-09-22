@@ -168,7 +168,7 @@ class GraphQlRouteLocatorSnippet(Snippet):
         self.add_root_component(pagetype, pagetype_name, style_type)
 
     def add_root_component(self, pagetype, pagetype_name, style_type):
-        path = os.path.join('lib', 'RootComponents', pagetype_name)
+        path = os.path.join('src', 'RootComponents', pagetype_name)
         rootComponentFile = '{}.js'.format(lowerfirst(pagetype_name))
         self.add_static_file(path, StaticFile(
             rootComponentFile,
