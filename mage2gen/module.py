@@ -508,8 +508,8 @@ class GraphQlObjectItem:
 		if self.item_arguments:
 			arguments = []
 			for argument in self.item_arguments.split(','):
-				arguments.append('\t\t{argument}: String @doc(description: "Query by {argument}.")'.format(argument=argument))
-			self.item_arguments = '(\n' + "\n".join(arguments) + '\n\t)'
+				arguments.append('\t\t\t{argument}: String @doc(description: "Query by {argument}.")'.format(argument=argument))
+			self.item_arguments = '(\n' + ",\n".join(arguments) + '\n\t)'
 
 	def __eq__(self, other):
 		return self.item_identifier == other.item_identifier
