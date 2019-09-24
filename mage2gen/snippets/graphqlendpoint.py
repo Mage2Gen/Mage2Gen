@@ -250,7 +250,7 @@ return ${0}Data;""".format(identifier, item_identifier)
         data_provider_dependency_splitted = data_provider_dependency.split('\\')
         if len(data_provider_dependency_splitted) > 1:
             sequence_modules.append(Xmlnode('module', attributes={
-                'name': '{}_{}'.format(data_provider_dependency_splitted[0], data_provider_dependency_splitted[1])}))
+                'name': '{}_{}'.format(data_provider_dependency_splitted[1], data_provider_dependency_splitted[2])}))
 
         etc_module = Xmlnode('config', attributes={
             'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Module/etc/module.xsd"}, nodes=[
