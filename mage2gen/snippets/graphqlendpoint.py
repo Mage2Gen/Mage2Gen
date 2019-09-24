@@ -261,17 +261,42 @@ return ${0}Data;""".format(identifier, item_identifier)
         self.add_xml('etc/module.xml', etc_module)
 
         if base_type == 'Query':
+            query_body = """query {identifier} {{
+    {identifier} {{
+        {object_fields_string}
+    }}
+}}"""
+            query_params = []
+            parameters = []
+            params = object_arguments.split(",")
+            for param in params:
+                if param:
+                    query_params.append(
+                        "${}: String!".format(param)
+                    )
+                    parameters.append(
+                        "{param}: ${param}".format(param=param)
+                    )
+            query_paramstring = ', '.join(query_params)
+            parametersstring = ', '.join(parameters)
+
+            if query_paramstring and parametersstring:
+                query_body = """query {identifier}({query_paramstring}) {{
+    {identifier}({parametersstring}) {{
+        {object_fields_string}
+    }}
+}}"""
+
 
             path = os.path.join('src', 'queries')
             self.add_static_file(path, StaticFile(
                     'get{}{}.graphql'.format(upperfirst(self._module.package), item_identifier),
-                    body="""query {identifier}() {{
-    {identifier}() {{
-        {object_fields_string}
-    }}
-}}""".format(
+                    body=query_body.format(
                         identifier=identifier,
-                        object_fields_string="\n\t".join(object_fields.split(","))
+                        object_fields_string="\n\t".join(object_fields.split(",")),
+                        query_paramstring=query_paramstring,
+                        parametersstring=parametersstring,
+
                 )
             )
             )
