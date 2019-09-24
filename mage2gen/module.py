@@ -490,9 +490,13 @@ class GraphQlObjectItem:
 
 		self.item_identifier = item_identifier
 		self.item_type = kwargs.get('item_type', 'String')
+		if self.item_type:
+			self.item_type = ': ' + self.item_type
 		self.item_arguments = kwargs.get('item_arguments', '')
 		self.item_resolver = kwargs.get('item_resolver', '')
 		self.item_description = kwargs.get('description', '')
+		if self.item_description:
+			self.item_description = '@doc(description: "Query by {}.")'.format(self.item_description)
 		self.item_cache_identity = kwargs.get('item_cache_identity', '')
 		self.body = [kwargs.get('body', '')]
 		self.end_body = [kwargs.get('end_body', '')]
