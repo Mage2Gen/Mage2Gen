@@ -29,7 +29,7 @@ class License:
 		self.copyright = copyright
 		self.module_name = module_name
 		self.description = description
-		self.license_year = datetime.now().year
+		self.license_year = datetime.datetime.now().year
 	
 	def get_text(self):
 		formatter = DefaultFormatter()
