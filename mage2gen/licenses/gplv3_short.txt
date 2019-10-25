@@ -1,5 +1,5 @@
 {description}
-Copyright (C) 2019 {copyright}
+Copyright (C) {license_year} {copyright}
 
 This file is part of {module_name}.
 
