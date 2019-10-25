@@ -1,5 +1,5 @@
 import os, locale
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Module, Phpclass, Phpmethod, Xmlnode, Readme, Snippet, SnippetParam
 from ..utils import upperfirst
 from ..module import TEMPLATE_DIR
 
@@ -74,6 +74,13 @@ class ApiSnippet(Snippet):
 		])
 
 		self.add_xml('etc/webapi.xml', webapi_xml)
+
+		self.add_static_file(
+			'.',
+			Readme(
+				specifications=" - API Endpoint\n\t- {} - {} > {}".format(api_method, api_classname, model_classname),
+			)
+		)
 
 		##Apiclass
 

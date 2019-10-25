@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, GraphQlSchema, GraphQlObjectType, GraphQlObjectItem, Readme
 
 class SystemSnippet(Snippet):
 	snippet_label = 'System / Config / Setting'
@@ -26,27 +26,61 @@ class SystemSnippet(Snippet):
 
 	For example an option to enable and disable your module. 
 
-	Generated configuration can be found in Magento Adminpanel > Stores > Settings > Configuration
 
+	Snippet Instructions:
+	---------------------
+	
+	1. Fill in the Tab (can be found in Magento Adminpanel > Stores > Settings > Configuration)
+	2. Check the box to add your config to an existing Tab
+	3. Fill in the Section
+	4. Fill in the Group
+	5. Fill in the Field
+	6. Select the Field type
+	7. Check the box to make your config available in the Graphql *StoreConfig* endpoint
+	
+	Available Field Types:
+	----------------------
+	- Text
+	- Textarea
+	- Select
+	- Multiselect
+	- Encrypted (Obscure)
+
+	For Select and Multiselect you will need to define a source model. By default this will be this will be the core Magento yes/no.
+	
+	
+	Retrieve config value:
+	----------------------
 	To retrieve the value you can use the xml path yourmodulename/general/enabled
 
-	Example:
-	--------
 	.. code::
 
 		$this->_scopeConfig->getValue('yourmodulename/general/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
 
-	(Depends on \Magento\Framework\App\Config\ScopeConfigInterface)
-
-	Field Types:
-	------------
-	- Select
-	- Multiselect
-	- Text
-	- Textarea
-	- Encrypted (Obscure)
-
-	For Select and Multiselect you will need to define a source model. By default this will be this will be the core Magento yes/no.
+	(Depends on \\\Magento\\\Framework\\\App\\\Config\\\ScopeConfigInterface)
+	
+	More information:
+		
+	https://github.com/magento/magento2/blob/2.3-develop/lib/internal/Magento/Framework/App/Config/ScopeConfigInterface.php#L29
+	
+	
+	Retrieve config in GraphQl:
+	---------------------------
+	Query a store’s configuation
+	
+	The following call returns all details of a store’s configuration.
+	.. json::
+	
+		{
+			  storeConfig {
+					yourmodulename_general_enabled
+			  }
+		}
+	
+	More information
+	
+	https://devdocs.magento.com/guides/v2.3/graphql/reference/store-config.html#extend-configuration-data
+	
 	"""
 
 	TYPE_CHOISES = [
@@ -87,7 +121,7 @@ class SystemSnippet(Snippet):
 		('custom','Create Your own')
 	]
 
-	def add(self, tab, section, group, field, field_type='text', new_tab=False, extra_params=None, source_model=False, source_model_options=False):
+	def add(self, tab, section, group, field, field_type='text', new_tab=False, extra_params=None, source_model=False, source_model_options=False, graphql=False):
 		resource_id = self.module_name+'::config_'+self.module_name.lower()
 		extra_params = extra_params if extra_params else {}
 
@@ -147,6 +181,8 @@ class SystemSnippet(Snippet):
 			config_path_xml = False
 
 
+		label = extra_params.get('field_label',field) or field
+
 		config = Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Config:etc/system_file.xsd"}, nodes=[
 				Xmlnode('system',  nodes=[
 					tabxml,
@@ -175,7 +211,7 @@ class SystemSnippet(Snippet):
 									'showInStore': 1 if extra_params.get('field_show_in_store',True) else 0,
 									'showInDefault': 1 if extra_params.get('field_show_in_default',True) else 0,
 									'translate':'label'},match_attributes={'id'},nodes=[
-								Xmlnode('label',node_text=extra_params.get('field_label',field) or field),
+								Xmlnode('label',node_text=label),
 								Xmlnode('comment',node_text=extra_params.get('field_comment')),
 								source_model_xml,
 								backend_model_xml,
@@ -185,8 +221,129 @@ class SystemSnippet(Snippet):
 					])
 				])
 		])
-
+		
 		self.add_xml(file, config)
+
+
+		if source_model == 'Magento\\Config\\Model\\Config\\Source\\Email\\Template':
+			# email_templates xml
+			email_templates_file = 'etc/email_templates.xml'
+			email_template = '{}.html'.format(field_code)
+
+			email_template_identifier = '{}_{}_{}'.format(section_code, group_code, field_code)
+			email_template_config_identifier = '{}/{}/{}'.format(section_code, group_code, field_code)
+			email_templates = Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Email:etc/email_templates.xsd"}, nodes=[
+				Xmlnode('template',attributes={'id': email_template_identifier,'label': label, 'file': email_template, 'type':'html', 'module': self.module_name, 'area':'frontend'},match_attributes={'id'})
+			]);
+
+			self.add_xml(email_templates_file, email_templates)
+			self.add_static_file('view/frontend/email/', StaticFile(email_template, template_file='email.tmpl', context_data={'subject': label}))
+
+			mail_helper = Phpclass(
+				'Helper\\Mail',
+				extends='AbstractHelper',
+				dependencies=[
+					'Magento\Framework\App\Helper\AbstractHelper',
+					'Magento\Store\Model\ScopeInterface',
+					'Magento\Framework\Exception\LocalizedException'
+				],
+				attributes=[
+					'protected $transportBuilder;',
+					'protected $storeManager;'
+				]
+			)
+
+			mail_helper.add_method(
+				Phpmethod(
+					'__construct',
+					params=[
+						'\\Magento\\Framework\\App\\Helper\\Context $context',
+						'\\Magento\\Framework\\Mail\\Template\\TransportBuilder $transportBuilder',
+						'\\Magento\\Store\Model\\StoreManagerInterface $storeManager'
+					],
+					body="""
+							$this->transportBuilder = $transportBuilder;
+							$this->storeManager = $storeManager;
+							parent::__construct($context);
+					""",
+					docstring=[
+						'@param \Magento\Framework\App\Helper\Context $context',
+						'@param \Magento\Framework\Mail\Template\TransportBuilder $transportBuilder'
+						'@param \Magento\Store\Model\StoreManagerInterface $storeManager'
+					]
+				)
+			)
+
+			mail_helper.add_method(
+				Phpmethod(
+					'sendEmailTemplate',
+					params=[
+						'$template',
+						'$sender',
+						'$to = []',
+						'$templateParams = []',
+						'$storeId = null'
+					],
+					body="""
+						if (!isset($to['email']) || empty($to['email'])) {
+						    throw new LocalizedException(
+						        __('We could not send the email because the receiver data is invalid.')
+						    );
+						}
+						$storeId = $storeId ? $storeId : $this->storeManager->getStore()->getId();
+						$name = isset($to['name']) ? $to['name'] : '';
+						
+						/** @var \Magento\Framework\Mail\TransportInterface $transport */
+						$transport = $this->transportBuilder->setTemplateIdentifier(
+						    $this->scopeConfig->getValue($template, ScopeInterface::SCOPE_STORE, $storeId)
+						)->setTemplateOptions(
+						    ['area' => \Magento\Framework\App\Area::AREA_FRONTEND, 'store' => $storeId]
+						)->setTemplateVars(
+						    $templateParams
+						)->setScopeId(
+						    $storeId
+						)->setFrom(
+						    $this->scopeConfig->getValue($sender, ScopeInterface::SCOPE_STORE, $storeId)
+						)->addTo(
+						    $to['email'],
+						    $name
+						)->getTransport();
+						$transport->sendMessage();
+					""",
+					docstring=[
+						'@param string $template configuration path of email template',
+						'@param string $sender configuration path of email identity',
+						'@param array $to email and name of the receiver',
+						'@param array $templateParams',
+						'@param int|null $storeId',
+						'@throws \\Magento\\Framework\\Exception\\MailException',
+						'@throws \\Magento\\Framework\\Exception\\NoSuchEntityException'
+					],
+					access='protected'
+				)
+			)
+
+			email_name = ''.join(f.capitalize() for f in field_code.split('_'))
+			mail_helper.add_method(
+				Phpmethod(
+					'send{}Email'.format(email_name),
+					params=[
+						'$sender = \'example@example.com\'',
+						'$to = [\'email\' => \'\', \'name\' => \'\']'
+					],
+					body="""
+						$this->sendEmailTemplate(
+						    '{}',
+						    $sender,
+						    $to
+						);
+					""".format(email_template_config_identifier),
+					docstring=[
+						'Send the {} Email'.format(email_name)
+					]
+				)
+			)
+			self.add_class(mail_helper)
 
 		# acl xml
 		aclfile = 'etc/acl.xml'
@@ -205,7 +362,7 @@ class SystemSnippet(Snippet):
 					])
 				])
 			])
-		]);
+		])
 
 		self.add_xml(aclfile, acl)
 
@@ -220,9 +377,61 @@ class SystemSnippet(Snippet):
 					])
 				])
 			])
-		]);
+		])
 		
 		self.add_xml(config_file, default_config)
+
+		if graphql:
+			object_field = '{}_{}_{}'.format(section, group, field)
+			# default config values xml
+			graphql_di_file = 'etc/graphql/di.xml'
+
+			graphql_di = Xmlnode('config', attributes={
+				'xsi:noNamespaceSchemaLocation': "urn:magento:framework:ObjectManager/etc/config.xsd"}, nodes=[
+				Xmlnode('type', attributes={'name':'Magento\StoreGraphQl\Model\Resolver\Store\StoreConfigDataProvider'}, nodes=[
+					Xmlnode('arguments', attributes={'xsi:type': 'array'},nodes=[
+						Xmlnode('argument', attributes={'name':'extendedConfigData'}, nodes=[
+							Xmlnode('item', attributes={'name':object_field, 'xsi:type':'string'}, node_text='{}/{}/{}'.format(section, group, field))
+						])
+					])
+				])
+			])
+
+			self.add_xml(graphql_di_file, graphql_di)
+
+			schema = GraphQlSchema()
+
+			item_definition = GraphQlObjectType(
+				'StoreConfig'
+			)
+
+			item_definition.add_objectitem(
+				GraphQlObjectItem(
+					object_field,
+					description=object_field
+				)
+			)
+
+			schema.add_objecttype(item_definition)
+
+			self.add_graphqlschema('etc/schema.graphqls', schema)
+
+			etc_module = Xmlnode('config', attributes={
+				'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Module/etc/module.xsd"}, nodes=[
+				Xmlnode('module', attributes={'name': self.module_name}, nodes=[
+					Xmlnode('sequence', attributes={}, nodes=[
+						Xmlnode('module', attributes={'name': 'Magento_StoreGraphQl'})
+					])
+				])
+			])
+			self.add_xml('etc/module.xml', etc_module)
+
+		self.add_static_file(
+			'.',
+			Readme(
+				configuration=" - {} ({})".format(label, '{}/{}/{}'.format(section, group, field)),
+			)
+		)
 
 	@classmethod
 	def params(cls):
@@ -273,8 +482,12 @@ class SystemSnippet(Snippet):
 				required=True,
 				depend= {'source_model': r'custom'},
 				description='comma seperated options. Example: yes,no.maybe',
-				error_message='Only alphanumeric')
-
+				error_message='Only alphanumeric'),
+			SnippetParam(
+				name='graphql',
+				default=False,
+				yes_no=True,
+				repeat=True)
 		]
 
 	@classmethod

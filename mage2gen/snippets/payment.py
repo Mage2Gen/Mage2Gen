@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, Readme
 
 class PaymentSnippet(Snippet):
 	snippet_label = 'Payment Method'
@@ -178,6 +178,13 @@ class PaymentSnippet(Snippet):
 		self.add_static_file('view/frontend/web/js/view/payment', StaticFile(payment_code + '.js', template_file='payment/payment-js.tmpl',context_data={'module_name':self.module_name,'payment_code':payment_code}))
 		self.add_static_file('view/frontend/web/js/view/payment/method-renderer', StaticFile(payment_code + '-method.js', template_file='payment/payment-method-js.tmpl',context_data={'module_name':self.module_name,'payment_code':payment_code}))
 
+		self.add_static_file(
+			'.',
+			Readme(
+				specifications=" - Payment Method\n\t- {}".format(method_name),
+				configuration=" - {} - payment/{}/*".format(method_name, payment_code)
+			)
+		)
 	@classmethod
 	def params(cls):
 		return [

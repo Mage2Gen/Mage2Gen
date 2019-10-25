@@ -50,7 +50,7 @@ class Phpclass:
 		self.implements = set(list(self.implements) + list(other.implements))
 		self.dependencies = set(list(self.dependencies) + list(other.dependencies))
 		for method in other.methods :
-			self.add_method(method)		
+			self.add_method(method)
 		return self
 
 	@property
@@ -63,7 +63,7 @@ class Phpclass:
 
 	def upper_class_namespace(self, class_namespace):
 		return '\\'.join(upperfirst(n) for n in class_namespace.strip('\\').split('\\'))
-	
+
 	def add_method(self, method):
 		if method in self.methods:
 			method_index = self.methods.index(method)
@@ -83,7 +83,7 @@ class Phpclass:
 
 		dependencies = ';\n'.join("use %s" %(dependency) for dependency in self.dependencies)
 		if dependencies:
-			dependencies = '\n' + dependencies + ';\n'	
+			dependencies = '\n' + dependencies + ';\n'
 
 		return {
 			'license': self.license.get_php_docstring() if self.license else '',
@@ -111,7 +111,7 @@ class Phpclass:
 			os.makedirs(os.path.dirname(path))
 		except Exception:
 			pass
-		
+
 		with open(path, 'w+', encoding='utf-8') as class_file:
 			class_file.writelines(self.generate())
 
@@ -121,13 +121,17 @@ class Phpmethod:
 	PRIVATE = 'private'
 
 	def __init__(self, name, **kwargs):
+		"""
 
+		:rtype:
+		"""
 		self.name = name
 		self.access = kwargs.get('access', self.PUBLIC)
 		self.params = kwargs.get('params', [])
 		self.docstring = kwargs.get('docstring',[])
 		self.body = [kwargs.get('body', '')]
 		self.end_body = [kwargs.get('end_body', '')]
+		self.body_start = kwargs.get('body_start', '')
 		self.body_return = kwargs.get('body_return', '')
 		self.template_file = os.path.join(TEMPLATE_DIR, 'method.tmpl')
 
@@ -173,6 +177,8 @@ class Phpmethod:
 
 	def body_code(self):
 		body_string = ''
+		if self.body_start:
+			body_string += self.body_start
 		for body_code in self.body:
 			if body_code:
 				body_string += '\n\t\t'.join(s.strip('\t') for s in body_code.splitlines()) + '\n\n\t\t'
@@ -202,8 +208,8 @@ class Phpmethod:
 class Xmlnode:
 
 	def __init__(self, node_name, attributes=None, nodes=None, node_text=None, match_attributes=None, xsd=False):
-		
-		if nodes : 
+
+		if nodes :
 			nodes = [x for x in nodes if x]
 
 		self.node_name = node_name
@@ -219,7 +225,7 @@ class Xmlnode:
 	def __eq__(self, other):
 		if self.node_name != other.node_name:
 			return False
-		for key in self.match_attributes:	
+		for key in self.match_attributes:
 			if key in self.attributes and self.attributes[key] != other.attributes[key]:
 					return False
 		return True
@@ -268,7 +274,7 @@ class Xmlnode:
 			os.makedirs(os.path.dirname(xml_path))
 		except Exception:
 			pass
-		
+
 		with open(xml_path, 'w+', encoding='utf-8') as xml_file:
 			xml_file.writelines(self.generate())
 
@@ -287,7 +293,7 @@ class StaticFile:
 	def __add__(self, other):
 		for code in other._context_data['body']:
 			if code not in self._context_data['body']:
-				self._context_data['body'].append(code)	
+				self._context_data['body'].append(code)
 		return self
 
 	def context_data(self):
@@ -308,7 +314,61 @@ class StaticFile:
 			os.makedirs(os.path.dirname(file_path))
 		except Exception:
 			pass
-		
+
+		with open(file_path, 'w+', encoding='utf-8') as static_file:
+			static_file.writelines(self.generate())
+
+###############################################################################
+# Template files
+###############################################################################
+class Readme:
+
+	def __init__(self, file_name='README.md', body=None, template_file='readme.tmpl', context_data=None, configuration=None, specifications=None, attributes=None):
+		self.file_name = file_name
+		self.template_file = os.path.join(TEMPLATE_DIR, template_file)
+		self._context_data = context_data if context_data else {}
+		self._context_data['body'] = [body] if body else []
+		self._context_data['configuration'] = [configuration] if configuration else []
+		self._context_data['specifications'] = [specifications] if specifications else []
+		self._context_data['attributes'] = [attributes] if attributes else []
+
+	def __add__(self, other):
+		for code in other._context_data['body']:
+			if code not in self._context_data['body']:
+				self._context_data['body'].append(code)
+		for code in other._context_data['configuration']:
+			if code not in self._context_data['configuration']:
+				self._context_data['configuration'].append(code)
+		for code in other._context_data['specifications']:
+			if code not in self._context_data['specifications']:
+				self._context_data['specifications'].append(code)
+		for code in other._context_data['attributes']:
+			if code not in self._context_data['attributes']:
+				self._context_data['attributes'].append(code)
+		return self
+
+	def context_data(self):
+		data = self._context_data
+		data['body'] = "\n\n".join(self._context_data['body'])
+		data['configuration'] = "\n\n".join(self._context_data['configuration'])
+		data['specifications'] = "\n\n".join(self._context_data['specifications'])
+		data['attributes'] = "\n\n".join(self._context_data['attributes'])
+		return self._context_data
+
+	def generate(self):
+		with open(self.template_file, 'rb') as tmpl:
+			template = tmpl.read().decode('utf-8')
+
+		return template.format(
+			**self.context_data()
+		)
+
+	def save(self, file_path):
+		try:
+			os.makedirs(os.path.dirname(file_path))
+		except Exception:
+			pass
+
 		with open(file_path, 'w+', encoding='utf-8') as static_file:
 			static_file.writelines(self.generate())
 
@@ -366,6 +426,7 @@ class GraphQlObjectType:
 	def __init__(self, type, **kwargs):
 
 		self.type = type
+		self.type_declaration = kwargs.get('type_declaration', 'type')
 		self.body = [kwargs.get('body', '')]
 		self.end_body = [kwargs.get('end_body', '')]
 		self.template_file = os.path.join(TEMPLATE_DIR, 'graphqlobject.tmpl')
@@ -408,8 +469,10 @@ class GraphQlObjectType:
 			object_items = '\n' + object_items
 
 		return {
+			'type_declaration': self.type_declaration,
 			'type': self.type,
-			'object_items': object_items
+			'object_items': object_items,
+			'body': self.body_code()
 		}
 
 	def generate(self):
@@ -427,19 +490,26 @@ class GraphQlObjectItem:
 
 		self.item_identifier = item_identifier
 		self.item_type = kwargs.get('item_type', 'String')
+		if self.item_type:
+			self.item_type = ': ' + self.item_type
 		self.item_arguments = kwargs.get('item_arguments', '')
 		self.item_resolver = kwargs.get('item_resolver', '')
 		self.item_description = kwargs.get('description', '')
+		if self.item_description:
+			self.item_description = '@doc(description: "Query by {}.")'.format(self.item_description)
+		self.item_cache_identity = kwargs.get('item_cache_identity', '')
 		self.body = [kwargs.get('body', '')]
 		self.end_body = [kwargs.get('end_body', '')]
 		self.template_file = os.path.join(TEMPLATE_DIR, 'graphqlobjectitem.tmpl')
 		if self.item_resolver:
 			self.item_resolver = '@resolver( class: "{item_resolver}")'.format(item_resolver=self.item_resolver)
+		if self.item_cache_identity:
+			self.item_cache_identity = '@cache( cacheIdentity: "{item_cache_identity}")'.format(item_cache_identity=self.item_cache_identity)
 		if self.item_arguments:
 			arguments = []
 			for argument in self.item_arguments.split(','):
-				arguments.append('\t\t{argument}: String @doc(description: "Query by {argument}.")'.format(argument=argument))
-			self.item_arguments = '(\n' + "\n".join(arguments) + '\n\t)'
+				arguments.append('\t\t\t{argument}: String @doc(description: "Query by {argument}.")'.format(argument=argument))
+			self.item_arguments = '(\n' + ",\n".join(arguments) + '\n\t)'
 
 	def __eq__(self, other):
 		return self.item_identifier == other.item_identifier
@@ -468,6 +538,7 @@ class GraphQlObjectItem:
 			item_type=self.item_type,
 			item_resolver=self.item_resolver,
 			item_description=self.item_description,
+			item_cache_identity=self.item_cache_identity,
 			item_arguments=self.item_arguments
 		).replace('\t', '    ')  # Make generated code PSR2 compliant
 
@@ -492,9 +563,22 @@ class Module:
 		])
 		self.add_xml('etc/module.xml', etc_module)
 
+		composer_name = '{}/module-{}'.format(self.package.lower(), self.name.lower())
+		self.add_static_file(
+			'.',
+			Readme(
+				context_data={
+					'package_name': upperfirst(self.package),
+					'name': upperfirst(self.name),
+					'module_name': self.module_name,
+					'composer_name': composer_name,
+					'description': self.description,
+				}
+			)
+		)
 		self.add_static_file('.', StaticFile('registration.php', template_file='registration.tmpl', context_data={'module_name':self.module_name}))
 		self._composer = OrderedDict()
-		self._composer['name'] = '{}/module-{}'.format(self.package.lower(), self.name.lower())
+		self._composer['name'] = composer_name
 		self._composer['description'] = self.description
 		self._composer['type'] = 'magento2-module'
 		self._composer['license'] = 'proprietary'
@@ -569,7 +653,7 @@ class Module:
 			current_class = phpclass
 
 		current_class.license = self.license
-		
+
 		self._classes[current_class.class_namespace] = current_class
 
 	def add_graphqlschema(self, graphqlschema_file, schema):
@@ -597,4 +681,4 @@ class Module:
 		else:
 			current_staticfile = staticfile
 
-		self._static_files[full_name] = current_staticfile	
+		self._static_files[full_name] = current_staticfile

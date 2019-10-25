@@ -17,7 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
 
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, Readme
 from ..utils import upperfirst
 
 
@@ -48,12 +48,14 @@ class ObserverSnippet(Snippet):
 	SCOPE_FRONTEND = 'frontend'
 	SCOPE_ADMINHTML = 'backend'
 	SCOPE_WEBAPI = 'webapi'
+	SCOPE_GRAPHQL = 'graphql'
 
 	SCOPE_CHOISES = [
 		(SCOPE_ALL, 'All'),
 		(SCOPE_FRONTEND, 'Frontend'),
 		(SCOPE_ADMINHTML, 'Backend'),
 		(SCOPE_WEBAPI, 'Webapi'),
+		(SCOPE_GRAPHQL, 'GraphQl'),
 	]
 	
 	def add(self, event, scope=SCOPE_ALL, extra_params=None):
@@ -100,9 +102,18 @@ class ObserverSnippet(Snippet):
 			soap_xml_path.append('webapi_soap')
 			soap_xml_path.append('events.xml')
 			self.add_xml(os.path.join(*soap_xml_path), config)
+		elif scope == self.SCOPE_GRAPHQL:
+			xml_path.append('graphql')
 
 		xml_path.append('events.xml')
 		self.add_xml(os.path.join(*xml_path), config)
+
+		self.add_static_file(
+			'.',
+			Readme(
+				specifications=" - Observer\n\t- {} > {}".format(event, observer.class_namespace),
+			)
+		)
 
 	@classmethod
 	def params(cls):

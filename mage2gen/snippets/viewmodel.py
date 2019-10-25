@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, Readme
 
 
 class ViewModelSnippet(Snippet):
@@ -75,7 +75,7 @@ class ViewModelSnippet(Snippet):
 									Xmlnode('argument', attributes={
 											'name': 'viewModel',
 											'xsi:type': 'object',
-										}, node_text='{}'.format(classname)
+										}, node_text='{}'.format(view_model.class_namespace)
 									)
 								]
 							)
@@ -85,6 +85,13 @@ class ViewModelSnippet(Snippet):
 			])
 			xml_path = '{}/{}.xml'.format(xml_path,layout_handle.lower())
 			self.add_xml(xml_path, page)
+
+		self.add_static_file(
+			'.',
+			Readme(
+				specifications=" - ViewModel\n\t- {}".format(view_model.class_namespace),
+			)
+		)
 
 	@classmethod
 	def params(cls):

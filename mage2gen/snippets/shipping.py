@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam
+from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, Readme
 from ..module import TEMPLATE_DIR
 
 class ShippingClass(Phpclass):
@@ -131,6 +131,14 @@ class ShippingSnippet(Snippet):
 		]);
 
 		self.add_xml(config_file, config)
+
+		self.add_static_file(
+			'.',
+			Readme(
+				specifications=" - Shipping Method\n\t- {}".format(shipping_code),
+				configuration=" - {} - carriers/{}/*".format(method_name, shipping_code)
+			)
+		)
 
 	@classmethod
 	def params(cls):
