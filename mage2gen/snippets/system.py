@@ -465,7 +465,7 @@ class SystemSnippet(Snippet):
 			SnippetParam(
 				name='field', 
 				required=True, 
-				description='Example: out of stock label ',
+				description='Example: out_of_stock_label ',
 				regex_validator= r'^[a-z]{1}[a-z0-9_]+$',
 				error_message='Only lowercase alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
 			SnippetParam(
