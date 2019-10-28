@@ -100,7 +100,7 @@ class SystemSnippet(Snippet):
 		('Magento\\Config\\Model\\Config\\Source\\Nooptreq','No/Optional/Required'),
 		('Magento\\Config\\Model\\Config\\Source\\Email\\Template','Email Template'),
 		('Magento\\Config\\Model\\Config\\Source\\Email\\Identity','Email Identity'),
-		('Magento\\Config\\Model\\Config\\Locale\\Source\\Currency','Currency'),
+		('Magento\\Config\\Model\\Config\\Source\\Locale\\Currency','Currency'),
 		('Magento\\Directory\\Model\\Config\\Source\\Country','Countries'),
 		('Magento\\Payment\\Model\\Config\\Source\\Allspecificcountries','Payment | All Specific Countries'),
 		('Magento\\Sales\\Model\\Config\\Source\\Order\\Status\\NewStatus','Sales | Order Status (state New)'),
