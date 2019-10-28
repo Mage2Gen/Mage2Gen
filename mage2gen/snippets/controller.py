@@ -77,9 +77,11 @@ class ControllerSnippet(Snippet):
 					context_class + ' $context',
 					'\Magento\Framework\View\Result\PageFactory $resultPageFactory',
 					'\Magento\Framework\Json\Helper\Data $jsonHelper',
+					'\Psr\Log\LoggerInterface $logger',
 				],
 				body="""$this->resultPageFactory = $resultPageFactory;
 					$this->jsonHelper = $jsonHelper;
+					$this->logger = $logger;
 					parent::__construct($context);
 				""",
 				docstring=[
