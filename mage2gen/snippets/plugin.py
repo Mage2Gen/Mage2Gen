@@ -104,12 +104,16 @@ class PluginSnippet(Snippet):
 			try:
 				data = self.get_mage2methods()
 				parameters = data[methodname][classname]
-				for key, value in parameters.items():
-					param = '$' + key
-					returnParams.append(param)
-					if value != '':
-						param += ' = ' + value
-					params.append(param)
+				if(parameters)
+					for key, value in parameters.items():
+						param = '$' + key
+						returnParams.append(param)
+						if value != '':
+							param += ' = ' + value
+						params.append(param)
+				else:
+					params.append('...$args')
+					returnParams.append('...$args')
 			except KeyError:
 				pass
 		else:
