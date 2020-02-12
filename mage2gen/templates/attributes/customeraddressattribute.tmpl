@@ -1,15 +1,11 @@
-$customerSetup->addAttribute(\Magento\Customer\Model\Indexer\Address\AttributeProvider::ENTITY, '{attribute_code}', [
+$customerSetup->addAttribute(AttributeProvider::ENTITY, '{attribute_code}', [
+    'type' => '{value_type}',
     'label' => '{attribute_label}',
     'input' => '{frontend_input}',
-    'type' => '{value_type}',
     'source' => '{source_model}',
     'required' => {required},
-    'position' => {sort_order},
     'visible' => {visible},
+    'position' => {sort_order},
     'system' => false,
-    'is_used_in_grid' => false,
-    'is_visible_in_grid' => false,
-    'is_filterable_in_grid' => false,
-    'is_searchable_in_grid' => false,
     'backend' => '{backend_model}'
 ]);

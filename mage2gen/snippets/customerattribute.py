@@ -179,7 +179,11 @@ class CustomerAttributeSnippet(Snippet):
 		split_attribute_code = attribute_code.split('_')
 		attribute_code_capitalized = ''.join(upperfirst(item) for item in split_attribute_code)
 		entity_type = 'Customer'
+		entity_type_identifier = 'Magento\\Customer\\Model\\Customer'
+		entity_type_alias='Customer'
 		if customer_entity == 'customer_address':
+			entity_type_identifier = 'Magento\\Customer\\Model\\Indexer\\Address\\AttributeProvider'
+			entity_type_alias='AttributeProvider'
 			entity_type = 'CustomerAddress'
 
 		install_patch = Phpclass('Setup\\Patch\\Data\\{}{}{}Attribute'.format(patchType, attribute_code_capitalized, entity_type),
@@ -189,11 +193,15 @@ class CustomerAttributeSnippet(Snippet):
 				 'Magento\\Framework\\Setup\\Patch\\PatchRevertableInterface',
 				 'Magento\\Framework\\Setup\\ModuleDataSetupInterface',
 				 'Magento\\Customer\\Setup\\CustomerSetupFactory',
-				'Magento\\Customer\\Setup\\CustomerSetup'
+				'Magento\\Customer\\Setup\\CustomerSetup',
+				'Magento\\Eav\\Model\\Entity\\Attribute\\SetFactory',
+				'Magento\\Eav\\Model\\Entity\\Attribute\\Set',
+				 entity_type_identifier
 			 ],
 			 attributes=[
 				 "/**\n\t * @var ModuleDataSetupInterface\n\t */\n\tprivate $moduleDataSetup;",
-				 "/**\n\t * @var CustomerSetup\n\t */\n\tprivate $customerSetupFactory;"
+				 "/**\n\t * @var CustomerSetup\n\t */\n\tprivate $customerSetupFactory;",
+				 "/**\n\t * @var SetFactory\n\t */\n\tprivate $attributeSetFactory;"
 			 ]
 		 )
 
@@ -201,21 +209,26 @@ class CustomerAttributeSnippet(Snippet):
 			'__construct',
 			params=[
 				'ModuleDataSetupInterface $moduleDataSetup',
-				'CustomerSetupFactory $customerSetupFactory'
+				'CustomerSetupFactory $customerSetupFactory',
+				'SetFactory $attributeSetFactory'
 			],
-			body="$this->moduleDataSetup = $moduleDataSetup;\n$this->customerSetupFactory = $customerSetupFactory;",
+			body="$this->moduleDataSetup = $moduleDataSetup;\n$this->customerSetupFactory = $customerSetupFactory;\n$this->attributeSetFactory = $attributeSetFactory;",
 			docstring=[
 				'Constructor',
 				'',
 				'@param ModuleDataSetupInterface $moduleDataSetup',
-				'@param CustomerSetupFactory $customerSetupFactory'
+				'@param CustomerSetupFactory $customerSetupFactory',
+				'@param SetFactory $attributeSetFactory'
 			]
 		))
 
 
+		methodBody = methodBody + "\n\n$attribute = $customerSetup->getEavConfig()->getAttribute({entity_type_alias}::ENTITY, '{attribute_code}');".format(entity_type_alias=entity_type_alias, attribute_code=attribute_code)
 		if forms_php_array:
-			attribute_form_data = "\n\n$attribute = $customerSetup->getEavConfig()->getAttribute('{customer_entity}', '{attribute_code}')->addData([\n    'used_in_forms' => [{forms_php_array}]\n]);\n$attribute->save();".format(customer_entity=customer_entity, attribute_code=attribute_code, forms_php_array=forms_php_array)
+			attribute_form_data = "\n$attribute->addData([\n    'used_in_forms' => [{forms_php_array}]\n]);".format(customer_entity=customer_entity, attribute_code=attribute_code, forms_php_array=forms_php_array)
 			methodBody = methodBody + attribute_form_data
+
+		methodBody = methodBody + "\n$attribute->addData([\n    'attribute_set_id' => $attributeSetId,\n    'attribute_group_id' => $attributeGroupId\n\n]);\n$attribute->save();".format(entity_type_alias=entity_type_alias, attribute_code=attribute_code)
 
 		install_patch.add_method(Phpmethod('apply',
 			body_start='$this->moduleDataSetup->getConnection()->startSetup();',
@@ -223,7 +236,14 @@ class CustomerAttributeSnippet(Snippet):
 			body="""
 			/** @var CustomerSetup $customerSetup */
 			$customerSetup = $this->customerSetupFactory->create(['setup' => $this->moduleDataSetup]);
-			""" + methodBody,
+			$customerEntity = $customerSetup->getEavConfig()->getEntityType({entity_type_alias}::ENTITY);
+			$attributeSetId = $customerEntity->getDefaultAttributeSetId();
+
+			/** @var $attributeSet Set */
+			$attributeSet = $this->attributeSetFactory->create();
+			$attributeGroupId = $attributeSet->getDefaultGroupId($attributeSetId);
+
+			""".format(entity_type_alias=entity_type_alias) + methodBody,
 			docstring=['{@inheritdoc}']))
 
 		install_patch.add_method(Phpmethod(
@@ -232,7 +252,7 @@ class CustomerAttributeSnippet(Snippet):
 			body_return='$this->moduleDataSetup->getConnection()->endSetup();',
 			body="""
 				/** @var CustomerSetup $customerSetup */
-				$customerSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
+				$customerSetup = $this->customerSetupFactory->create(['setup' => $this->moduleDataSetup]);
 				$customerSetup->removeAttribute(\Magento\Customer\Model\Customer::ENTITY, '{attribute_code}');""".format(
 				attribute_code=attribute_code)
 		))

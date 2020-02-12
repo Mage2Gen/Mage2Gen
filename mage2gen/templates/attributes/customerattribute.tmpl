@@ -1,15 +1,19 @@
 $customerSetup->addAttribute(
-    \Magento\Customer\Model\Customer::ENTITY,
+    Customer::ENTITY,
     '{attribute_code}',
     [
-        'type' => '{value_type}',
         'label' => '{attribute_label}',
         'input' => '{frontend_input}',
+        'type' => '{value_type}',
         'source' => '{source_model}',
         'required' => {required},
-        'visible' => {visible},
         'position' => {sort_order},
+        'visible' => {visible},
         'system' => false,
+        'is_used_in_grid' => true,
+        'is_visible_in_grid' => true,
+        'is_filterable_in_grid' => true,
+        'is_searchable_in_grid' => false,
         'backend' => '{backend_model}'
     ]
 );
