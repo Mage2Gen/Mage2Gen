@@ -21,7 +21,7 @@ from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, Snippe
 from ..utils import upperfirst, lowerfirst
 from ..module import TEMPLATE_DIR
 
-# Long boring code to add a lot of PHP classes and xml, only go here if you feel like too bring you happiness down. 
+# Long boring code to add a lot of PHP classes and xml, only go here if you feel like too bring you happiness down.
 # Or make your day happy that you don't maintain this code :)
 
 class InterfaceClass(Phpclass):
@@ -292,7 +292,10 @@ class ModelSnippet(Snippet):
 
 		# Create collection
 		collection_model_class = Phpclass('Model\\ResourceModel\\' + model_name_capitalized.replace('_', '\\') + '\\Collection',
-				extends='\\Magento\\Framework\\Model\\ResourceModel\\Db\\Collection\\AbstractCollection')
+				extends='\\Magento\\Framework\\Model\\ResourceModel\\Db\\Collection\\AbstractCollection',
+				attributes=[
+					"/**\n\t * @var string\n\t */\n\tprotected $_idFieldName = '{}';".format(model_id),
+				])
 		collection_model_class.add_method(Phpmethod('_construct',
 			access=Phpmethod.PROTECTED,
 			body="$this->_init(\n    \{}::class,\n    \{}::class\n);".format(
