@@ -218,7 +218,6 @@ class ModelSnippet(Snippet):
 		api_data_class.add_method(InterfaceMethod('setExtensionAttributes', params=[extension_interface_class_name + ' $extensionAttributes'], docstring=['Set an extension attributes object.','@param ' + extension_interface_class_name +' $extensionAttributes','@return $this']))
 		self.add_class(api_data_class)
 
-
 		# Create api data interface class
 		api_data_search_class =  InterfaceClass('Api\\Data\\' + model_name_capitalized.replace('_', '\\') + 'SearchResultsInterface',extends='\Magento\Framework\Api\SearchResultsInterface')
 		api_data_search_class.add_method(InterfaceMethod('getItems',docstring=['Get {} list.'.format(model_name),'@return \{}[]'.format(api_data_class.class_namespace)]))
@@ -233,6 +232,10 @@ class ModelSnippet(Snippet):
 		api_repository_class.add_method(InterfaceMethod('delete',params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],docstring=['Delete {}'.format(model_name),'@param \{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after),'@return bool true on success','@throws \Magento\Framework\Exception\LocalizedException']))
 		api_repository_class.add_method(InterfaceMethod('deleteById',params=['${}'.format(model_id_capitalized_after)],docstring=['Delete {} by ID'.format(model_name),'@param string ${}'.format(model_id_capitalized_after),'@return bool true on success','@throws \\Magento\\Framework\\Exception\\NoSuchEntityException','@throws \\Magento\\Framework\\Exception\\LocalizedException']))
 		self.add_class(api_repository_class)
+
+		# Create api data extension attributes interface
+		api_data_extension_attributes_class =  InterfaceClass(extension_interface_class_name,extends='\Magento\Framework\Api\ExtensionAttributesInterface')
+		self.add_class(api_data_extension_attributes_class)
 
 		# Create model class
 		model_class = Phpclass('Model\\' + model_name_capitalized.replace('_', '\\'),
