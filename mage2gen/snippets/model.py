@@ -111,7 +111,7 @@ class ModelSnippet(Snippet):
 			'xsi:type': "{}".format('smallint'),
 			'name': "{}".format(model_id),
 			'padding': "{}".format('6'),
-			'unsigned': "{}".format('false'),
+			'unsigned': "{}".format('true'),
 			'nullable': "{}".format('false'),
 			'identity': "{}".format('true'),
 			'comment': "{}".format('Entity Id')
@@ -153,7 +153,7 @@ class ModelSnippet(Snippet):
 			attributes['length'] = '255'
 
 
-		# Create di.xml preferences
+		# Create db_schema.xml declaration
 		self.add_xml('etc/db_schema.xml', Xmlnode('schema', attributes={
 			'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd"}, nodes=[
 			Xmlnode('table', attributes={
@@ -166,7 +166,7 @@ class ModelSnippet(Snippet):
 					'xsi:type': "{}".format('smallint'),
 					'name': "{}".format(model_id),
 					'padding': "{}".format('6'),
-					'unsigned': "{}".format('false'),
+					'unsigned': "{}".format('true'),
 					'nullable': "{}".format('false'),
 					'identity': "{}".format('true'),
 					'comment': "{}".format('Entity Id')
