@@ -104,7 +104,7 @@ class PluginSnippet(Snippet):
 			try:
 				data = self.get_mage2methods()
 				parameters = data[methodname][classname]
-				if(parameters)
+				if parameters:
 					for key, value in parameters.items():
 						param = '$' + key
 						returnParams.append(param)
