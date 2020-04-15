@@ -81,7 +81,7 @@ class Phpclass:
 		else:
 			attributes = ''
 
-		dependencies = ';\n'.join("use %s" %(dependency) for dependency in self.dependencies)
+		dependencies = ';\n'.join("use %s" %(dependency) for dependency in sorted(self.dependencies))
 		if dependencies:
 			dependencies = '\n' + dependencies + ';\n'
 
