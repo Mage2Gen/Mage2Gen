@@ -382,7 +382,7 @@ $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
                 name='scope',
                 required=True,
                 choises=cls.SCOPE_CHOICES,
-                default='ScopedAttributeInterface::SCOPE_STOR'),
+                default='ScopedAttributeInterface::SCOPE_STORE'),
             SnippetParam(
                 name='required',
                 required=True,
