@@ -1,4 +1,3 @@
-{description}
 Copyright © {license_year}-present {copyright}
 
 This file is part of {module_name}.
