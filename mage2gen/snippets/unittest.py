@@ -31,7 +31,7 @@ class UnitTestSnippet(Snippet):
 	def add(self, test_suite, test_name, extra_params=None):
 		class_name = "\\Test\\Unit\\{}Test".format(test_suite)
 
-		unittest_class = Phpclass(class_name,extends='\\PHPUnit_Framework_TestCase')
+		unittest_class = Phpclass(class_name,extends='\\PHPUnit\\Framework\\TestCase')
 
 		# Adding class setup and teardown
 		unittest_class.add_method(
