@@ -21,7 +21,7 @@ import os
 from .. import Phpclass, Phpmethod, Xmlnode, Snippet, SnippetParam, Readme
 
 class CompanyAttributeSnippet(Snippet):
-	snippet_label = 'Company Attribute'
+	snippet_label = 'Company Attribute (Magento Commerce)'
 
 	FRONTEND_INPUT_TYPE = [
         ("input","Text Field"),
