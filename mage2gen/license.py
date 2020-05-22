@@ -52,7 +52,7 @@ class License:
 		)
 	
 	def get_php_docstring(self):
-		return '/**\n * Copyright © {copy_right} All rights reserved.\n * See COPYING.txt for license details.\n */'\
+		return '/**\n * Copyright © {copy_right} All rights reserved.\n * See COPYING.txt for license details.\n */\n'\
 			.format(copy_right=self.copyright)
 
 

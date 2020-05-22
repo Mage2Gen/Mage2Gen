@@ -576,7 +576,7 @@ class Module:
 				}
 			)
 		)
-		self.add_static_file('.', StaticFile('registration.php', template_file='registration.tmpl', context_data={'module_name':self.module_name}))
+
 		self._composer = OrderedDict()
 		self._composer['name'] = composer_name
 		self._composer['description'] = self.description
@@ -619,10 +619,15 @@ class Module:
 		except Exception:
 			pass
 
+		context_data = {'module_name': self.module_name, 'license': ''}
+
 		if self.license:
 			self._composer['license'] = self.license.identifier
 			self.add_static_file('', StaticFile('LICENSE.txt', body=self.license.get_text()))
 			self.add_static_file('', StaticFile('COPYING.txt', body=self.license.get_short_text()))
+			context_data = {'module_name': self.module_name, 'license': self.license.get_php_docstring()}
+
+		self.add_static_file('.', StaticFile('registration.php', template_file='registration.tmpl',context_data=context_data))
 
 		# Add composer as static file
 		self.add_static_file('', StaticFile('composer.json', body=json.dumps(self._composer, indent=4)))
