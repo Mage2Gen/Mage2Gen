@@ -622,6 +622,7 @@ class Module:
 		if self.license:
 			self._composer['license'] = self.license.identifier
 			self.add_static_file('', StaticFile('LICENSE.txt', body=self.license.get_text()))
+			self.add_static_file('', StaticFile('COPYING.txt', body=self.license.get_short_text()))
 
 		# Add composer as static file
 		self.add_static_file('', StaticFile('composer.json', body=json.dumps(self._composer, indent=4)))

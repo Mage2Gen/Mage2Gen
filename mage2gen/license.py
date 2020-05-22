@@ -52,12 +52,9 @@ class License:
 		)
 	
 	def get_php_docstring(self):
-		license = '/**'
-		for line in self.get_short_text().split('\n'):
-			license += format('\n * {}'.format(line))
-		license += '\n */'
-		return license
-	
+		return '/**\n * Copyright © {copy_right} All rights reserved.\n * See COPYING.txt for license details.\n */'\
+			.format(copy_right=self.copyright)
+
 
 class FileLicense(License):
 	template_license = None

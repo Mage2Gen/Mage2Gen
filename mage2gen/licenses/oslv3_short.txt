@@ -1,5 +1,5 @@
 {description}
-Copyright (C) {license_year} {copyright}
+Copyright © {license_year}-present {copyright}
 
 This file included in {module_name} is licensed under OSL 3.0
 
