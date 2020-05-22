@@ -92,9 +92,8 @@ class SalesAttributeSnippet(Snippet):
 
         if extra_params.get('default'):
             attributes['default'] = "{}".format(extra_params.get('default'))
-        if not extra_params.get('nullable'):
+        if not extra_params.get('nullable') and extra_params.get('default'):
             attributes['nullable'] = 'false'
-            required = not attributes['nullable']
         if value_type in {'mallint', 'integer', 'bigint'}:
             attributes['identity'] = 'false'
             if extra_params.get('identity'):
@@ -136,7 +135,7 @@ class SalesAttributeSnippet(Snippet):
                 }, nodes=[
                     Xmlnode('column', attributes=attributes)
                 ]))
-                self.add_xml('etc/di.xml', Xmlnode('schema', attributes={
+                self.add_xml('etc/di.xml', Xmlnode('config', attributes={
                     'xsi:noNamespaceSchemaLocation': "urn:magento:framework:ObjectManager/etc/config.xsd"},
                               nodes=[
                                   Xmlnode('virtualType', attributes={
@@ -145,7 +144,7 @@ class SalesAttributeSnippet(Snippet):
                                   }, nodes=[
                                       Xmlnode('arguments', attributes={}, nodes=[
                                           Xmlnode('argument', attributes={'name': 'columns', 'xsi:type': 'array'}, nodes=[
-                                              Xmlnode('item', attributes={'name': ''.format(attribute_code), 'xsi:type': 'string'}, 
+                                              Xmlnode('item', attributes={'name': '{}'.format(attribute_code), 'xsi:type': 'string'},
                                                       node_text="{}.{}".format(sales_entity, attribute_code)
                                                       )
                                           ])
