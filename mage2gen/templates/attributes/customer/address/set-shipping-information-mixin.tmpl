@@ -17,6 +17,9 @@ define([
             if (shippingAddress.customAttributes != undefined) {{
                 $.each(shippingAddress.customAttributes , function( key, value ) {{
 
+                    if($.isPlainObject(value)){
+                        key = value['attribute_code'];
+                    }
                     if($.isPlainObject(value)){{
                         value = value['value'];
                     }}

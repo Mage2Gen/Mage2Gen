@@ -19,6 +19,9 @@ define([
                 if (billingAddress.customAttributes != undefined) {{
                     $.each(billingAddress.customAttributes, function (key, value) {{
 
+                        if($.isPlainObject(value)){
+                            key = value['attribute_code'];
+                        }
                         if($.isPlainObject(value)){{
                             value = value['value'];
                         }}
