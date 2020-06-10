@@ -408,6 +408,7 @@ class CustomerAttributeSnippet(Snippet):
 
 			layout_processor.add_method(Phpmethod('getField',
 												  body="""$field = [
+	    'component' => 'Magento_Ui/js/form/element/abstract',
 	    'config' => [
 	        'customScope' => $scope,
 	        'template' => 'ui/form/field',
