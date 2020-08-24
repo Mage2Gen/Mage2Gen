@@ -647,6 +647,12 @@ class Module:
 			path = os.path.join(location, path)
 			static_file.save(path)
 
+	def add_composer_require(self, require, version = "*", dev = False):
+		if dev:
+			self._composer['require-dev'][require] = version
+		else:
+			self._composer['require'][require] = version
+
 	def add_class(self, phpclass):
 		root_namespace = '{}\{}'.format(self.package, self.name)
 		if root_namespace not in phpclass.class_namespace:

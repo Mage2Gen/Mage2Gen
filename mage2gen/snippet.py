@@ -121,6 +121,9 @@ class Snippet(metaclass=MetaClass):
 	def module_name(self):
 	    return self._module.module_name
 
+	def add_composer_require(self, require, version = "*", dev = False):
+		return self._module.add_composer_require(require, version, dev)
+
 	def add_class(self, phpclass):
 		return self._module.add_class(phpclass)
 
