@@ -32,7 +32,21 @@ class ControllerSnippet(Snippet):
 	This snippet will also create a layout.xml, Block and phtml for the action.
 	"""
 
-	def add(self, frontname='', section='index', action='index', adminhtml=False, ajax=False, extra_params=None, top_level_menu=True):
+	ACTION_INTERFACE = [
+		("HttpOptionsActionInterface","OPTIONS"),
+		("HttpGetActionInterface","GET"),
+		("HttpGetActionInterface","HEAD"),
+		("HttpPostActionInterface","POST"),
+		("HttpPutActionInterface","PUT"),
+		("HttpPatchActionInterface","PATCH"),
+		("HttpDeleteActionInterface","DELETE"),
+		("HttpConnectActionInterface","CONNECT"),
+		("HttpPropfindActionInterface","PROPFIND"),
+		("HttpTraceActionInterface","TRACE")
+	]
+
+
+	def add(self, frontname='', section='index', action='index', action_interface='HttpGetActionInterface', adminhtml=False, ajax=False, extra_params=None, top_level_menu=True):
 		if not frontname:
 			frontname = '{}_{}'.format(self._module.package.lower(),self._module.name.lower())
 		file = 'etc/{}/routes.xml'.format('adminhtml' if adminhtml else 'frontend')
@@ -58,62 +72,50 @@ class ControllerSnippet(Snippet):
 		controller_class.append(section)
 		controller_class.append(action)
 
-		controller_extend = '\Magento\Backend\App\Action' if  adminhtml else '\Magento\Framework\App\Action\Action' 
-		controller = Phpclass('\\'.join(controller_class), controller_extend, attributes=[
-			'protected $resultPageFactory;'
+		controller = Phpclass('\\'.join(controller_class), implements=[action_interface], attributes=[
+			"/**\n\t * @var PageFactory\n\t */\n\tprotected $resultPageFactory;"
+		], dependencies=[
+			'Magento\Framework\App\Action\{}'.format(action_interface),
+			'Magento\Framework\View\Result\PageFactory',
+			'Magento\Framework\Controller\ResultInterface',
 		])
-
 		if ajax:
 			controller.attributes.extend([
-			'protected $jsonHelper;'
-		])
-
-		# generate construct
-		context_class = '\Magento\\' + ('Backend' if adminhtml else 'Framework') +'\App\Action\Context'
-		if ajax:
+				"/**\n\t * @var Json\n\t */\n\tprotected $serializer;",
+				"/**\n\t * @var LoggerInterface\n\t */\n\tprotected $logger;",
+				"/**\n\t * @var Http\n\t */\n\tprotected $http;",
+			])
+			controller.dependencies.extend([
+				'Magento\Framework\Serialize\Serializer\Json',
+				'Psr\Log\LoggerInterface',
+				'Magento\Framework\App\Response\Http',
+				'Magento\Framework\Exception\LocalizedException'
+			])
 			controller.add_method(Phpmethod(
 				'__construct',
 				params=[
-					context_class + ' $context',
-					'\Magento\Framework\View\Result\PageFactory $resultPageFactory',
-					'\Magento\Framework\Json\Helper\Data $jsonHelper',
-					'\Psr\Log\LoggerInterface $logger',
+					'PageFactory $resultPageFactory',
+					'Json $json',
+					'LoggerInterface $logger',
+					'Http $http',
 				],
 				body="""$this->resultPageFactory = $resultPageFactory;
-					$this->jsonHelper = $jsonHelper;
+					$this->serializer = $json;
 					$this->logger = $logger;
-					parent::__construct($context);
+					$this->http = $http;
 				""",
 				docstring=[
 					'Constructor',
 					'',
-					'@param ' + context_class + '  $context',
-					'@param \\Magento\\Framework\\Json\\Helper\\Data $jsonHelper',
-				]
-			))	
-		else: 
-			controller.add_method(Phpmethod(
-				'__construct',
-				params=[
-					context_class + ' $context',
-					'\Magento\Framework\View\Result\PageFactory $resultPageFactory'
-				],
-				body="""$this->resultPageFactory = $resultPageFactory;
-					parent::__construct($context);
-				""",
-				docstring=[
-					'Constructor',
-					'',
-					'@param ' + context_class + '  $context',
-					'@param \\Magento\\Framework\\View\\Result\\PageFactory $resultPageFactory',
+					'@param PageFactory $resultPageFactory',
+					'@param Json $json',
+					'@param LoggerInterface $logger',
+					'@param Http $http',
 				]
 			))
-
-		# generate execute method
-		if ajax:
 			execute_body = """try {
 			    return $this->jsonResponse('your response');
-			} catch (\Magento\Framework\Exception\LocalizedException $e) {
+			} catch (LocalizedException $e) {
 			    return $this->jsonResponse($e->getMessage());
 			} catch (\Exception $e) {
 			    $this->logger->critical($e);
@@ -121,7 +123,20 @@ class ControllerSnippet(Snippet):
 			}
         	"""
 		else:
+			controller.add_method(Phpmethod(
+				'__construct',
+				params=[
+					'PageFactory $resultPageFactory',
+				],
+				body="""$this->resultPageFactory = $resultPageFactory;""",
+				docstring=[
+					'Constructor',
+					'',
+					'@param PageFactory $resultPageFactory',
+				]
+			))
 			execute_body = 'return $this->resultPageFactory->create();'
+
 
 		controller.add_method(Phpmethod(
 			'execute',
@@ -129,7 +144,7 @@ class ControllerSnippet(Snippet):
 			docstring=[
 				'Execute view action',
 				'',
-				'@return \Magento\Framework\Controller\ResultInterface',
+				'@return ResultInterface',
 			]
 		))
 
@@ -139,13 +154,15 @@ class ControllerSnippet(Snippet):
 				'jsonResponse',
 				params=["$response = ''"],
 				body="""
-				return $this->getResponse()->representJson(
-				    $this->jsonHelper->jsonEncode($response)
-				);""",
+	$this->http->getHeaders()->clearHeaders();
+$this->http->setHeader('Content-Type', 'application/json');
+return $this->http->setBody(
+    $this->serializer->serialize($response)
+);""",
 				docstring=[
 					'Create json response',
 					'',
-					'@return \Magento\Framework\Controller\ResultInterface',
+					'@return ResultInterface',
 				]
 				)
 			)
@@ -274,5 +291,11 @@ class ControllerSnippet(Snippet):
 				yes_no=True,
 				default=True,
 				repeat=True
-			)
+			),
+			SnippetParam(
+				name='action_interface',
+				choises=cls.ACTION_INTERFACE,
+				required=True,
+				default='HttpGetActionInterface'
+			),
 		]
