@@ -296,171 +296,93 @@ class CustomerAttributeSnippet(Snippet):
 		]
 
 		if customer_entity =='customer_address' and (checkout_billing or checkout_shipping):
-			self.add_static_file('view/frontend/web/js/action',
-								 StaticFile('create-shipping-address-mixin.js', template_file='attributes/customer/address/create-shipping-address-mixin.tmpl'))
-			self.add_static_file('view/frontend/web/js/action',
-								 StaticFile('set-billing-address-mixin.js',
-											template_file='attributes/customer/address/set-billing-address-mixin.tmpl'))
-			self.add_static_file('view/frontend/web/js/action',
-								 StaticFile('set-shipping-information-mixin.js',
-											template_file='attributes/customer/address/set-shipping-information-mixin.tmpl'))
-			self.add_static_file('view/frontend',
-								 StaticFile('requirejs-config.js',
-											template_file='attributes/customer/address/requirejs-config.tmpl',
-											context_data={'module_name': self.module_name}))
+			self.add_composer_require("experius/module-extracheckoutaddressfields","*")
+			if value_type == 'decimal':
+				size = '\'12,4\''
+			elif value_type == 'varchar' and not extra_params.get('field_size'):
+				size = '255'
+			else:
+				size = 'null'
 
-			layout_processor = Phpclass(
-				'Block\\Checkout\\LayoutProcessor',
-				implements=['\Magento\Checkout\Block\Checkout\LayoutProcessorInterface']
-			)
+			attributes = {
+				'name': "{}".format(attribute_code),
+				'nullable': "true",
+				'xsi:type': value_type,
+				'comment': attribute_label
+			}
+			if size:
+				attributes['length'] = size
+			if value_type == 'integer' or value_type == 'bigint':
+				attributes['xsi:type'] = "int"
+			elif value_type == 'numeric':
+				attributes['xsi:type'] = "real"
 
-			methodBody = "\n"
-			additionalFieldsBody = "\n"
+			if value_type in {'mallint', 'integer', 'bigint'}:
+				attributes['identity'] = 'false'
+				if extra_params.get('identity'):
+					attributes['identity'] = 'true'
+			if extra_params.get('field_size'):
+				attributes['length'] = '{}'.format(extra_params.get('field_size'))
+			elif value_type == 'decimal':
+				attributes['scale'] = '4'
+				attributes['precision'] = '12'
+			elif value_type == 'varchar' and not extra_params.get('field_size'):
+				attributes['length'] = '255'
+
+			# Create db_schema.xml declaration
+			db_nodes = []
+			for sales_entity in {'quote_address', 'order_address'}:
+				db_nodes.append(
+					Xmlnode('table', attributes={
+						'name': "{}".format(sales_entity),
+					}, nodes=[
+						Xmlnode('column', attributes=attributes)
+					])
+				)
+			self.add_xml('etc/db_schema.xml', Xmlnode('schema', attributes={
+				'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd"},
+													  nodes=db_nodes))
+
+			fieldset_file = 'etc/fieldset.xml'
+
+			fieldsets = []
 			if checkout_shipping:
-				self.add_plugin(attribute_code)
-				methodBody += "		$result = $this->getShippingFormFields($result);\n"
-				additionalFieldsBody += "		$shippingAttributes[] = '{}';\n".format(attribute_code)
-				layout_processor.add_method(Phpmethod('getShippingFormFields',
-						  body_return="return $result;",
-						  params=[
-							  '$result'
-						  ],
-						  body=""" if(isset($result['components']['checkout']['children']['steps']['children']
-    ['shipping-step']['children']['shippingAddress']['children']
-    ['shipping-address-fieldset'])
-) {
-	    $customShippingFields = $this->getFields('shippingAddress.custom_attributes','shipping');
-
-	    $shippingFields = $result['components']['checkout']['children']['steps']['children']
-	    ['shipping-step']['children']['shippingAddress']['children']
-	    ['shipping-address-fieldset']['children'];
-
-	    $shippingFields = array_replace_recursive($shippingFields,$customShippingFields);
-
-	    $result['components']['checkout']['children']['steps']['children']
-	    ['shipping-step']['children']['shippingAddress']['children']
-	    ['shipping-address-fieldset']['children'] = $shippingFields;
-}"""
-						  )
-				)
+				fieldsets.append('extra_checkout_shipping_address_fields')
 			if checkout_billing:
-				self.add_plugin(attribute_code, 'billing')
-				methodBody += "		$result = $this->getBillingFormFields($result);\n"
-				additionalFieldsBody += "		$billingAttributes[] = '{}';\n".format(attribute_code)
-				layout_processor.add_method(Phpmethod('getBillingFormFields',
-													  body_return="return $result;",
-													  params=[
-														  '$result'
-													  ],
-													  body=""" if(isset($result['components']['checkout']['children']['steps']['children']
-    ['billing-step']['children']['payment']['children']
-    ['payments-list'])
-) {
-	    $paymentForms = $result['components']['checkout']['children']['steps']['children']
-	    ['billing-step']['children']['payment']['children']
-	    ['payments-list']['children'];
+				fieldsets.append('extra_checkout_billing_address_fields')
 
-	    foreach ($paymentForms as $paymentMethodForm => $paymentMethodValue) {
+			for fieldset in fieldsets:
+				fieldset_xml = Xmlnode('config',
+									   attributes={'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+												   'xsi:noNamespaceSchemaLocation': "urn:magento:framework:DataObject/etc/fieldset.xsd"},
+									   nodes=[
+										   Xmlnode('scope', attributes={'id': 'global'},
+												   match_attributes={'id'}, nodes=[
+												   Xmlnode('fieldset', attributes={
+													   'id': fieldset
+												   }, match_attributes={'id'}, nodes=[
+													   Xmlnode('field', attributes={
+														   'name': attribute_code
+													   }, nodes=[
+														   Xmlnode('aspect', attributes={
+															   'name': 'to_order_address'
+														   }),
+														   Xmlnode('aspect', attributes={
+															   'name': 'to_customer_address'
+														   })
+													   ])
+												   ]),
 
-	        $paymentMethodCode = str_replace('-form', '', $paymentMethodForm);
+											   ])
+									   ])
+				self.add_xml(fieldset_file, fieldset_xml)
 
-	        if (!isset($result['components']['checkout']['children']['steps']['children']['billing-step']['children']['payment']['children']['payments-list']['children'][$paymentMethodCode . '-form'])) {
-	            continue;
-	        }
-
-	        $billingFields = $result['components']['checkout']['children']['steps']['children']
-	        ['billing-step']['children']['payment']['children']
-	        ['payments-list']['children'][$paymentMethodCode . '-form']['children']['form-fields']['children'];
-
-	        $customBillingFields = $this->getFields('billingAddress' . $paymentMethodCode . '.custom_attributes','billing');
-
-	        $billingFields = array_replace_recursive($billingFields, $customBillingFields);
-
-	        $result['components']['checkout']['children']['steps']['children']
-	        ['billing-step']['children']['payment']['children']
-	        ['payments-list']['children'][$paymentMethodCode . '-form']['children']['form-fields']['children'] = $billingFields;
-	}
-}"""
-													  )
-											)
-
-			layout_processor.add_method(Phpmethod('process',
-				  body=methodBody,
-				  body_return="return $result;",
-				  params=[
-					  '$result'
-				  ]
-				)
-			)
-
-			layout_processor.add_method(Phpmethod('getFields',
-					  body="""$fields = [];
-	foreach($this->getAdditionalFields($addressType) as $field){
-	    $fields[$field] = $this->getField($field,$scope);
-	}""",
-					  body_return="return $fields;",
-					  params=[
-						  '$scope',
-						  '$addressType'
-					  ]
-					  )
-			)
-
-			layout_processor.add_method(Phpmethod('getField',
-												  body="""$field = [
-	    'component' => 'Magento_Ui/js/form/element/abstract',
-	    'config' => [
-	        'customScope' => $scope,
-	        'template' => 'ui/form/field',
-	        'elementTmpl' => 'ui/form/element/input'
-	    ],
-	    'dataScope' => $scope . '.' . $attributeCode,
-	    'sortOrder' => '{sort_order}',
-	    'visible' => true,
-	    'provider' => 'checkoutProvider',
-	    'validation' => [],
-	    'options' => [],
-	    'label' => __('{attribute_label}')
-];""".format(sort_order=extra_params.get('sort_order','333') if extra_params.get('sort_order','333') else '333',attribute_label=attribute_label),
-					  body_return="return $field;",
-					  params=[
-						  '$attributeCode',
-						  '$scope'
-					  ]
-					  )
-			)
-
-			layout_processor.add_method(Phpmethod('getAdditionalFields',
-					  body_return="return $addressType == 'shipping' ? $shippingAttributes : $billingAttributes; ",
-					  body_start="""$shippingAttributes = [];
-        $billingAttributes = [];""",
-					  body=additionalFieldsBody,
-					  params=[
-						  "$addressType='shipping'"
-					  ]
-					  )
-			)
-
-
-			# add checkout filed
-			frontend_di_xml = Xmlnode('config',
-				attributes={'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance', 'xsi:noNamespaceSchemaLocation': "urn:magento:framework:ObjectManager/etc/config.xsd"},
-				nodes=[
-				   Xmlnode('type', attributes={'name': 'Magento\Checkout\Block\Onepage'},nodes=[
-						   Xmlnode('arguments', attributes={}, nodes=[
-							   Xmlnode('argument', attributes={'name': 'layoutProcessors', 'xsi:type':'array'}, nodes=[
-								   Xmlnode('item', attributes={'name': '{}_extra_checkout_address_fields_layoutprocessor'.format(self._module.package.lower()), 'xsi:type': 'object'},
-										   node_text='{}\\{}\\{}'.format(self._module.package,self._module.name, layout_processor.class_namespace)
-								   )
-							   ])
-						   ])
-					   ])
-				])
 			etc_module_sequence.append(
 				Xmlnode('module', attributes={'name': 'Magento_Checkout'})
 			)
-			self.add_xml('etc/frontend/di.xml', frontend_di_xml)
-			self.add_class(layout_processor)
+			etc_module_sequence.append(
+				Xmlnode('module', attributes={'name': 'Magento_Sales'})
+			)
 
 		etc_module = Xmlnode('config', attributes={
 			'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Module/etc/module.xsd"}, nodes=[
@@ -589,13 +511,15 @@ class CustomerAttributeSnippet(Snippet):
 				name='checkout_billing',
 				default=False,
 				depend={'customer_entity': r'^customer_address'},
-				yes_no=True
+				yes_no=True,
+				description="requires experius/module-extracheckoutaddressfields"
 			),
 			SnippetParam(
 				name='checkout_shipping',
 				default=False,
 				depend={'customer_entity': r'^customer_address'},
-				yes_no=True
+				yes_no=True,
+				description="requires experius/module-extracheckoutaddressfields"
 			)
          ]
 
@@ -616,4 +540,13 @@ class CustomerAttributeSnippet(Snippet):
 				name='visible',
 				default=True,
 				yes_no=True),
+			SnippetParam(
+				name='field_size',
+				description='Size of field, Example: 512 for max chars',
+				required=False,
+				regex_validator=r'^\d+$',
+				error_message='Only numeric value allowed.',
+				depend={'frontend_input': r'text|blob|decimal|numeric', },
+				repeat=True
+			),
 		]

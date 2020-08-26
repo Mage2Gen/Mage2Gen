@@ -72,11 +72,6 @@ class SalesAttributeSnippet(Snippet):
         else:
             size = 'null'
 
-        templatePath = os.path.join(os.path.dirname(__file__), '../templates/attributes/sales/attribute.tmpl')
-
-        with open(templatePath, 'rb') as tmpl:
-            template = tmpl.read().decode('utf-8')
-
         attributes = {
             'name': "{}".format(attribute_code),
             'nullable': "true",
@@ -89,21 +84,10 @@ class SalesAttributeSnippet(Snippet):
             attributes['xsi:type'] = "int"
         elif value_type == 'numeric':
             attributes['xsi:type'] = "real"
-
-        if extra_params.get('default'):
-            attributes['default'] = "{}".format(extra_params.get('default'))
-        if not extra_params.get('nullable') and extra_params.get('default'):
-            attributes['nullable'] = 'false'
         if value_type in {'mallint', 'integer', 'bigint'}:
             attributes['identity'] = 'false'
             if extra_params.get('identity'):
                 attributes['identity'] = 'true'
-        if extra_params.get('unsigned'):
-            attributes['unsigned'] = 'true'
-        if extra_params.get('precision'):
-            attributes['precision'] = extra_params.get('precision')
-        if extra_params.get('scale'):
-            attributes['scale'] = extra_params.get('scale')
         if extra_params.get('field_size'):
             attributes['length'] = '{}'.format(extra_params.get('field_size'))
         elif value_type == 'decimal':
