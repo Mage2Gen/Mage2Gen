@@ -559,7 +559,7 @@ class Module:
 
 		# minimum requirements for Magento2 module
 		etc_module = Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation':"urn:magento:framework:Module/etc/module.xsd"}, nodes=[
-			Xmlnode('module', attributes={'name': self.module_name, 'setup_version': '1.0.0'})
+			Xmlnode('module', attributes={'name': self.module_name})
 		])
 		self.add_xml('etc/module.xml', etc_module)
 
