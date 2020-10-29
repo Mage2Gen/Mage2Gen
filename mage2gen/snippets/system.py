@@ -389,8 +389,8 @@ class SystemSnippet(Snippet):
 			graphql_di = Xmlnode('config', attributes={
 				'xsi:noNamespaceSchemaLocation': "urn:magento:framework:ObjectManager/etc/config.xsd"}, nodes=[
 				Xmlnode('type', attributes={'name':'Magento\StoreGraphQl\Model\Resolver\Store\StoreConfigDataProvider'}, nodes=[
-					Xmlnode('arguments', attributes={'xsi:type': 'array'},nodes=[
-						Xmlnode('argument', attributes={'name':'extendedConfigData'}, nodes=[
+					Xmlnode('arguments' ,nodes=[
+						Xmlnode('argument', attributes={'name':'extendedConfigData', 'xsi:type': 'array'}, nodes=[
 							Xmlnode('item', attributes={'name':object_field, 'xsi:type':'string'}, node_text='{}/{}/{}'.format(section, group, field))
 						])
 					])
