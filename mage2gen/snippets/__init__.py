@@ -33,3 +33,5 @@ from .saleattribute import SalesAttributeSnippet
 from .eaventity import EavEntitySnippet
 from .eaventityattribute import EavEntityAttributeSnippet
 from .customerdata import CustomerSectionDataSnippet
+from .router import RouterSnippet
+from .pagebuildercontenttype import PageBuilderContentTypeSnippet
