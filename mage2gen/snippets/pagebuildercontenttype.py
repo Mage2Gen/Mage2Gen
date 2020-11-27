@@ -254,6 +254,26 @@ class PageBuilderContentTypeSnippet(Snippet):
 		])
 		self.add_xml('etc/module.xml', etc_module)
 
+		# Create di.xml
+		self.add_xml('etc/adminhtml/di.xml', Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:framework:ObjectManager/etc/config.xsd"}, nodes=[
+		    Xmlnode('virtualType', attributes={
+		        'name': "AppearanceSource{}".format(content_type_name),
+		        'type': "Magento\\PageBuilder\\Model\\Source\\VisualSelect"
+		    }),
+		    Xmlnode('arguments', nodes=[
+				Xmlnode('argument', attributes={'name': 'optionsSize', 'xsi:type': 'string'}, node_text='large'),
+				Xmlnode('argument', attributes={'name': 'optionsData', 'xsi:type': 'array'},
+						nodes=[
+							Xmlnode('item', attributes={'name': '0', 'xsi:type': 'array'},
+								nodes=[
+									Xmlnode('item', attributes={'name': 'value', 'xsi:type': 'string'}, node_text='default'),
+									Xmlnode('item', attributes={'name': 'title', 'xsi:type': 'string', 'translate': 'true'}, node_text='Default'),
+							])
+						]
+				),
+			]),
+		]))
+
 	@classmethod
 	def params(cls):
 		return [
