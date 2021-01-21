@@ -95,6 +95,8 @@ class ProductAttributeSnippet(Snippet):
 			options_php_array = '[\n' + ',\n'.join(x.strip() for x in options_array) + '\n]'
 			self.add_source_model(attribute_code_capitalized, options_php_array, extra_params.get('used_in_product_listing', False))
 			options_php_array_string = "''"
+		elif frontend_input == 'boolean' :
+			source_model = "\{}\{}\Magento\Eav\Model\Entity\Attribute\Source\Boolean\{}::class".format(self._module.package, self._module.name, attribute_code_capitalized)
 		else:
 			source_model = "''"
 
