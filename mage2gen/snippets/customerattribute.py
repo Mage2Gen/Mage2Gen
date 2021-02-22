@@ -42,7 +42,7 @@ class CustomerAttributeSnippet(Snippet):
 	]
 	
 	FRONTEND_INPUT_VALUE_TYPE = {
-        "text":"varchar",
+        "text":"text",
         "textarea":"text",
         "date":"date",
         "boolean":"int",
