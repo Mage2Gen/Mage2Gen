@@ -167,7 +167,7 @@ class ModelSnippet(Snippet):
 			index_xml_node = Xmlnode(
 				'index',
 				attributes={
-					'refenceId': "{}_{}".format(model_name_capitalized.replace('_', '\\'), field_name.upper()).upper(),
+					'referenceId': "{}_{}".format(model_table.upper(), field_name.upper()).upper(),
 					'indexType': 'btree'
 				},
 				nodes=[
