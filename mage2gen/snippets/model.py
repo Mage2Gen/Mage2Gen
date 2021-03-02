@@ -679,7 +679,7 @@ class ModelSnippet(Snippet):
 		data_source_xml = Xmlnode('dataSource', attributes={'name': data_source_id, 'component': 'Magento_Ui/js/grid/provider'}, nodes=[
 			Xmlnode('settings', nodes=[
 				Xmlnode('storageConfig', nodes=[
-					Xmlnode('param', attributes={'name': 'indexField', 'xsi:type': 'string'} node_text=model_id)
+					Xmlnode('param', attributes={'name': 'indexField', 'xsi:type': 'string'}, node_text=model_id)
 				]),
 				Xmlnode('updateUrl', attributes={'path': 'mui/index/render'})
 			]),
