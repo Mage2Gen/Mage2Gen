@@ -124,6 +124,10 @@ class ModelSnippet(Snippet):
 			'nullable': "true",
 			'xsi:type': field_type
 		}
+
+		if extra_params.get('comment'):
+			attributes['comment'] = extra_params.get('comment')
+
 		if field_type == 'integer' or field_type == 'bigint':
 			attributes['xsi:type'] = "int"
 		elif field_type == 'numeric':
@@ -151,6 +155,30 @@ class ModelSnippet(Snippet):
 			attributes['precision'] = '12'
 		elif field_type == 'varchar' and not extra_params.get('field_size'):
 			attributes['length'] = '255'
+		elif field_type == 'datetime' or field_type == 'timestamp':
+			if extra_params.get('on_update'):
+				attributes['default'] = 'CURRENT_TIMESTAMP'
+				attributes['on_update'] = 'true'
+			if extra_params.get('current_timestamp'):
+				attributes['default'] = 'CURRENT_TIMESTAMP'
+
+		index_xml_node = False
+		if field_type is not 'text' and field_type is not 'blob' and extra_params.get('add_index'):
+			index_xml_node = Xmlnode(
+				'index',
+				attributes={
+					'referenceId': "{}_{}".format(model_table.upper(), field_name.upper()).upper(),
+					'indexType': 'btree'
+				},
+				nodes=[
+					Xmlnode(
+						'column',
+						attributes={
+							'name': "{}".format(field_name)
+						}
+					)
+				]
+			)
 
 
 		# Create db_schema.xml declaration
@@ -179,7 +207,8 @@ class ModelSnippet(Snippet):
 						'name': "{}".format(model_id)
 					})
 				]),
-				Xmlnode('column', attributes=attributes)
+				Xmlnode('column', attributes=attributes),
+				index_xml_node
 			])
 		]))
 
@@ -1514,6 +1543,27 @@ class ModelSnippet(Snippet):
 			SnippetParam('comment', required=False, description='Description of database field'),
 			SnippetParam('default', required=False, description='Default value of field'),
 			SnippetParam('nullable', yes_no=True, default=True),
+			SnippetParam(
+				name='current_timestamp',
+				yes_no=True,
+				default=False,
+				description='Fill date time field with current date when record is created (typical create_at behaviour)',
+				depend={'field_type': r'datetime|timestamp'}
+			),
+			SnippetParam(
+				'on_update',
+				yes_no=True,
+				default=False,
+				description='Update date time field when records is updated_at (typical updated_at behaviour)',
+				depend={'field_type': r'datetime|timestamp'}
+			),
+			SnippetParam(
+				'add_index',
+				yes_no=True,
+				default=False,
+				description='Add a index to the table for this field',
+				depend={'field_type': r'smallint|integer|bigint|float|decimal|numeric|varchar|datetime|timestamp'}
+			),
 			SnippetParam('identity', yes_no=True, depend={'field_type': r'smallint|integer|bigint'}),
 			'Extra',
 			SnippetParam(
