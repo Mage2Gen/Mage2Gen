@@ -31,20 +31,12 @@ class CustomerAttributeSnippet(Snippet):
         ("boolean","Yes/No"),
         ("multiselect","Multiple Select"),
         ("select","Dropdown"),
-        ("static","Static")
     ]
-
-	STATIC_FIELD_TYPES = [
-		("varchar","Varchar"),
-		("text","Text"),
-		("int","Int"),
-		("decimal","Decimal")
-	]
 	
 	FRONTEND_INPUT_VALUE_TYPE = {
         "text":"varchar",
         "textarea":"text",
-        "date":"date",
+        "date":"datetime",
         "boolean":"int",
         "multiselect":"varchar",
         "select":"int",
@@ -85,7 +77,7 @@ class CustomerAttributeSnippet(Snippet):
 	"""
 
 	def add(self,attribute_label, customer_forms=False, customer_address_forms=False, customer_entity='customer', frontend_input='text', checkout_billing=False, checkout_shipping=False, upgrade_data=False,
-		from_version='1.0.1', static_field_type='varchar', required=False, source_model=False, source_model_options=False, extra_params=None):
+		from_version='1.0.1', static_field=False, required=False, source_model=False, source_model_options=False, extra_params=None):
 
 		extra_params = extra_params if extra_params else {}
 		attribute_code = extra_params.get('attribute_code', None)
@@ -139,8 +131,7 @@ class CustomerAttributeSnippet(Snippet):
 
 			source_model = source_model_class.class_namespace
 
-		value_type = 'static' if frontend_input=='static' else self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int')
-		frontend_input = static_field_type if frontend_input=='static' else self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int')
+		value_type = 'static' if static_field else self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int')
 		value_type = value_type if value_type != 'date' else 'datetime'
 
 		forms_array = customer_forms if customer_entity == 'customer' else customer_address_forms
@@ -295,40 +286,55 @@ class CustomerAttributeSnippet(Snippet):
 		etc_module_sequence = [
 			Xmlnode('module', attributes={'name': 'Magento_Customer'})
 		]
+		if value_type == 'decimal':
+			size = '\'12,4\''
+		elif value_type == 'varchar' and not extra_params.get('field_size'):
+			size = '255'
+		else:
+			size = 'null'
+
+		attributes = {
+			'name': "{}".format(attribute_code),
+			'nullable': "true",
+			'xsi:type': self.FRONTEND_INPUT_VALUE_TYPE.get(frontend_input,'int'),
+			'comment': attribute_label
+		}
+		if size:
+			attributes['length'] = size
+		if value_type == 'integer' or value_type == 'bigint':
+			attributes['xsi:type'] = "int"
+		elif value_type == 'numeric':
+			attributes['xsi:type'] = "real"
+
+		if value_type in {'mallint', 'integer', 'bigint'}:
+			attributes['identity'] = 'false'
+			if extra_params.get('identity'):
+				attributes['identity'] = 'true'
+		if extra_params.get('field_size'):
+			attributes['length'] = '{}'.format(extra_params.get('field_size'))
+		elif value_type == 'decimal':
+			attributes['scale'] = '4'
+			attributes['precision'] = '12'
+		elif value_type == 'varchar' and not extra_params.get('field_size'):
+			attributes['length'] = '255'
+
+
+
+		if static_field:
+			# Create db_schema.xml declaration
+			db_nodes = [
+				Xmlnode('table', attributes={
+					'name': "{}".format("customer_entity" if customer_entity == 'customer' else "customer_address_entity"),
+				}, nodes=[
+					Xmlnode('column', attributes=attributes)
+				])
+			]
+			self.add_xml('etc/db_schema.xml', Xmlnode('schema', attributes={
+				'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd"},
+													  nodes=db_nodes))
 
 		if customer_entity =='customer_address' and (checkout_billing or checkout_shipping):
 			self.add_composer_require("experius/module-extracheckoutaddressfields","*")
-			if value_type == 'decimal':
-				size = '\'12,4\''
-			elif value_type == 'varchar' and not extra_params.get('field_size'):
-				size = '255'
-			else:
-				size = 'null'
-
-			attributes = {
-				'name': "{}".format(attribute_code),
-				'nullable': "true",
-				'xsi:type': value_type,
-				'comment': attribute_label
-			}
-			if size:
-				attributes['length'] = size
-			if value_type == 'integer' or value_type == 'bigint':
-				attributes['xsi:type'] = "int"
-			elif value_type == 'numeric':
-				attributes['xsi:type'] = "real"
-
-			if value_type in {'mallint', 'integer', 'bigint'}:
-				attributes['identity'] = 'false'
-				if extra_params.get('identity'):
-					attributes['identity'] = 'true'
-			if extra_params.get('field_size'):
-				attributes['length'] = '{}'.format(extra_params.get('field_size'))
-			elif value_type == 'decimal':
-				attributes['scale'] = '4'
-				attributes['precision'] = '12'
-			elif value_type == 'varchar' and not extra_params.get('field_size'):
-				attributes['length'] = '255'
 
 			# Create db_schema.xml declaration
 			db_nodes = []
@@ -495,13 +501,10 @@ class CustomerAttributeSnippet(Snippet):
                 depend= {'source_model': r'custom'},
                 description='Dropdown or Multiselect options comma seperated',
                 error_message='Only alphanumeric'),
-             SnippetParam(
-                name='static_field_type',
-                choises=cls.STATIC_FIELD_TYPES,
-                default='varchar',
-                depend= {'frontend_input': r'static'}, 
-                required=True,
-                ),
+			SnippetParam(
+				name='static_field',
+				default=False,
+				yes_no=True),
 			# TODO: add Upgrade Attribute Support
 			# SnippetParam(
 			#  name='upgrade_data',
