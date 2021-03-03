@@ -483,7 +483,7 @@ class CustomerAttributeSnippet(Snippet):
                 ),
              SnippetParam(
                  name='required', 
-                 default=True,
+                 default=False,
                  yes_no=True),
              SnippetParam(
                  name='frontend_input', 

@@ -337,7 +337,7 @@ $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
 			 SnippetParam(
 				 name='required',
 				 required=True,
-				 default=True,
+				 default=False,
 				 yes_no=True),
 			 # TODO: add Upgrade Attribute Support
 			 # SnippetParam(

@@ -258,7 +258,7 @@ class CompanyAttributeSnippet(Snippet):
                 error_message='Only alphanumeric'),
              SnippetParam(
                  name='required', 
-                 default=True,
+                 default=False,
                  yes_no=True),
              SnippetParam(
                  name='frontend_input', 
