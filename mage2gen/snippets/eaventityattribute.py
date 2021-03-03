@@ -284,7 +284,7 @@ $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
 			 SnippetParam(
 				 name='required',
 				 required=True,
-				 default=True,
+				 default=False,
 				 yes_no=True),
 			 SnippetParam(name='extend_adminhtml_form', yes_no=True, description='Extend the admin ui based on the Entity Model Class'),
 
