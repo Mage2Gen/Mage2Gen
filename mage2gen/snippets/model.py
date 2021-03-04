@@ -122,7 +122,8 @@ class ModelSnippet(Snippet):
 		attributes = {
 			'name': "{}".format(field_name),
 			'nullable': "true",
-			'xsi:type': field_type
+			'xsi:type': field_type,
+			'comment': "{}".format(field_name),
 		}
 
 		if extra_params.get('comment'):
