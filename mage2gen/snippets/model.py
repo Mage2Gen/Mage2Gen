@@ -164,7 +164,7 @@ class ModelSnippet(Snippet):
 				attributes['default'] = 'CURRENT_TIMESTAMP'
 
 		index_xml_node = False
-		if field_type is not 'text' and field_type is not 'blob' and extra_params.get('add_index'):
+		if field_type != 'text' and field_type != 'blob' and extra_params.get('add_index'):
 			index_xml_node = Xmlnode(
 				'index',
 				attributes={
@@ -566,7 +566,7 @@ class ModelSnippet(Snippet):
 			self.add_adminhtml_grid(model_name, field_name, model_table, model_id, collection_model_class, field_element_type, top_level_menu, adminhtml_form)
 
 		if adminhtml_form:
-			self.add_adminhtml_form(model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type)
+			self.add_adminhtml_form(model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type, extra_params)
 			self.add_acl(model_name)
 
 
@@ -786,7 +786,7 @@ class ModelSnippet(Snippet):
 				columns_xml
 			]))
 
-	def add_adminhtml_form(self, model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type):
+	def add_adminhtml_form(self, model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type, extra_params):
 		frontname = self.module_name.lower()
 		# Add block buttons
 		# Back button
@@ -1353,7 +1353,11 @@ class ModelSnippet(Snippet):
 				Xmlnode('settings', nodes=[
 					Xmlnode('label', node_text='General'),
 				]),
-				Xmlnode('field', attributes={'name': field_name, 'formElement': field_element_type, 'sortOrder': str(10 * self.count)}, nodes=[
+				Xmlnode('field', attributes={
+					'name': field_name,
+					'formElement': field_element_type,
+					'sortOrder': extra_params.get('sort_order') if extra_params.get('sort_order') else str(10 * self.count)
+				}, nodes=[
 					Xmlnode('argument', attributes={'name': 'data', 'xsi:type': 'array'}, nodes=[
 						Xmlnode('item', attributes={'name': 'config', 'xsi:type': 'array'}, nodes=[
 							Xmlnode('item', attributes={'name': 'source', 'xsi:type': 'string'}, node_text=model_name),
@@ -1603,5 +1607,11 @@ class ModelSnippet(Snippet):
 				default=True,
 				repeat=True
 			),
+			SnippetParam(
+				name='sort_order',
+				description='10',
+				regex_validator=r'^\d+$',
+				error_message='Only numeric value'
+			)
 		]
 
