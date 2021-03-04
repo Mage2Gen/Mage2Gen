@@ -77,6 +77,16 @@ class WidgetSnippet(Snippet):
 			)
 		)
 
+		etc_module = Xmlnode('config', attributes={
+			'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Module/etc/module.xsd"}, nodes=[
+			Xmlnode('module', attributes={'name': self.module_name}, nodes=[
+				Xmlnode('sequence', attributes={}, nodes=[
+					Xmlnode('module', attributes={'name': 'Magento_Widget'})
+				])
+			])
+		])
+		self.add_xml('etc/module.xml', etc_module)
+
 	@classmethod
 	def params(cls):
 		return [
