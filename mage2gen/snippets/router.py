@@ -26,27 +26,10 @@ class RouterSnippet(Snippet):
 			'Magento\\Framework\\App\\ActionFactory',
 			'Magento\\Framework\\App\\RequestInterface',
 			'Magento\\Framework\\App\\RouterInterface',
+		], attributes=[
+			'protected $transportBuilder;',
+			'protected $actionFactory;'
 		])
-
-		# Create config router
-		module = Xmlnode('module', attributes={'name': self.module_name})
-		if adminhtml:
-			module.attributes['before'] = 'Magento_Backend'
-
-		router_list_config = Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation':"urn:magento:framework:ObjectManager/etc/config.xsd"}, nodes=[
-			Xmlnode('type', attributes={'name': 'Magento\Framework\App\RouterList'}, nodes=[
-				Xmlnode('arguments', nodes=[
-					Xmlnode('argument', attributes={'name': 'routerList', 'xsi:type': 'array'}, nodes=[
-						Xmlnode('item', attributes={'name': '{}'.format(routername), 'xsi:type': 'array'}, nodes=[
-							Xmlnode('item', attributes={'name': 'class', 'xsi:type': 'string'}, node_text=router.class_namespace),
-							Xmlnode('item', attributes={'name': 'disable', 'xsi:type': 'boolean'}, node_text="false"),
-							Xmlnode('item', attributes={'name': 'sortOrder', 'xsi:type': 'string'}, node_text="999"),
-						])
-					])
-				])
-			])
-		])
-		self.add_xml(file, router_list_config)
 
 		router.add_method(Phpmethod(
 			'__construct',
@@ -95,6 +78,28 @@ class RouterSnippet(Snippet):
 			]
 		))
 		self.add_class(router)
+
+
+
+		# Create config router
+		module = Xmlnode('module', attributes={'name': self.module_name})
+		if adminhtml:
+			module.attributes['before'] = 'Magento_Backend'
+
+		router_list_config = Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation':"urn:magento:framework:ObjectManager/etc/config.xsd"}, nodes=[
+			Xmlnode('type', attributes={'name': 'Magento\Framework\App\RouterList'}, nodes=[
+				Xmlnode('arguments', nodes=[
+					Xmlnode('argument', attributes={'name': 'routerList', 'xsi:type': 'array'}, nodes=[
+						Xmlnode('item', attributes={'name': '{}'.format(routername), 'xsi:type': 'array'}, nodes=[
+							Xmlnode('item', attributes={'name': 'class', 'xsi:type': 'string'}, node_text=router.class_namespace),
+							Xmlnode('item', attributes={'name': 'disable', 'xsi:type': 'boolean'}, node_text="false"),
+							Xmlnode('item', attributes={'name': 'sortOrder', 'xsi:type': 'string'}, node_text="999"),
+						])
+					])
+				])
+			])
+		])
+		self.add_xml(file, router_list_config)
 
 	@classmethod
 	def params(cls):
