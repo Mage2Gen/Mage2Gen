@@ -63,7 +63,7 @@ class ProductTypeSnippet(Snippet):
     }
 
 
-    def add(self, product_type_code, product_type_label, extend_product_type='default', use_composable_types=False, use_price_model=False, upgrade_data=False, from_version='1.0.1', extra_params=None):
+    def add(self, product_type_code, product_type_label, extend_product_type='default', use_qty=True, use_composable_types=False, use_price_model=False, upgrade_data=False, from_version='1.0.1', extra_params=None):
 
         extend_product_type_class = self.STATIC_PRODUCT_TYPES_SOURCE_MODELS.get(extend_product_type, '\\Magento\\Catalog\\Model\\Product\\Type\\AbstractType')
 
@@ -117,7 +117,8 @@ class ProductTypeSnippet(Snippet):
                         attributes={
                             'name': product_type_code.lower(),
                             'label': format(upperfirst(product_type_label)),
-                            'modelInstance': product_type_class_name
+                            'modelInstance': product_type_class_name,
+                            'isQty': "true" if use_qty else "false"
                         },
                         nodes=[
                             price_model_xml
@@ -209,6 +210,11 @@ class ProductTypeSnippet(Snippet):
                 choises=cls.STATIC_PRODUCT_TYPES,
                 required=True,
                 default='default'
+            ),
+            SnippetParam(
+                name='use_qty',
+                default=True,
+                yes_no=True
             ),
             SnippetParam(
                 name='use_composable_types',
