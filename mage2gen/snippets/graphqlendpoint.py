@@ -91,6 +91,13 @@ class GraphQlEndpointSnippet(Snippet):
         if base_type == 'Query':
             item_type = item_identifier
 
+        if base_type == 'Mutation':
+            item_identifier = '{}Input'.format(item_identifier)
+            item_type = item_identifier
+            if not object_arguments:
+                object_arguments = 'id'
+            object_fields = object_arguments
+
         schema = GraphQlSchema()
 
         if base_type != 'Custom':
@@ -105,7 +112,9 @@ class GraphQlEndpointSnippet(Snippet):
                     item_type=item_type,
                     item_resolver=resolver_graphqlformat,
                     item_cache_identity=cache_identity_graphqlformat,
-                    description=description
+                    description=description,
+                    item_input= item_type if base_type == 'Mutation' else False,
+                    base_type=base_type
                 )
             )
 
@@ -121,11 +130,12 @@ class GraphQlEndpointSnippet(Snippet):
             item_definition.add_objectitem(
                 GraphQlObjectItem(
                     object_field,
-                    description=object_field
+                    description=object_field,
+                    base_type=base_type
                 )
             )
 
-        if base_type != 'Mutation':
+        if object_arguments:
             schema.add_objecttype(
                 item_definition
             )
