@@ -58,6 +58,8 @@ class BlockSnippet(Snippet):
 	]
 
 	def add(self, classname, methodname, scope=SCOPE_FRONTEND, layout_handle=None, reference_type=REFERENCE_CONTAINER, reference_name='content', extra_params=None):
+		# strip the classname of the module when filled in
+		classname = classname.replace('{}\\Block\\'.format(self.module_name.replace('_', '\\')), '')
 		# Add class
 		block = Phpclass('Block\\{}'.format(classname),'\Magento\Framework\View\Element\Template')
 		scope_name = 'frontend'

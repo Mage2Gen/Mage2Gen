@@ -63,7 +63,7 @@ class {class_name} extends \Magento\Shipping\Model\Carrier\AbstractCarrier imple
             $method->setMethod($this->_code);
             $method->setMethodTitle($this->getConfigData('name'));
 
-            if ($request->getFreeShipping() === true || $request->getPackageQty() == $this->getFreeBoxes()) {{
+            if ($request->getFreeShipping() === true) {{
                 $shippingPrice = '0.00';
             }}
 
