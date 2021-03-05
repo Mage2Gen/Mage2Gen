@@ -495,8 +495,13 @@ class GraphQlObjectItem:
 		self.item_arguments = kwargs.get('item_arguments', '')
 		self.item_resolver = kwargs.get('item_resolver', '')
 		self.item_description = kwargs.get('description', '')
+		self.item_input = kwargs.get('item_input', '')
+		self.base_type = kwargs.get('base_type', '')
 		if self.item_description:
-			self.item_description = '@doc(description: "Query by {}.")'.format(self.item_description)
+			if self.base_type == 'Mutation':
+				self.item_description = '@doc(description: "Input {}.")'.format(self.item_description)
+			else:
+				self.item_description = '@doc(description: "Query by {}.")'.format(self.item_description)
 		self.item_cache_identity = kwargs.get('item_cache_identity', '')
 		self.body = [kwargs.get('body', '')]
 		self.end_body = [kwargs.get('end_body', '')]
@@ -508,8 +513,13 @@ class GraphQlObjectItem:
 		if self.item_arguments:
 			arguments = []
 			for argument in self.item_arguments.split(','):
-				arguments.append('\t\t\t{argument}: String @doc(description: "Query by {argument}.")'.format(argument=argument))
+				if self.base_type == 'Mutation':
+					arguments.append('\t\t\t{argument}: String @doc(description: "Input {argument}.")'.format(argument=argument))
+				else:
+					arguments.append('\t\t\t{argument}: String @doc(description: "Query by {argument}.")'.format(argument=argument))
 			self.item_arguments = '(\n' + ",\n".join(arguments) + '\n\t)'
+		if self.item_input:
+			self.item_arguments = '(input: {item_input})'.format(item_input=self.item_input)
 
 	def __eq__(self, other):
 		return self.item_identifier == other.item_identifier
