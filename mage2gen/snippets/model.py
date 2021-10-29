@@ -139,7 +139,7 @@ class ModelSnippet(Snippet):
 		if not extra_params.get('nullable'):
 			attributes['nullable'] = 'false'
 			required = not attributes['nullable']
-		if field_type in {'mallint','integer','bigint'}:
+		if field_type in {'smallint','integer','bigint'}:
 			attributes['identity'] = 'false'
 			if extra_params.get('identity'):
 				attributes['identity'] = 'true'
@@ -149,7 +149,7 @@ class ModelSnippet(Snippet):
 			attributes['precision'] = extra_params.get('precision')
 		if extra_params.get('scale'):
 			attributes['scale'] = extra_params.get('scale')
-		if extra_params.get('field_size'):
+		if extra_params.get('field_size') and not field_type == 'text':
 			attributes['length'] = '{}'.format(extra_params.get('field_size'))
 		elif field_type == 'decimal':
 			attributes['scale'] = '4'
