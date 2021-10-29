@@ -2,12 +2,14 @@
 <div attr="data.main.attributes"
      ko-style="data.main.style"
      css="data.main.css"
+     class="pagebuilder-content-type"
      event="{{ mouseover: onMouseOver, mouseout: onMouseOut }}, mouseoverBubble: false"
 >
     <render args="getOptions().template" />
     <div class="{content_type_code}-content">
-        <div attr="data.{field_name}.attributes"
+        <h3 attr="data.{field_name}.attributes"
              data-bind="liveEdit: {{ field: '{field_name}', placeholder: $t('{field_name}') }}">
-        </div>
+        </h3>
     </div>
 </div>
+
