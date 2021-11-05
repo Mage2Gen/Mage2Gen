@@ -214,15 +214,15 @@ class ModelSnippet(Snippet):
 		]))
 
 		# Create resource class
-		resource_model_class = Phpclass('Model\\ResourceModel\\' + model_name_capitalized.replace('_', '\\'), extends='\\Magento\\Framework\\Model\\ResourceModel\\Db\\AbstractDb')
+		resource_model_class = Phpclass(
+			'Model\\ResourceModel\\' + model_name_capitalized.replace('_', '\\'),
+			dependencies=['Magento\\Framework\\Model\\ResourceModel\\Db\\AbstractDb'],
+			extends='AbstractDb'
+		)
 		resource_model_class.add_method(Phpmethod('_construct',
 			access=Phpmethod.PROTECTED,
 			body="$this->_init('{}', '{}');".format(model_table, model_id),
-			docstring=[
-				'Define resource model',
-				'',
-				'@return void',
-				]))
+			docstring=['@inheritDoc']))
 		self.add_class(resource_model_class)
 
 		# Create api data interface class
@@ -260,8 +260,9 @@ class ModelSnippet(Snippet):
 		model_class = Phpclass('Model\\' + model_name_capitalized.replace('_', '\\'),
 			dependencies=[
 				api_data_class.class_namespace,
+				'Magento\\Framework\\Model\\AbstractModel'
 			],
-			extends='\\Magento\\Framework\\Model\\AbstractModel',
+			extends='AbstractModel',
 			implements=[
 				api_data_class.class_name
 			])
@@ -272,27 +273,27 @@ class ModelSnippet(Snippet):
 		))
 
 		model_class.add_method(Phpmethod('get' + model_id_capitalized,
-			docstring=['Get {}'.format(model_id),'@return {}'.format('string|null')],
+			docstring=['@inheritDoc'],
 			body="""return $this->_get({});
 			""".format('self::'+model_id.upper()),
 		))
 
 		model_class.add_method(Phpmethod('set' + model_id_capitalized,
 			params=['${}'.format(model_id_capitalized_after)],
-			docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id_capitalized_after),'@return \{}'.format(api_data_class.class_namespace)],
+			docstring=['@inheritDoc'],
 			body="""return $this->setData({}, ${});
 			""".format('self::' + model_id.upper(), model_id_capitalized_after)
 		))
 
 		model_class.add_method(Phpmethod('get' + field_name_capitalized,
-			docstring=['Get {}'.format(field_name),'@return {}'.format('string|null')],
+			docstring=['@inheritDoc'],
 			body="""return $this->_get({});
 			""".format('self::' + field_name.upper()),
 		))
 
 		model_class.add_method(Phpmethod('set' + field_name_capitalized,
 			params=['${}'.format(lowerfirst(field_name_capitalized))],
-			docstring=['Set {}'.format(field_name),'@param string ${}'.format(lowerfirst(field_name_capitalized)),'@return \{}'.format(api_data_class.class_namespace)],
+			docstring=['@inheritDoc'],
 			body="""return $this->setData({}, ${});
 			""".format('self::' + field_name.upper(), lowerfirst(field_name_capitalized))
 		))
@@ -300,20 +301,23 @@ class ModelSnippet(Snippet):
 		self.add_class(model_class)
 
 		# Create collection
-		collection_model_class = Phpclass('Model\\ResourceModel\\' + model_name_capitalized.replace('_', '\\') + '\\Collection',
-				extends='\\Magento\\Framework\\Model\\ResourceModel\\Db\\Collection\\AbstractCollection',
-				attributes=[
-					"/**\n\t * @var string\n\t */\n\tprotected $_idFieldName = '{}';".format(model_id),
-				])
-		collection_model_class.add_method(Phpmethod('_construct',
+		collection_model_class = Phpclass(
+			'Model\\ResourceModel\\' + model_name_capitalized.replace('_', '\\') + '\\Collection',
+			dependencies=['Magento\\Framework\\Model\\ResourceModel\\Db\\Collection\\AbstractCollection'],
+			extends='AbstractCollection',
+			attributes=[
+				"/**\n\t * @inheritDoc\n\t */\n\tprotected $_idFieldName = '{}';".format(model_id),
+			]
+		)
+		collection_model_class.add_method(Phpmethod(
+			'_construct',
 			access=Phpmethod.PROTECTED,
 			body="$this->_init(\n    \{}::class,\n    \{}::class\n);".format(
-				model_class.class_namespace ,resource_model_class.class_namespace),
-			docstring=[
-				'Define resource model',
-				'',
-				'@return void',
-				]))
+				model_class.class_namespace,
+				resource_model_class.class_namespace
+			),
+			docstring=['@inheritDoc']
+		))
 		self.add_class(collection_model_class)
 
 		# Create Repository Class
@@ -414,7 +418,7 @@ class ModelSnippet(Snippet):
 					}}
 					return ${variable}Model;
 			""".format(data_interface=api_data_class.class_namespace, variable=model_name_capitalized_after),
-			docstring=['{@inheritdoc}']
+			docstring=['@inheritDoc']
 		))
 		model_repository_class.add_method(Phpmethod('get', access=Phpmethod.PUBLIC,
 			params=['${}Id'.format(model_name_capitalized_after)],
@@ -425,7 +429,7 @@ class ModelSnippet(Snippet):
 			}}
 			return ${variable};
 			""".format(variable=model_name_capitalized_after,model_name=model_name),
-			docstring=['{@inheritdoc}']
+			docstring=['@inheritDoc']
 		))
 		model_repository_class.add_method(Phpmethod('getList', access=Phpmethod.PUBLIC,
 			params=['\Magento\Framework\Api\SearchCriteriaInterface $criteria'],
@@ -450,7 +454,7 @@ class ModelSnippet(Snippet):
 					$searchResults->setTotalCount($collection->getSize());
 					return $searchResults;
 			""".format(variable=model_name_capitalized_after,data_interface=api_data_class.class_namespace,variable_upper=model_name_capitalized),
-			docstring=['{@inheritdoc}']
+			docstring=['@inheritDoc']
 		))
 		model_repository_class.add_method(Phpmethod('delete', access=Phpmethod.PUBLIC,
 			params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],
@@ -466,13 +470,13 @@ class ModelSnippet(Snippet):
 					}}
 					return true;
 			""".format(variable=model_name_capitalized_after,model_name=model_name,model_id=model_id_capitalized),
-			docstring=['{@inheritdoc}']
+			docstring=['@inheritDoc']
 		))
 		model_repository_class.add_method(Phpmethod('deleteById', access=Phpmethod.PUBLIC,
 			params=['${}Id'.format(model_name_capitalized_after)],
 			body="""return $this->delete($this->get(${variable}Id));
 			""".format(variable=model_name_capitalized_after,model_name=model_name),
-			docstring=['{@inheritdoc}']
+			docstring=['@inheritDoc']
 		))
 		self.add_class(model_repository_class)
 
