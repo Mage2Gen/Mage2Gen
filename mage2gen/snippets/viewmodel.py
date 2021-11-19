@@ -73,7 +73,7 @@ class ViewModelSnippet(Snippet):
 							Xmlnode('arguments', attributes={},
 								nodes=[
 									Xmlnode('argument', attributes={
-											'name': 'viewModel',
+											'name': 'view_model',
 											'xsi:type': 'object',
 										}, node_text='{}'.format(view_model.class_namespace)
 									)
