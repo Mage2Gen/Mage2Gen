@@ -359,103 +359,63 @@ class ModelSnippet(Snippet):
 		self.add_class(collection_model_class)
 
 		# Create Repository Class
-		model_repository_class = Phpclass('Model\\' + model_name_capitalized.replace('_', '\\') + 'Repository',
+		model_repository_class = Phpclass(
+			'Model\\' + model_name_capitalized.replace('_', '\\') + 'Repository',
 			dependencies=[
 				api_repository_class.class_namespace,
 				api_data_search_class.class_namespace + 'Factory',
+				api_data_class.class_namespace,
 				api_data_class.class_namespace + 'Factory',
-				'Magento\\Framework\\Api\\DataObjectHelper',
 				'Magento\\Framework\\Exception\\CouldNotDeleteException',
 				'Magento\\Framework\\Exception\\NoSuchEntityException',
 				'Magento\\Framework\\Exception\\CouldNotSaveException',
-				'Magento\\Framework\\Reflection\\DataObjectProcessor',
 				'Magento\\Framework\\Api\\SearchCriteria\\CollectionProcessorInterface',
 				resource_model_class.class_namespace + ' as Resource' + model_name_capitalized,
-				collection_model_class.class_namespace + 'Factory as '+ model_name_capitalized +'CollectionFactory',
-				'Magento\\Store\\Model\\StoreManagerInterface',
-				'Magento\\Framework\\Api\\ExtensionAttribute\\JoinProcessorInterface',
-				'Magento\\Framework\\Api\\ExtensibleDataObjectConverter'
+				collection_model_class.class_namespace + 'Factory as '+ model_name_capitalized +'CollectionFactory'
 			],
 			attributes=[
-				'protected $resource;\n',
-				'protected ${}Factory;\n'.format(model_name_capitalized_after),
-				'protected ${}CollectionFactory;\n'.format(model_name_capitalized_after),
-				'protected $searchResultsFactory;\n',
-				'protected $dataObjectHelper;\n',
-				'protected $dataObjectProcessor;\n',
-				'protected $data{}Factory;\n'.format(model_name_capitalized),
-				'protected $extensionAttributesJoinProcessor;\n',
-				'protected $storeManager;\n',
-				'protected $collectionProcessor;\n',
-				'protected $extensibleDataObjectConverter;'
+				'/**\n\t * @var Resource{}\n\t */\n\tprotected $resource;\n'.format(model_name_capitalized),
+				'/**\n\t * @var {}Factory\n\t */\n\tprotected ${}Factory;\n'.format(api_data_class.class_name, model_name_capitalized_after),
+				'/**\n\t * @var {}CollectionFactory\n\t */\n\tprotected ${}CollectionFactory;\n'.format(model_name_capitalized, model_name_capitalized_after),
+				'/**\n\t * @var {}\n\t */\n\tprotected $searchResultsFactory;\n'.format(model_name_capitalized),
+				'/**\n\t * @var CollectionProcessorInterface\n\t */\n\tprotected $collectionProcessor;\n',
 			],
 			implements=[model_name_capitalized.replace('_', '\\') + 'RepositoryInterface']
 		)
 		model_repository_class.add_method(Phpmethod('__construct', access=Phpmethod.PUBLIC,
 			params=[
 				"Resource{} $resource".format(model_name_capitalized),
-		        "{}Factory ${}Factory".format(model_name_capitalized,model_name_capitalized_after),
-		        "{}InterfaceFactory $data{}Factory".format(model_name_capitalized,model_name_capitalized),
-		        "{}CollectionFactory ${}CollectionFactory".format(model_name_capitalized,model_name_capitalized_after),
-		        "{}SearchResultsInterfaceFactory $searchResultsFactory".format(model_name_capitalized),
-		        "DataObjectHelper $dataObjectHelper",
-		        "DataObjectProcessor $dataObjectProcessor",
-		        "StoreManagerInterface $storeManager",
-		        "CollectionProcessorInterface $collectionProcessor",
-				"JoinProcessorInterface $extensionAttributesJoinProcessor",
-				"ExtensibleDataObjectConverter $extensibleDataObjectConverter"
+				"{}Factory ${}Factory".format(api_data_class.class_name, model_name_capitalized_after),
+				"{}CollectionFactory ${}CollectionFactory".format(model_name_capitalized, model_name_capitalized_after),
+				"{}SearchResultsInterfaceFactory $searchResultsFactory".format(model_name_capitalized),
+				"CollectionProcessorInterface $collectionProcessor",
 			],
 			body="""$this->resource = $resource;
 			$this->{variable}Factory = ${variable}Factory;
 			$this->{variable}CollectionFactory = ${variable}CollectionFactory;
 			$this->searchResultsFactory = $searchResultsFactory;
-			$this->dataObjectHelper = $dataObjectHelper;
-			$this->data{variable_upper}Factory = $data{variable_upper}Factory;
-			$this->dataObjectProcessor = $dataObjectProcessor;
-			$this->storeManager = $storeManager;
 			$this->collectionProcessor = $collectionProcessor;
-			$this->extensionAttributesJoinProcessor = $extensionAttributesJoinProcessor;
-			$this->extensibleDataObjectConverter = $extensibleDataObjectConverter;
 			""".format(variable=model_name_capitalized_after,variable_upper=model_name_capitalized),
 			docstring=[
 				"@param Resource{} $resource".format(model_name_capitalized),
-				"@param {}Factory ${}Factory".format(model_name_capitalized,model_name_capitalized_after),
-				"@param {}InterfaceFactory $data{}Factory".format(model_name_capitalized,model_name_capitalized),
+				"@param {}Factory ${}Factory".format(api_data_class.class_name, model_name_capitalized_after),
 				"@param {}CollectionFactory ${}CollectionFactory".format(model_name_capitalized,model_name_capitalized_after),
 				"@param {}SearchResultsInterfaceFactory $searchResultsFactory".format(model_name_capitalized),
-				"@param DataObjectHelper $dataObjectHelper",
-				"@param DataObjectProcessor $dataObjectProcessor",
-				"@param StoreManagerInterface $storeManager",
 				"@param CollectionProcessorInterface $collectionProcessor",
-				"@param JoinProcessorInterface $extensionAttributesJoinProcessor",
-				"@param ExtensibleDataObjectConverter $extensibleDataObjectConverter",
 			]
 		))
 		model_repository_class.add_method(Phpmethod('save', access=Phpmethod.PUBLIC,
-			params=['\\' + api_data_class.class_namespace + ' $' + model_name_capitalized_after],
-			body="""/* if (empty(${variable}->getStoreId())) {{
-					    $storeId = $this->storeManager->getStore()->getId();
-					    ${variable}->setStoreId($storeId);
-					}} */
-
-					${variable}Data = $this->extensibleDataObjectConverter->toNestedArray(
-					    ${variable},
-					    [],
-					    \{data_interface}::class
-					);
-
-					${variable}Model = $this->{variable}Factory->create()->setData(${variable}Data);
-
-					try {{
-					    $this->resource->save(${variable}Model);
+			params=['{}Interface ${}'.format(model_name_capitalized, model_name_capitalized_after)],
+			body="""try {{
+					    $this->resource->save(${variable});
 					}} catch (\Exception $exception) {{
 					    throw new CouldNotSaveException(__(
 					        'Could not save the {variable}: %1',
 					        $exception->getMessage()
 					    ));
 					}}
-					return ${variable}Model;
-			""".format(data_interface=api_data_class.class_namespace, variable=model_name_capitalized_after),
+					return ${variable};
+			""".format(variable=model_name_capitalized_after),
 			docstring=['@inheritDoc']
 		))
 		model_repository_class.add_method(Phpmethod('get', access=Phpmethod.PUBLIC,
@@ -472,11 +432,6 @@ class ModelSnippet(Snippet):
 		model_repository_class.add_method(Phpmethod('getList', access=Phpmethod.PUBLIC,
 			params=['\Magento\Framework\Api\SearchCriteriaInterface $criteria'],
 			body="""$collection = $this->{variable}CollectionFactory->create();
-
-					$this->extensionAttributesJoinProcessor->process(
-					    $collection,
-					    \{data_interface}::class
-					);
 
 					$this->collectionProcessor->process($criteria, $collection);
 
@@ -495,7 +450,7 @@ class ModelSnippet(Snippet):
 			docstring=['@inheritDoc']
 		))
 		model_repository_class.add_method(Phpmethod('delete', access=Phpmethod.PUBLIC,
-			params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],
+			params=['{}Interface ${}'.format(model_name_capitalized, model_name_capitalized_after)],
 			body="""try {{
 						    ${variable}Model = $this->{variable}Factory->create();
 						    $this->resource->load(${variable}Model, ${variable}->get{model_id}());
@@ -1086,9 +1041,13 @@ class ModelSnippet(Snippet):
 		self.add_class(new_controller)
 
 		# Save Controller
-		new_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Save', dependencies=['Magento\Framework\Exception\LocalizedException'], extends='\\Magento\\Backend\\App\\Action',
-			attributes=[
-				'protected $dataPersistor;'])
+		new_controller = Phpclass(
+			'Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Save',
+			dependencies=['Magento\Framework\Exception\LocalizedException'],
+			extends='\\Magento\\Backend\\App\\Action',
+			attributes=['protected $dataPersistor;']
+		)
+
 		new_controller.add_method(Phpmethod('__construct',
 			params=['\\Magento\\Backend\\App\\Action\\Context $context',
 				'\\Magento\\Framework\\App\\Request\\DataPersistorInterface $dataPersistor'],
