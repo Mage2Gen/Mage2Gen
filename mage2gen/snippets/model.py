@@ -520,18 +520,18 @@ class ModelSnippet(Snippet):
 
 		# Create di.xml preferences
 		self.add_xml('etc/di.xml', Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:framework:ObjectManager/etc/config.xsd"}, nodes=[
-		    Xmlnode('preference', attributes={
-		        'for': "{}\\{}\\Api\\{}RepositoryInterface".format(self._module.package, self._module.name, model_name_capitalized),
-		        'type': model_repository_class.class_namespace
-		    }),
-		    Xmlnode('preference', attributes={
-		        'for': "{}\\{}\\Api\\Data\\{}Interface".format(self._module.package, self._module.name, model_name_capitalized),
-		        'type': "{}\\{}\\Model\\Data\\{}".format(self._module.package, self._module.name, model_name_capitalized)
-		    }),
-		    Xmlnode('preference', attributes={
-		        'for': "{}\\{}\\Api\\Data\\{}SearchResultsInterface".format(self._module.package, self._module.name, model_name_capitalized),
-		        'type': 'Magento\Framework\Api\SearchResults'
-		    })
+			Xmlnode('preference', attributes={
+				'for': "{}\\{}\\Api\\{}RepositoryInterface".format(self._module.package, self._module.name, model_name_capitalized),
+				'type': model_repository_class.class_namespace
+			}),
+			Xmlnode('preference', attributes={
+				'for': "{}\\{}\\Api\\Data\\{}Interface".format(self._module.package, self._module.name, model_name_capitalized),
+				'type': "{}\\{}\\Model\\{}".format(self._module.package, self._module.name, model_name_capitalized)
+			}),
+			Xmlnode('preference', attributes={
+				'for': "{}\\{}\\Api\\Data\\{}SearchResultsInterface".format(self._module.package, self._module.name, model_name_capitalized),
+				'type': 'Magento\Framework\Api\SearchResults'
+			})
 		]))
 
 		# add grid
