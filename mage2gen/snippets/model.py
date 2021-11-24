@@ -247,7 +247,11 @@ class ModelSnippet(Snippet):
 			docstring=[
 				'Set {}'.format(model_id),
 				'@param string ${}'.format(model_id_capitalized_after),
-				'@return \{}'.format(api_data_class.class_namespace)
+				'@return \\{}\\{}\\{}'.format(
+					self.module_name.replace('_', '\\'),
+					model_name_capitalized,
+					api_data_class.class_namespace
+				)
 			]
 		))
 
@@ -265,7 +269,11 @@ class ModelSnippet(Snippet):
 			docstring=[
 				'Set {}'.format(field_name),
 				'@param string ${}'.format(lowerfirst(field_name_capitalized)),
-				'@return \{}'.format(api_data_class.class_namespace)
+				'@return \\{}\\{}\\{}'.format(
+					self.module_name.replace('_', '\\'),
+					model_name_capitalized,
+					api_data_class.class_namespace
+				)
 			]
 		))
 
