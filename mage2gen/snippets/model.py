@@ -181,7 +181,6 @@ class ModelSnippet(Snippet):
 				]
 			)
 
-
 		# Create db_schema.xml declaration
 		self.add_xml('etc/db_schema.xml', Xmlnode('schema', attributes={
 			'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd"}, nodes=[
@@ -214,30 +213,69 @@ class ModelSnippet(Snippet):
 		]))
 
 		# Create resource class
-		resource_model_class = Phpclass('Model\\ResourceModel\\' + model_name_capitalized.replace('_', '\\'), extends='\\Magento\\Framework\\Model\\ResourceModel\\Db\\AbstractDb')
+		resource_model_class = Phpclass(
+			'Model\\ResourceModel\\' + model_name_capitalized.replace('_', '\\'),
+			dependencies=['Magento\\Framework\\Model\\ResourceModel\\Db\\AbstractDb'],
+			extends='AbstractDb'
+		)
 		resource_model_class.add_method(Phpmethod('_construct',
 			access=Phpmethod.PROTECTED,
 			body="$this->_init('{}', '{}');".format(model_table, model_id),
-			docstring=[
-				'Define resource model',
-				'',
-				'@return void',
-				]))
+			docstring=['@inheritDoc']))
 		self.add_class(resource_model_class)
 
 		# Create api data interface class
-		api_data_class =  InterfaceClass('Api\\Data\\' + model_name_capitalized.replace('_', '\\') + 'Interface',
+		api_data_class =  InterfaceClass(
+			'Api\\Data\\' + model_name_capitalized.replace('_', '\\') + 'Interface',
 			attributes=[
-				"const {} = '{}';".format(field_name.upper(),field_name),"const {} = '{}';".format(model_id.upper(),model_id)
-			])
+				"const {} = '{}';".format(field_name.upper(),field_name),
+				"const {} = '{}';".format(model_id.upper(),model_id)
+			]
+		)
 
-		api_data_class.add_method(InterfaceMethod('get'+model_id_capitalized,docstring=['Get {}'.format(model_id),'@return {}'.format('string|null')]))
+		api_data_class.add_method(InterfaceMethod(
+			'get' + model_id_capitalized,
+			docstring=[
+				'Get {}'.format(model_id),
+				'@return {}'.format('string|null')
+			]
+		))
 
-		api_data_class.add_method(InterfaceMethod('set'+model_id_capitalized,params=['${}'.format(model_id_capitalized_after)],docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id_capitalized_after),'@return \{}'.format(api_data_class.class_namespace)]))
+		api_data_class.add_method(InterfaceMethod(
+			'set' + model_id_capitalized,
+			params=['${}'.format(model_id_capitalized_after)],
+			docstring=[
+				'Set {}'.format(model_id),
+				'@param string ${}'.format(model_id_capitalized_after),
+				'@return \\{}\\{}\\{}'.format(
+					self.module_name.replace('_', '\\'),
+					model_name_capitalized,
+					api_data_class.class_namespace
+				)
+			]
+		))
 
-		api_data_class.add_method(InterfaceMethod('get'+field_name_capitalized,docstring=['Get {}'.format(field_name),'@return {}'.format('string|null')]))
+		api_data_class.add_method(InterfaceMethod(
+			'get' + field_name_capitalized,
+			docstring=[
+				'Get {}'.format(field_name),
+				'@return {}'.format('string|null')
+			]
+		))
 
-		api_data_class.add_method(InterfaceMethod('set'+field_name_capitalized,params=['${}'.format(lowerfirst(field_name_capitalized))],docstring=['Set {}'.format(field_name),'@param string ${}'.format(lowerfirst(field_name_capitalized)),'@return \{}'.format(api_data_class.class_namespace)]))
+		api_data_class.add_method(InterfaceMethod(
+			'set' + field_name_capitalized,
+			params=['${}'.format(lowerfirst(field_name_capitalized))],
+			docstring=[
+				'Set {}'.format(field_name),
+				'@param string ${}'.format(lowerfirst(field_name_capitalized)),
+				'@return \\{}\\{}\\{}'.format(
+					self.module_name.replace('_', '\\'),
+					model_name_capitalized,
+					api_data_class.class_namespace
+				)
+			]
+		))
 
 		self.add_class(api_data_class)
 
@@ -260,8 +298,9 @@ class ModelSnippet(Snippet):
 		model_class = Phpclass('Model\\' + model_name_capitalized.replace('_', '\\'),
 			dependencies=[
 				api_data_class.class_namespace,
+				'Magento\\Framework\\Model\\AbstractModel'
 			],
-			extends='\\Magento\\Framework\\Model\\AbstractModel',
+			extends='AbstractModel',
 			implements=[
 				api_data_class.class_name
 			])
@@ -272,27 +311,27 @@ class ModelSnippet(Snippet):
 		))
 
 		model_class.add_method(Phpmethod('get' + model_id_capitalized,
-			docstring=['Get {}'.format(model_id),'@return {}'.format('string|null')],
+			docstring=['@inheritDoc'],
 			body="""return $this->_get({});
 			""".format('self::'+model_id.upper()),
 		))
 
 		model_class.add_method(Phpmethod('set' + model_id_capitalized,
 			params=['${}'.format(model_id_capitalized_after)],
-			docstring=['Set {}'.format(model_id),'@param string ${}'.format(model_id_capitalized_after),'@return \{}'.format(api_data_class.class_namespace)],
+			docstring=['@inheritDoc'],
 			body="""return $this->setData({}, ${});
 			""".format('self::' + model_id.upper(), model_id_capitalized_after)
 		))
 
 		model_class.add_method(Phpmethod('get' + field_name_capitalized,
-			docstring=['Get {}'.format(field_name),'@return {}'.format('string|null')],
+			docstring=['@inheritDoc'],
 			body="""return $this->_get({});
 			""".format('self::' + field_name.upper()),
 		))
 
 		model_class.add_method(Phpmethod('set' + field_name_capitalized,
 			params=['${}'.format(lowerfirst(field_name_capitalized))],
-			docstring=['Set {}'.format(field_name),'@param string ${}'.format(lowerfirst(field_name_capitalized)),'@return \{}'.format(api_data_class.class_namespace)],
+			docstring=['@inheritDoc'],
 			body="""return $this->setData({}, ${});
 			""".format('self::' + field_name.upper(), lowerfirst(field_name_capitalized))
 		))
@@ -300,121 +339,84 @@ class ModelSnippet(Snippet):
 		self.add_class(model_class)
 
 		# Create collection
-		collection_model_class = Phpclass('Model\\ResourceModel\\' + model_name_capitalized.replace('_', '\\') + '\\Collection',
-				extends='\\Magento\\Framework\\Model\\ResourceModel\\Db\\Collection\\AbstractCollection',
-				attributes=[
-					"/**\n\t * @var string\n\t */\n\tprotected $_idFieldName = '{}';".format(model_id),
-				])
-		collection_model_class.add_method(Phpmethod('_construct',
+		collection_model_class = Phpclass(
+			'Model\\ResourceModel\\' + model_name_capitalized.replace('_', '\\') + '\\Collection',
+			dependencies=['Magento\\Framework\\Model\\ResourceModel\\Db\\Collection\\AbstractCollection'],
+			extends='AbstractCollection',
+			attributes=[
+				"/**\n\t * @inheritDoc\n\t */\n\tprotected $_idFieldName = '{}';".format(model_id),
+			]
+		)
+		collection_model_class.add_method(Phpmethod(
+			'_construct',
 			access=Phpmethod.PROTECTED,
 			body="$this->_init(\n    \{}::class,\n    \{}::class\n);".format(
-				model_class.class_namespace ,resource_model_class.class_namespace),
-			docstring=[
-				'Define resource model',
-				'',
-				'@return void',
-				]))
+				model_class.class_namespace,
+				resource_model_class.class_namespace
+			),
+			docstring=['@inheritDoc']
+		))
 		self.add_class(collection_model_class)
 
 		# Create Repository Class
-		model_repository_class = Phpclass('Model\\' + model_name_capitalized.replace('_', '\\') + 'Repository',
+		model_repository_class = Phpclass(
+			'Model\\' + model_name_capitalized.replace('_', '\\') + 'Repository',
 			dependencies=[
 				api_repository_class.class_namespace,
 				api_data_search_class.class_namespace + 'Factory',
+				api_data_class.class_namespace,
 				api_data_class.class_namespace + 'Factory',
-				'Magento\\Framework\\Api\\DataObjectHelper',
 				'Magento\\Framework\\Exception\\CouldNotDeleteException',
 				'Magento\\Framework\\Exception\\NoSuchEntityException',
 				'Magento\\Framework\\Exception\\CouldNotSaveException',
-				'Magento\\Framework\\Reflection\\DataObjectProcessor',
 				'Magento\\Framework\\Api\\SearchCriteria\\CollectionProcessorInterface',
 				resource_model_class.class_namespace + ' as Resource' + model_name_capitalized,
-				collection_model_class.class_namespace + 'Factory as '+ model_name_capitalized +'CollectionFactory',
-				'Magento\\Store\\Model\\StoreManagerInterface',
-				'Magento\\Framework\\Api\\ExtensionAttribute\\JoinProcessorInterface',
-				'Magento\\Framework\\Api\\ExtensibleDataObjectConverter'
+				collection_model_class.class_namespace + 'Factory as '+ model_name_capitalized +'CollectionFactory'
 			],
 			attributes=[
-				'protected $resource;\n',
-				'protected ${}Factory;\n'.format(model_name_capitalized_after),
-				'protected ${}CollectionFactory;\n'.format(model_name_capitalized_after),
-    			'protected $searchResultsFactory;\n',
-    			'protected $dataObjectHelper;\n',
-    			'protected $dataObjectProcessor;\n',
-    			'protected $data{}Factory;\n'.format(model_name_capitalized),
-				'protected $extensionAttributesJoinProcessor;\n',
-    			'private $storeManager;\n',
-				'private $collectionProcessor;\n',
-				'protected $extensibleDataObjectConverter;'
+				'/**\n\t * @var Resource{}\n\t */\n\tprotected $resource;\n'.format(model_name_capitalized),
+				'/**\n\t * @var {}Factory\n\t */\n\tprotected ${}Factory;\n'.format(api_data_class.class_name, model_name_capitalized_after),
+				'/**\n\t * @var {}CollectionFactory\n\t */\n\tprotected ${}CollectionFactory;\n'.format(model_name_capitalized, model_name_capitalized_after),
+				'/**\n\t * @var {}\n\t */\n\tprotected $searchResultsFactory;\n'.format(model_name_capitalized),
+				'/**\n\t * @var CollectionProcessorInterface\n\t */\n\tprotected $collectionProcessor;\n',
 			],
 			implements=[model_name_capitalized.replace('_', '\\') + 'RepositoryInterface']
 		)
 		model_repository_class.add_method(Phpmethod('__construct', access=Phpmethod.PUBLIC,
 			params=[
 				"Resource{} $resource".format(model_name_capitalized),
-		        "{}Factory ${}Factory".format(model_name_capitalized,model_name_capitalized_after),
-		        "{}InterfaceFactory $data{}Factory".format(model_name_capitalized,model_name_capitalized),
-		        "{}CollectionFactory ${}CollectionFactory".format(model_name_capitalized,model_name_capitalized_after),
-		        "{}SearchResultsInterfaceFactory $searchResultsFactory".format(model_name_capitalized),
-		        "DataObjectHelper $dataObjectHelper",
-		        "DataObjectProcessor $dataObjectProcessor",
-		        "StoreManagerInterface $storeManager",
-		        "CollectionProcessorInterface $collectionProcessor",
-				"JoinProcessorInterface $extensionAttributesJoinProcessor",
-				"ExtensibleDataObjectConverter $extensibleDataObjectConverter"
+				"{}Factory ${}Factory".format(api_data_class.class_name, model_name_capitalized_after),
+				"{}CollectionFactory ${}CollectionFactory".format(model_name_capitalized, model_name_capitalized_after),
+				"{}SearchResultsInterfaceFactory $searchResultsFactory".format(model_name_capitalized),
+				"CollectionProcessorInterface $collectionProcessor",
 			],
 			body="""$this->resource = $resource;
 			$this->{variable}Factory = ${variable}Factory;
 			$this->{variable}CollectionFactory = ${variable}CollectionFactory;
 			$this->searchResultsFactory = $searchResultsFactory;
-			$this->dataObjectHelper = $dataObjectHelper;
-			$this->data{variable_upper}Factory = $data{variable_upper}Factory;
-			$this->dataObjectProcessor = $dataObjectProcessor;
-			$this->storeManager = $storeManager;
 			$this->collectionProcessor = $collectionProcessor;
-			$this->extensionAttributesJoinProcessor = $extensionAttributesJoinProcessor;
-			$this->extensibleDataObjectConverter = $extensibleDataObjectConverter;
 			""".format(variable=model_name_capitalized_after,variable_upper=model_name_capitalized),
 			docstring=[
 				"@param Resource{} $resource".format(model_name_capitalized),
-				"@param {}Factory ${}Factory".format(model_name_capitalized,model_name_capitalized_after),
-				"@param {}InterfaceFactory $data{}Factory".format(model_name_capitalized,model_name_capitalized),
+				"@param {}Factory ${}Factory".format(api_data_class.class_name, model_name_capitalized_after),
 				"@param {}CollectionFactory ${}CollectionFactory".format(model_name_capitalized,model_name_capitalized_after),
 				"@param {}SearchResultsInterfaceFactory $searchResultsFactory".format(model_name_capitalized),
-				"@param DataObjectHelper $dataObjectHelper",
-				"@param DataObjectProcessor $dataObjectProcessor",
-				"@param StoreManagerInterface $storeManager",
 				"@param CollectionProcessorInterface $collectionProcessor",
-				"@param JoinProcessorInterface $extensionAttributesJoinProcessor",
-				"@param ExtensibleDataObjectConverter $extensibleDataObjectConverter",
 			]
 		))
 		model_repository_class.add_method(Phpmethod('save', access=Phpmethod.PUBLIC,
-			params=['\\' + api_data_class.class_namespace + ' $' + model_name_capitalized_after],
-			body="""/* if (empty(${variable}->getStoreId())) {{
-					    $storeId = $this->storeManager->getStore()->getId();
-					    ${variable}->setStoreId($storeId);
-					}} */
-
-					${variable}Data = $this->extensibleDataObjectConverter->toNestedArray(
-					    ${variable},
-					    [],
-					    \{data_interface}::class
-					);
-
-					${variable}Model = $this->{variable}Factory->create()->setData(${variable}Data);
-
-					try {{
-					    $this->resource->save(${variable}Model);
+			params=['{}Interface ${}'.format(model_name_capitalized, model_name_capitalized_after)],
+			body="""try {{
+					    $this->resource->save(${variable});
 					}} catch (\Exception $exception) {{
 					    throw new CouldNotSaveException(__(
 					        'Could not save the {variable}: %1',
 					        $exception->getMessage()
 					    ));
 					}}
-					return ${variable}Model;
-			""".format(data_interface=api_data_class.class_namespace, variable=model_name_capitalized_after),
-			docstring=['{@inheritdoc}']
+					return ${variable};
+			""".format(variable=model_name_capitalized_after),
+			docstring=['@inheritDoc']
 		))
 		model_repository_class.add_method(Phpmethod('get', access=Phpmethod.PUBLIC,
 			params=['${}Id'.format(model_name_capitalized_after)],
@@ -425,16 +427,11 @@ class ModelSnippet(Snippet):
 			}}
 			return ${variable};
 			""".format(variable=model_name_capitalized_after,model_name=model_name),
-			docstring=['{@inheritdoc}']
+			docstring=['@inheritDoc']
 		))
 		model_repository_class.add_method(Phpmethod('getList', access=Phpmethod.PUBLIC,
 			params=['\Magento\Framework\Api\SearchCriteriaInterface $criteria'],
 			body="""$collection = $this->{variable}CollectionFactory->create();
-
-					$this->extensionAttributesJoinProcessor->process(
-					    $collection,
-					    \{data_interface}::class
-					);
 
 					$this->collectionProcessor->process($criteria, $collection);
 
@@ -450,10 +447,10 @@ class ModelSnippet(Snippet):
 					$searchResults->setTotalCount($collection->getSize());
 					return $searchResults;
 			""".format(variable=model_name_capitalized_after,data_interface=api_data_class.class_namespace,variable_upper=model_name_capitalized),
-			docstring=['{@inheritdoc}']
+			docstring=['@inheritDoc']
 		))
 		model_repository_class.add_method(Phpmethod('delete', access=Phpmethod.PUBLIC,
-			params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],
+			params=['{}Interface ${}'.format(model_name_capitalized, model_name_capitalized_after)],
 			body="""try {{
 						    ${variable}Model = $this->{variable}Factory->create();
 						    $this->resource->load(${variable}Model, ${variable}->get{model_id}());
@@ -466,30 +463,30 @@ class ModelSnippet(Snippet):
 					}}
 					return true;
 			""".format(variable=model_name_capitalized_after,model_name=model_name,model_id=model_id_capitalized),
-			docstring=['{@inheritdoc}']
+			docstring=['@inheritDoc']
 		))
 		model_repository_class.add_method(Phpmethod('deleteById', access=Phpmethod.PUBLIC,
 			params=['${}Id'.format(model_name_capitalized_after)],
 			body="""return $this->delete($this->get(${variable}Id));
 			""".format(variable=model_name_capitalized_after,model_name=model_name),
-			docstring=['{@inheritdoc}']
+			docstring=['@inheritDoc']
 		))
 		self.add_class(model_repository_class)
 
 		# Create di.xml preferences
 		self.add_xml('etc/di.xml', Xmlnode('config', attributes={'xsi:noNamespaceSchemaLocation': "urn:magento:framework:ObjectManager/etc/config.xsd"}, nodes=[
-		    Xmlnode('preference', attributes={
-		        'for': "{}\\{}\\Api\\{}RepositoryInterface".format(self._module.package, self._module.name, model_name_capitalized),
-		        'type': model_repository_class.class_namespace
-		    }),
-		    Xmlnode('preference', attributes={
-		        'for': "{}\\{}\\Api\\Data\\{}Interface".format(self._module.package, self._module.name, model_name_capitalized),
-		        'type': "{}\\{}\\Model\\Data\\{}".format(self._module.package, self._module.name, model_name_capitalized)
-		    }),
-		    Xmlnode('preference', attributes={
-		        'for': "{}\\{}\\Api\\Data\\{}SearchResultsInterface".format(self._module.package, self._module.name, model_name_capitalized),
-		        'type': 'Magento\Framework\Api\SearchResults'
-		    })
+			Xmlnode('preference', attributes={
+				'for': "{}\\{}\\Api\\{}RepositoryInterface".format(self._module.package, self._module.name, model_name_capitalized),
+				'type': model_repository_class.class_namespace
+			}),
+			Xmlnode('preference', attributes={
+				'for': "{}\\{}\\Api\\Data\\{}Interface".format(self._module.package, self._module.name, model_name_capitalized),
+				'type': "{}\\{}\\Model\\{}".format(self._module.package, self._module.name, model_name_capitalized)
+			}),
+			Xmlnode('preference', attributes={
+				'for': "{}\\{}\\Api\\Data\\{}SearchResultsInterface".format(self._module.package, self._module.name, model_name_capitalized),
+				'type': 'Magento\Framework\Api\SearchResults'
+			})
 		]))
 
 		# add grid
@@ -1044,9 +1041,13 @@ class ModelSnippet(Snippet):
 		self.add_class(new_controller)
 
 		# Save Controller
-		new_controller = Phpclass('Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Save', dependencies=['Magento\Framework\Exception\LocalizedException'], extends='\\Magento\\Backend\\App\\Action',
-			attributes=[
-				'protected $dataPersistor;'])
+		new_controller = Phpclass(
+			'Controller\\Adminhtml\\' + model_name.replace('_', '') + '\\Save',
+			dependencies=['Magento\Framework\Exception\LocalizedException'],
+			extends='\\Magento\\Backend\\App\\Action',
+			attributes=['protected $dataPersistor;']
+		)
+
 		new_controller.add_method(Phpmethod('__construct',
 			params=['\\Magento\\Backend\\App\\Action\\Context $context',
 				'\\Magento\\Framework\\App\\Request\\DataPersistorInterface $dataPersistor'],
@@ -1102,13 +1103,21 @@ class ModelSnippet(Snippet):
 		self.add_class(new_controller)
 
 		# Add model provider
-		data_provider = Phpclass('Model\\' + model_name.replace('_', '') + '\\DataProvider', extends='\\Magento\\Ui\\DataProvider\\AbstractDataProvider',
-			attributes=[
-				'protected $collection;\n',
-				'protected $dataPersistor;\n',
-				'protected $loadedData;'
+		data_provider = Phpclass(
+			'Model\\' + model_name.replace('_', '') + '\\DataProvider',
+			dependencies=[
+				collection_model_class.class_namespace + 'Factory',
+				'Magento\\Framework\\App\\Request\\DataPersistorInterface',
+				'Magento\\Ui\\DataProvider\\AbstractDataProvider'
 			],
-			dependencies=[collection_model_class.class_namespace + 'Factory', 'Magento\\Framework\\App\\Request\\DataPersistorInterface'])
+			extends='AbstractDataProvider',
+			attributes=[
+				'/**\n\t * @inheritDoc\n\t */\n\tprotected $collection;\n',
+				'/**\n\t * @var DataPersistorInterface\n\t */\n\tprotected $dataPersistor;\n',
+				'/**\n\t * @var array\n\t */\n\tprotected $loadedData;'
+			]
+		)
+
 		data_provider.add_method(Phpmethod('__construct',
 			params=['$name',
 				'$primaryFieldName',
@@ -1121,8 +1130,6 @@ class ModelSnippet(Snippet):
 					$this->dataPersistor = $dataPersistor;
 					parent::__construct($name, $primaryFieldName, $requestFieldName, $meta, $data);""",
 			docstring=[
-				'Constructor',
-				'',
 				'@param string $name',
 				'@param string $primaryFieldName',
 				'@param string $requestFieldName',
@@ -1130,7 +1137,9 @@ class ModelSnippet(Snippet):
 				'@param DataPersistorInterface $dataPersistor',
 				'@param array $meta',
 				'@param array $data'
-			]))
+			])
+		)
+
 		data_provider.add_method(Phpmethod('getData',
 			body="""if (isset($this->loadedData)) {{
 					    return $this->loadedData;
@@ -1151,22 +1160,22 @@ class ModelSnippet(Snippet):
 					return $this->loadedData;""".format(
 						register_model = register_model
 					),
-			docstring=[
-				'Get data',
-				'',
-				'@return array',
-			]))
+			docstring=['@inheritDoc'])
+		)
 
 		self.add_class(data_provider)
 
 		# Add model actions
-		actions = Phpclass('Ui\Component\Listing\Column\\' + model_name.replace('_', '') + 'Actions', extends='\\Magento\\Ui\\Component\\Listing\\Columns\Column',
+		actions = Phpclass(
+			'Ui\Component\Listing\Column\\' + model_name.replace('_', '') + 'Actions',
+			extends='\\Magento\\Ui\\Component\\Listing\\Columns\Column',
 			attributes=[
 				"const URL_PATH_EDIT = '{}/{}/edit';".format(frontname, model_name.replace('_', '').lower()),
 				"const URL_PATH_DELETE = '{}/{}/delete';".format(frontname, model_name.replace('_', '').lower()),
 				"const URL_PATH_DETAILS = '{}/{}/details';".format(frontname, model_name.replace('_', '').lower()),
 				'protected $urlBuilder;',
-			])
+			]
+		)
 		actions.add_method(Phpmethod('__construct',
 			params=['\\Magento\\Framework\\View\\Element\\UiComponent\\ContextInterface $context',
 				'\\Magento\\Framework\\View\\Element\\UiComponentFactory $uiComponentFactory',
@@ -1380,38 +1389,38 @@ class ModelSnippet(Snippet):
 
 	def add_web_api(self, model_name, field_name, model_table, model_id, collection_model_class, model_class, required, field_element_type, api_repository_class, model_id_capitalized_after):
 
-		resource = '{}_{}::{}_'.format(self._module.package,self._module.name,model_name);
-		api_url = '/V1/{}-{}/'.format(self._module.package.lower(),self._module.name.lower())
+		resource = '{}_{}::{}_'.format(self._module.package, self._module.name, model_name)
+		api_url = '/V1/{}-{}/'.format(self._module.package.lower(), self._module.name.lower())
 
 		webapi_xml = Xmlnode('routes', attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:module:Magento_Webapi:etc/webapi.xsd"}, nodes=[
 			Xmlnode('route', attributes={'url': api_url + model_name.lower(), 'method': 'POST'},match_attributes={'url','method'},nodes=[
-				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'save'}),
-		 		Xmlnode('resources',nodes=[
+				Xmlnode('service', attributes={'class':api_repository_class.class_namespace,'method':'save'}),
+		 		Xmlnode('resources', nodes=[
 		 			Xmlnode('resource', attributes={'ref':resource + 'save'})
 				])
 			]),
 			Xmlnode('route', attributes={'url': api_url + model_name.lower() + '/search', 'method': 'GET'},match_attributes={'url','method'},nodes=[
-				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'getList'}),
-		 		Xmlnode('resources',nodes=[
-		 			Xmlnode('resource', attributes={'ref':resource + 'view'})
+				Xmlnode('service', attributes={'class':api_repository_class.class_namespace,'method':'getList'}),
+				Xmlnode('resources', nodes=[
+					Xmlnode('resource', attributes={'ref':resource + 'view'})
 				])
 			]),
 			Xmlnode('route', attributes={'url': api_url + model_name.lower() + '/:' + model_id_capitalized_after, 'method': 'GET'},match_attributes={'url','method'},nodes=[
-				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'get'}),
-		 		Xmlnode('resources',nodes=[
-		 			Xmlnode('resource', attributes={'ref':resource + 'view'})
+				Xmlnode('service', attributes={'class':api_repository_class.class_namespace,'method':'get'}),
+				Xmlnode('resources', nodes=[
+					Xmlnode('resource', attributes={'ref':resource + 'view'})
 				])
 			]),
-			Xmlnode('route', attributes={'url': api_url + model_name.lower() + '/:' + model_id_capitalized_after, 'method': 'PUT'},match_attributes={'url','method'},nodes=[
-				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'save'}),
-		 		Xmlnode('resources',nodes=[
-		 			Xmlnode('resource', attributes={'ref':resource + 'update'})
+			Xmlnode('route', attributes={'url': api_url + model_name.lower() + '/:' + model_id_capitalized_after, 'method': 'PUT'}, match_attributes={'url','method'}, nodes=[
+				Xmlnode('service', attributes={'class':api_repository_class.class_namespace,'method':'save'}),
+				Xmlnode('resources', nodes=[
+					Xmlnode('resource', attributes={'ref':resource + 'update'})
 				])
 			]),
-			Xmlnode('route', attributes={'url': api_url + model_name.lower() + '/:' + model_id_capitalized_after, 'method': 'DELETE'},match_attributes={'url','method'},nodes=[
-				Xmlnode('service',attributes={'class':api_repository_class.class_namespace,'method':'deleteById'}),
-		 		Xmlnode('resources',nodes=[
-		 			Xmlnode('resource', attributes={'ref':resource + 'delete'})
+			Xmlnode('route', attributes={'url': api_url + model_name.lower() + '/:' + model_id_capitalized_after, 'method': 'DELETE'}, match_attributes={'url','method'}, nodes=[
+				Xmlnode('service', attributes={'class':api_repository_class.class_namespace,'method':'deleteById'}),
+				Xmlnode('resources', nodes=[
+					Xmlnode('resource', attributes={'ref':resource + 'delete'})
 				])
 			])
 		])
@@ -1425,10 +1434,9 @@ class ModelSnippet(Snippet):
 			)
 		)
 
-
 	def add_acl(self,model_name):
 
-		namespace = '{}_{}'.format(self._module.package,self._module.name)
+		namespace = '{}_{}'.format(self._module.package, self._module.name)
 
 		acl_xml = Xmlnode('config', attributes={'xmlns:xsi':'http://www.w3.org/2001/XMLSchema-instance','xsi:noNamespaceSchemaLocation':"urn:magento:framework:Acl/etc/acl.xsd"}, nodes=[
 			Xmlnode('acl',nodes=[
@@ -1446,7 +1454,6 @@ class ModelSnippet(Snippet):
 		])
 
 		self.add_xml('etc/acl.xml', acl_xml)
-
 
 	@classmethod
 	def params(cls):
