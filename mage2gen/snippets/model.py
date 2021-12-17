@@ -108,7 +108,7 @@ class ModelSnippet(Snippet):
 		column_nodes = []
 		# add model id field
 		column_nodes.append(Xmlnode('column', attributes={
-			'xsi:type': "{}".format('smallint'),
+			'xsi:type': "{}".format('int'),
 			'name': "{}".format(model_id),
 			'padding': "{}".format('6'),
 			'unsigned': "{}".format('true'),
@@ -191,7 +191,7 @@ class ModelSnippet(Snippet):
 				'comment': "{} Table".format(model_table)
 			}, nodes=[
 				Xmlnode('column', attributes={
-					'xsi:type': "{}".format('smallint'),
+					'xsi:type': "{}".format('int'),
 					'name': "{}".format(model_id),
 					'padding': "{}".format('6'),
 					'unsigned': "{}".format('true'),
