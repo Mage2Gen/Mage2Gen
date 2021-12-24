@@ -53,7 +53,7 @@ class CustomerSectionDataSnippet(Snippet):
 
         section_class.add_method(Phpmethod(
             'getSectionData',
-            body='return []',
+            body='return [];',
             docstring=[
                 '{@inheritdoc}',
             ]
