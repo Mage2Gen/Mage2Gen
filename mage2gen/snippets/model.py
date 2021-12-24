@@ -312,7 +312,7 @@ class ModelSnippet(Snippet):
 
 		model_class.add_method(Phpmethod('get' + model_id_capitalized,
 			docstring=['@inheritDoc'],
-			body="""return $this->_get({});
+			body="""return $this->getData({});
 			""".format('self::'+model_id.upper()),
 		))
 
@@ -325,7 +325,7 @@ class ModelSnippet(Snippet):
 
 		model_class.add_method(Phpmethod('get' + field_name_capitalized,
 			docstring=['@inheritDoc'],
-			body="""return $this->_get({});
+			body="""return $this->getData({});
 			""".format('self::' + field_name.upper()),
 		))
 
