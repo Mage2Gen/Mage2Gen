@@ -110,7 +110,7 @@ class ModelSnippet(Snippet):
 		column_nodes.append(Xmlnode('column', attributes={
 			'xsi:type': "{}".format('int'),
 			'name': "{}".format(model_id),
-			'padding': "{}".format('6'),
+			'padding': "{}".format('10'),
 			'unsigned': "{}".format('true'),
 			'nullable': "{}".format('false'),
 			'identity': "{}".format('true'),
@@ -193,7 +193,7 @@ class ModelSnippet(Snippet):
 				Xmlnode('column', attributes={
 					'xsi:type': "{}".format('int'),
 					'name': "{}".format(model_id),
-					'padding': "{}".format('6'),
+					'padding': "{}".format('10'),
 					'unsigned': "{}".format('true'),
 					'nullable': "{}".format('false'),
 					'identity': "{}".format('true'),
