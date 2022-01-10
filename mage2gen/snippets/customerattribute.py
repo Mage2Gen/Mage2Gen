@@ -338,7 +338,7 @@ class CustomerAttributeSnippet(Snippet):
 
 			# Create db_schema.xml declaration
 			db_nodes = []
-			for sales_entity in {'quote_address', 'order_address'}:
+			for sales_entity in {'quote_address', 'sales_order_address'}:
 				db_nodes.append(
 					Xmlnode('table', attributes={
 						'name': "{}".format(sales_entity),
