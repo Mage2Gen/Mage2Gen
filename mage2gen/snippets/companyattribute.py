@@ -71,7 +71,7 @@ class CompanyAttributeSnippet(Snippet):
 		install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
 			params=['SchemaSetupInterface $setup'.format(setupType),'ModuleContextInterface $context'],
 			body="",
-			docstring=['{@inheritdoc}']))
+			docstring=['@inheritdoc']))
 
 		if upgrade_data:
 			install_data.add_method(Phpmethod('{}'.format(setupType.lower()),

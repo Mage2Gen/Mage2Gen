@@ -236,7 +236,7 @@ class CustomerAttributeSnippet(Snippet):
 			$attributeGroupId = $attributeSet->getDefaultGroupId($attributeSetId);
 
 			""".format(entity_type_alias=entity_type_alias) + methodBody,
-			docstring=['{@inheritdoc}']))
+			docstring=['@inheritdoc']))
 
 		install_patch.add_method(Phpmethod(
 			'revert',
@@ -253,7 +253,7 @@ class CustomerAttributeSnippet(Snippet):
 			'getAliases',
 			body="return [];",
 			docstring=[
-				'{@inheritdoc}'
+				'@inheritdoc'
 			]
 		))
 
@@ -262,7 +262,7 @@ class CustomerAttributeSnippet(Snippet):
 			access='public static',
 			body="return [\n\n];",
 			docstring=[
-				'{@inheritdoc}'
+				'@inheritdoc'
 			]
 		))
 

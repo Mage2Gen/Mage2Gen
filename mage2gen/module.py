@@ -163,10 +163,10 @@ class Phpmethod:
 
 	def docstring_code(self):
 		if not self.docstring:
-			return '';
+			return ''
 
 		docstring = '/**'
-		docstring +=  '\n\t *' + '\n\t *'.join(" {}".format(line.strip()) if len(line.strip()) else '' for line in self.docstring)
+		docstring += '\n\t *' + '\n\t *'.join(" {}".format(line.strip()) if len(line.strip()) else '' for line in self.docstring)
 		docstring += '\n\t */\n\t'
 		return docstring
 
@@ -225,7 +225,7 @@ class Xmlnode:
 			return False
 		for key in self.match_attributes:
 			if key in self.attributes and self.attributes[key] != other.attributes[key]:
-					return False
+				return False
 		return True
 
 	def output_tree(self, depth=0):

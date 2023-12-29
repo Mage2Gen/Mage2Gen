@@ -62,7 +62,7 @@ class RouterSnippet(Snippet):
 				"RequestInterface $request"
 			],
 			docstring=[
-				'{@inheritdoc}',
+				'@inheritdoc',
 			]
 		))
 

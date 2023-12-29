@@ -25,8 +25,9 @@ class TestFullModuleCreation(unittest.TestCase):
 		module.generate_module(root_location='./app/code/')
 
 	def add_all_snippet_elements(self, module) -> None:
-		mage2gen.snippets.ApiSnippet(module).add(api_name='SampleAPI', api_method='GET')
-		mage2gen.snippets.BlockSnippet(module).add(classname='SampleBlock', methodname='getCustomNotice', scope='frontend', layout_handle='default', reference_type='referenceContainer', reference_name='content')
+		for (api_method, _) in mage2gen.snippets.ApiSnippet.API_METHOD_CHOISES:
+			mage2gen.snippets.ApiSnippet(module).add(api_name='Example', api_method=api_method)
+		mage2gen.snippets.BlockSnippet(module).add(classname='SampleBlock', methodname='printNotice')
 		mage2gen.snippets.CategoryAttributeSnippet(module).add(attribute_label='Sample Category Attribute')
 		mage2gen.snippets.CacheSnippet(module).add(name='SampleCache', description='Sample cache description')
 		mage2gen.snippets.CompanyAttributeSnippet(module).add(attribute_label='Sample Attribute')
@@ -41,7 +42,7 @@ class TestFullModuleCreation(unittest.TestCase):
 		mage2gen.snippets.EavEntitySnippet(module).add(entity_name='SampleEntity')
 		mage2gen.snippets.EavEntityAttributeSnippet(module).add(entity_model_class='SampleEntity', attribute_label='Sample Eav Attribute')
 		mage2gen.snippets.GraphQlEndpointSnippet(module).add(base_type='Query', identifier='sample')
-		mage2gen.snippets.GraphQlRouteLocatorSnippet(module).add(pagetype='SamplePageType', style_type='sass')
+		mage2gen.snippets.GraphQlRouteLocatorSnippet(module).add(pagetype='SamplePageType', style_type='scss')
 		mage2gen.snippets.HelperSnippet(module).add(helper_name='SampleHelper', add_enabled_function=True)
 		mage2gen.snippets.LanguageSnippet(module).add()
 		mage2gen.snippets.ModelSnippet(module).add(model_name='SampleModel', field_name='sample')

@@ -79,7 +79,7 @@ class ProductTypeSnippet(Snippet):
                 '\Magento\Catalog\Model\Product $product',
             ],
             body="// method intentionally empty",
-            docstring=['{@inheritdoc}']
+            docstring=['@inheritdoc']
 
         ))
         self.add_class(product_type_class)
@@ -168,7 +168,7 @@ class ProductTypeSnippet(Snippet):
         install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
             params=['ModuleDataSetupInterface $setup', 'ModuleContextInterface $context'],
             body="$eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);",
-            docstring=['{@inheritdoc}']))
+            docstring=['@inheritdoc']))
         if upgrade_data:
             install_data.add_method(Phpmethod('{}'.format(setupType.lower()),
                 params=['ModuleDataSetupInterface $setup', 'ModuleContextInterface $context'],

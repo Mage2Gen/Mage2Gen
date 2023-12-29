@@ -55,7 +55,7 @@ class CustomerSectionDataSnippet(Snippet):
             'getSectionData',
             body='return [];',
             docstring=[
-                '{@inheritdoc}',
+                '@inheritdoc',
             ]
         ))
 

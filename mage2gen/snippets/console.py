@@ -63,7 +63,7 @@ class ConsoleSnippet(Snippet):
 			$option = $input->getOption(self::NAME_OPTION);
 			$output->writeln("Hello " . $name);
 			""",
-			docstring=['{@inheritdoc}']
+			docstring=['@inheritdoc']
 			)
 		)
 
@@ -84,7 +84,7 @@ class ConsoleSnippet(Snippet):
 					action_name=action_name.lower(),
 					short_description=short_description
 				),
-				docstring=['{@inheritdoc}']
+				docstring=['@inheritdoc']
 			)
 		)
 

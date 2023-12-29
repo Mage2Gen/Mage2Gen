@@ -157,7 +157,7 @@ class EavEntityAttributeSnippet(Snippet):
 $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
 """ + methodBody,
 			docstring=[
-				'{@inheritdoc}',
+				'@inheritdoc',
 			]
 		))
 
@@ -174,7 +174,7 @@ $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
 			'getAliases',
 			body="return [];",
 			docstring=[
-				'{@inheritdoc}'
+				'@inheritdoc'
 			]
 		))
 
@@ -183,7 +183,7 @@ $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
 			access='public static',
 			body="return [\n\n];",
 			docstring=[
-				'{@inheritdoc}'
+				'@inheritdoc'
 			]
 		))
 

@@ -470,12 +470,12 @@ class EavEntitySnippet(Snippet):
 					${variable}Setup = $this->{variable}SetupFactory->create(['setup' => $this->moduleDataSetup]);
 					${variable}Setup->installEntities();
 					""".format(variable=lowerfirst(entity_name_capitalized.replace('_', '\\')), class_name=entity_name_capitalized.replace('_', '\\')),
-										   docstring=['{@inheritdoc}']))
+										   docstring=['@inheritdoc']))
 		install_patch.add_method(Phpmethod(
 			'getAliases',
 			body="return [];",
 			docstring=[
-				'{@inheritdoc}'
+				'@inheritdoc'
 			]
 		))
 
@@ -484,7 +484,7 @@ class EavEntitySnippet(Snippet):
 			access='public static',
 			body="return [\n\n];",
 			docstring=[
-				'{@inheritdoc}'
+				'@inheritdoc'
 			]
 		))
 
@@ -615,7 +615,7 @@ class EavEntitySnippet(Snippet):
 					}}
 					return ${variable}Model->getDataModel();
 			""".format(data_interface=api_data_class.class_namespace, variable=entity_name_capitalized_after),
-			docstring=['{@inheritdoc}']
+			docstring=['@inheritdoc']
 		))
 		entity_repository_class.add_method(Phpmethod('get', access=Phpmethod.PUBLIC,
 			params=['${}Id'.format(entity_name_capitalized_after)],
@@ -626,7 +626,7 @@ class EavEntitySnippet(Snippet):
 			}}
 			return ${variable}->getDataModel();
 			""".format(variable=entity_name_capitalized_after,entity_name=entity_name),
-			docstring=['{@inheritdoc}']
+			docstring=['@inheritdoc']
 		))
 		entity_repository_class.add_method(Phpmethod('getList', access=Phpmethod.PUBLIC,
 			params=['\Magento\Framework\Api\SearchCriteriaInterface $criteria'],
@@ -651,7 +651,7 @@ class EavEntitySnippet(Snippet):
 					$searchResults->setTotalCount($collection->getSize());
 					return $searchResults;
 			""".format(variable=entity_name_capitalized_after,data_interface=api_data_class.class_namespace,variable_upper=entity_name_capitalized),
-			docstring=['{@inheritdoc}']
+			docstring=['@inheritdoc']
 		))
 		entity_repository_class.add_method(Phpmethod('delete', access=Phpmethod.PUBLIC,
 			params=['\{} ${}'.format(api_data_class.class_namespace,entity_name_capitalized_after)],
@@ -667,13 +667,13 @@ class EavEntitySnippet(Snippet):
 					}}
 					return true;
 			""".format(variable=entity_name_capitalized_after,entity_name=entity_name,entity_id=entity_id_capitalized),
-			docstring=['{@inheritdoc}']
+			docstring=['@inheritdoc']
 		))
 		entity_repository_class.add_method(Phpmethod('deleteById', access=Phpmethod.PUBLIC,
 			params=['${}Id'.format(entity_name_capitalized_after)],
 			body="""return $this->delete($this->get(${variable}Id));
 			""".format(variable=entity_name_capitalized_after,entity_name=entity_name),
-			docstring=['{@inheritdoc}']
+			docstring=['@inheritdoc']
 		))
 		self.add_class(entity_repository_class)
 
