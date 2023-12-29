@@ -9,3 +9,6 @@ dist/
 *.iml
 phpcs.phar
 generated/
+
+# IDE JetBrains
+.idea/

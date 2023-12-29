@@ -20,6 +20,7 @@ from .utils import DefaultFormatter
 
 LICENCE_DIR = os.path.join(os.path.dirname(__file__), 'licenses')
 
+
 class License:
 	identifier = 'proprietary'
 
@@ -68,7 +69,6 @@ class FileLicense(License):
 			short_license_text = tmpl.read().decode('utf-8').strip()
 
 		super().__init__(copyright, module_name, description, license_text, short_license_text)
-
 
 
 class GPLV3(FileLicense):

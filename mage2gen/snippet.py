@@ -17,24 +17,33 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import re
 import inspect
-from collections import namedtuple
-
 from .utils import upperfirst
+
 
 class SnippetParam:
 	"""
 	SnippetParam defines how a param can be rendered and validated by external program.
 
-	depend is a dict where the key is the name of an other param and the value is a regex, example:
+	depend is a dict where the key is the name of another param and the value is a regex, example:
 	{
 		'some_param': r'value|value2'
 	}
 	"""
-	
+
 	def __init__(
-		self, name, description='', required=False, default=None, 
-		choises=None, yes_no=False, regex_validator='', error_message='',
-		depend=None, label=None, multiple_choices=False, repeat=False
+			self,
+			name,
+			description='',
+			required=False,
+			default=None,
+			choises=None,
+			yes_no=False,
+			regex_validator='',
+			error_message='',
+			depend=None,
+			label=None,
+			multiple_choices=False,
+			repeat=False
 	):
 		self.name = name
 		self.description = description
@@ -61,6 +70,7 @@ class SnippetParam:
 		if self.regex_validator and not re_validate.match(value):
 			raise Exception(self.error_message)
 
+
 class MetaClass(type):
 	snippets = []
 	
@@ -69,6 +79,7 @@ class MetaClass(type):
 		if clsname != 'Snippet':
 			MetaClass.snippets.append(newclass)
 		return newclass
+
 
 class Snippet(metaclass=MetaClass):
 	snippet_label = None
@@ -119,7 +130,7 @@ class Snippet(metaclass=MetaClass):
 
 	@property
 	def module_name(self):
-	    return self._module.module_name
+		return self._module.module_name
 
 	def add_composer_require(self, require, version = "*", dev = False):
 		return self._module.add_composer_require(require, version, dev)

@@ -31,9 +31,9 @@ class ApiSnippet(Snippet):
 
 	def add(self, api_name, api_method='GET',extra_params=None):
 
-		methodname = api_name;
+		methodname = api_name
 		url = '/V1/'+ self._module.package.lower() + '-' + self._module.name.lower()+'/'+api_name.lower();
-		resource = 'anonymous';
+		resource = 'anonymous'
 		description = api_method + ' for ' + api_name + ' api'
 
 

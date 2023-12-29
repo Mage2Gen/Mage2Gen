@@ -26,7 +26,7 @@ class GraphQlEndpointSnippet(Snippet):
 
     description = """
 
-	"""
+    """
 
     GRAPHQL_TYPE_CHOISES = [
         ('Query', 'Query'),
@@ -257,10 +257,11 @@ return ${0}Data;""".format(identifier, item_identifier)
             Xmlnode('module', attributes={'name': 'Magento_GraphQl'})
         ]
 
-        data_provider_dependency_splitted = data_provider_dependency.split('\\')
-        if len(data_provider_dependency_splitted) > 1:
-            sequence_modules.append(Xmlnode('module', attributes={
-                'name': '{}_{}'.format(data_provider_dependency_splitted[1], data_provider_dependency_splitted[2])}))
+        if data_provider_dependency:
+            data_provider_dependency_splitted = data_provider_dependency.split('\\')
+            if len(data_provider_dependency_splitted) > 1:
+                sequence_modules.append(Xmlnode('module', attributes={
+                    'name': '{}_{}'.format(data_provider_dependency_splitted[1], data_provider_dependency_splitted[2])}))
 
         etc_module = Xmlnode('config', attributes={
             'xsi:noNamespaceSchemaLocation': "urn:magento:framework:Module/etc/module.xsd"}, nodes=[
@@ -278,7 +279,7 @@ return ${0}Data;""".format(identifier, item_identifier)
 }}"""
             query_params = []
             parameters = []
-            params = object_arguments.split(",")
+            params = object_arguments.split(",") if object_arguments else []
             for param in params:
                 if param:
                     query_params.append(
@@ -296,7 +297,6 @@ return ${0}Data;""".format(identifier, item_identifier)
         {object_fields_string}
     }}
 }}"""
-
 
             path = os.path.join('src', 'queries')
             self.add_static_file(path, StaticFile(
@@ -363,12 +363,10 @@ return ${0}Data;""".format(identifier, item_identifier)
                 regex_validator=r'^[\w\\]+$',
                 error_message='Only alphanumeric, underscore and backslash characters are allowed'
             ),
-			 SnippetParam(
-				name='add_cache_identity',
-				required=True,
+             SnippetParam(
+                name='add_cache_identity',
+                required=True,
                 depend={'base_type': 'Query'},
-				default=False,
-				yes_no=True),
+                default=False,
+                yes_no=True),
         ]
-
-

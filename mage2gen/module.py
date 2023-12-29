@@ -20,16 +20,15 @@ import json
 from collections import defaultdict, OrderedDict
 from xml.etree.ElementTree import Element, SubElement, tostring, ElementTree
 from xml.dom import minidom
-
 from .utils import upperfirst
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates')
+
 
 ###############################################################################
 # PHP Class
 ###############################################################################
 class Phpclass:
-
 	template_file = os.path.join(TEMPLATE_DIR,'class.tmpl')
 
 	def __init__(self, class_namespace, extends=None, implements=None, attributes=None, dependencies=None, abstract=False):
@@ -115,6 +114,7 @@ class Phpclass:
 		with open(path, 'w+', encoding='utf-8') as class_file:
 			class_file.writelines(self.generate())
 
+
 class Phpmethod:
 	PUBLIC = 'public'
 	PROTECTED = 'protected'
@@ -170,7 +170,6 @@ class Phpmethod:
 		docstring += '\n\t */\n\t'
 		return docstring
 
-
 	def add_body_code(self,code):
 		if code not in self.body:
 			self.append(code)
@@ -202,13 +201,12 @@ class Phpmethod:
 			brace_break= ' ' if len(self.params_code()) > 40 else '\n\t'
 		).replace('\t', '    ') # Make generated code PSR2 compliant
 
+
 ###############################################################################
 # XML
 ###############################################################################
 class Xmlnode:
-
 	def __init__(self, node_name, attributes=None, nodes=None, node_text=None, match_attributes=None, xsd=False):
-
 		if nodes :
 			nodes = [x for x in nodes if x]
 
@@ -283,7 +281,6 @@ class Xmlnode:
 # Template files
 ###############################################################################
 class StaticFile:
-
 	def __init__(self, file_name, body=None, template_file='staticfile.tmpl', context_data=None):
 		self.file_name = file_name
 		self.template_file = os.path.join(TEMPLATE_DIR, template_file)
@@ -318,11 +315,11 @@ class StaticFile:
 		with open(file_path, 'w+', encoding='utf-8') as static_file:
 			static_file.writelines(self.generate())
 
+
 ###############################################################################
 # Template files
 ###############################################################################
 class Readme:
-
 	def __init__(self, file_name='README.md', body=None, template_file='readme.tmpl', context_data=None, configuration=None, specifications=None, attributes=None):
 		self.file_name = file_name
 		self.template_file = os.path.join(TEMPLATE_DIR, template_file)
@@ -422,7 +419,6 @@ class GraphQlSchema:
 
 
 class GraphQlObjectType:
-
 	def __init__(self, type, **kwargs):
 
 		self.type = type
@@ -485,7 +481,6 @@ class GraphQlObjectType:
 
 
 class GraphQlObjectItem:
-
 	def __init__(self, item_identifier, **kwargs):
 
 		self.item_identifier = item_identifier
@@ -552,11 +547,11 @@ class GraphQlObjectItem:
 			item_arguments=self.item_arguments
 		).replace('\t', '    ')  # Make generated code PSR2 compliant
 
+
 ###############################################################################
 # Module
 ###############################################################################
 class Module:
-
 	def __init__(self, package, name, description='', license=None):
 		self.package = upperfirst(package)
 		self.name = upperfirst(name)
@@ -611,7 +606,7 @@ class Module:
 
 	@property
 	def module_name(self):
-	    return '{}_{}'.format(self.package, self.name)
+		return '{}_{}'.format(self.package, self.name)
 
 	@classmethod
 	def load_module(cls, data):
