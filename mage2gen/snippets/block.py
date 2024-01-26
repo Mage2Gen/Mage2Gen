@@ -157,8 +157,8 @@ class BlockSnippet(Snippet):
  */
 ?>
 <div>
-	<?= $block->{function_name}() ?>
-	<?= $escaper->escapeHtml(__('Hello from: {module_name}::{block_template}')) ?>
+    <?= $block->{function_name}() ?>
+    <?= $escaper->escapeHtml(__('Hello from: {module_name}::{block_template}')) ?>
 </div>""".format(
 					classname=block.class_namespace,
 					function_name=function_name,

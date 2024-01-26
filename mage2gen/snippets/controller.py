@@ -179,21 +179,31 @@ return $this->http->setBody(
 			block_class.append(section)
 			block_class.append(action)
 
-			block_extend = '\Magento\Backend\Block\Template' if adminhtml else '\Magento\Framework\View\Element\Template'
-			block = Phpclass('\\'.join(block_class), block_extend)
+			block_extend = 'Magento\Backend\Block\Template' if adminhtml else 'Magento\Framework\View\Element\Template'
+			block_context_class = 'Magento\Backend\Block\Template\Context' if adminhtml else 'Magento\Framework\View\Element\Template\Context'
 
-			block_context_class = '\Magento\Backend\Block\Template\Context' if adminhtml else '\Magento\Framework\View\Element\Template\Context'
+			block = Phpclass(
+				'\\'.join(block_class),
+				'Template',
+				dependencies=[
+					block_extend,
+					block_context_class
+				]
+			)
+
 			block.add_method(Phpmethod(
 				'__construct',
 				params=[
-					block_context_class + ' $context',
+					'Context $context',
 					'array $data = []',
 				],
-				body="""parent::__construct($context, $data);""",
+				body="""// __construct() added to easily add extra classes as dependency injection.
+				// Remove if you are not using extra classes.
+				parent::__construct($context, $data);""",
 				docstring=[
 					'Constructor',
 					'',
-					'@param ' + block_context_class + '  $context',
+					'@param Context $context',
 					'@param array $data',
 				]
 			))
@@ -217,7 +227,22 @@ return $this->http->setBody(
 
 			# add template file
 			path = os.path.join('view', 'adminhtml' if adminhtml else 'frontend', 'templates')
-			self.add_static_file(path, StaticFile("{}/{}.phtml".format(section, action),body="Hello {}/{}.phtml".format(section, action)))
+			self.add_static_file(path, StaticFile(
+				"{}/{}.phtml".format(section, action),
+				body="""<?php
+/**
+ * @var $block \{classname}
+ * @var $escaper \Magento\Framework\Escaper
+ */
+?>
+<?= $escaper->escapeHtml(__('This template file is {modulename}::{section}/{action}.phtml')) ?>
+""".format(
+					classname=block.class_namespace,
+					modulename=self.module_name,
+					section=section,
+					action=action
+				)
+			))
 
 			if adminhtml:
 				# create menu.xml
@@ -269,20 +294,30 @@ return $this->http->setBody(
 			)
 		)
 
-
 	@classmethod
 	def params(cls):
 		return [
-			SnippetParam(name='frontname', required=False, description='On empty uses module name in lower case',
-				regex_validator= r'^[a-z]{1}\w+$',
+			SnippetParam(
+				name='frontname',
+				required=False,
+				description='On empty uses module name in lower case',
+				regex_validator=r'^[a-z]{1}\w+$',
 				error_message='Only lowercase alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.',
-				repeat=True),
-			SnippetParam(name='section', required=True, default='index',
-				regex_validator= r'^[a-z]{1}\w+$',
+				repeat=True
+			),
+			SnippetParam(
+				name='section',
+				required=True,
+				default='index',
+				regex_validator=r'^[a-z]{1}\w+$',
 				error_message='Only lowercase alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.',
-				repeat=True),
-			SnippetParam(name='action', required=True, default='index',
-				regex_validator= r'^[a-z]{1}\w+$',
+				repeat=True
+			),
+			SnippetParam(
+				name='action',
+				required=True,
+				default='index',
+				regex_validator=r'^[a-z]{1}\w+$',
 				error_message='Only lowercase alphanumeric and underscore characters are allowed, and need to start with a alphabetic character.'),
 			SnippetParam(name='adminhtml', yes_no=True),
 			SnippetParam(name='ajax', yes_no=True),
