@@ -72,19 +72,16 @@ class ControllerSnippet(Snippet):
 		controller_class.append(section)
 		controller_class.append(action)
 
-		controller = Phpclass('\\'.join(controller_class), implements=[action_interface], attributes=[
-			"/**\n\t * @var PageFactory\n\t */\n\tprotected $resultPageFactory;"
-		], dependencies=[
-			'Magento\Framework\App\Action\{}'.format(action_interface),
-			'Magento\Framework\View\Result\PageFactory',
-			'Magento\Framework\Controller\ResultInterface',
-		])
+		controller = Phpclass(
+			'\\'.join(controller_class),
+			implements=[action_interface],
+			dependencies=[
+				'Magento\Framework\App\Action\{}'.format(action_interface),
+				'Magento\Framework\View\Result\PageFactory',
+				'Magento\Framework\Controller\ResultInterface',
+			]
+		)
 		if ajax:
-			controller.attributes.extend([
-				"/**\n\t * @var Json\n\t */\n\tprotected $serializer;",
-				"/**\n\t * @var LoggerInterface\n\t */\n\tprotected $logger;",
-				"/**\n\t * @var Http\n\t */\n\tprotected $http;",
-			])
 			controller.dependencies.extend([
 				'Magento\Framework\Serialize\Serializer\Json',
 				'Psr\Log\LoggerInterface',
@@ -94,21 +91,16 @@ class ControllerSnippet(Snippet):
 			controller.add_method(Phpmethod(
 				'__construct',
 				params=[
-					'PageFactory $resultPageFactory',
-					'Json $json',
-					'LoggerInterface $logger',
-					'Http $http',
+					'protected PageFactory $resultPageFactory',
+					'protected Json $serializer',
+					'protected LoggerInterface $logger',
+					'protected Http $http',
 				],
-				body="""$this->resultPageFactory = $resultPageFactory;
-					$this->serializer = $json;
-					$this->logger = $logger;
-					$this->http = $http;
-				""",
 				docstring=[
 					'Constructor',
 					'',
 					'@param PageFactory $resultPageFactory',
-					'@param Json $json',
+					'@param Json $serializer',
 					'@param LoggerInterface $logger',
 					'@param Http $http',
 				]
@@ -126,9 +118,8 @@ class ControllerSnippet(Snippet):
 			controller.add_method(Phpmethod(
 				'__construct',
 				params=[
-					'PageFactory $resultPageFactory',
+					'protected PageFactory $resultPageFactory',
 				],
-				body="""$this->resultPageFactory = $resultPageFactory;""",
 				docstring=[
 					'Constructor',
 					'',
@@ -136,7 +127,6 @@ class ControllerSnippet(Snippet):
 				]
 			))
 			execute_body = 'return $this->resultPageFactory->create();'
-
 
 		controller.add_method(Phpmethod(
 			'execute',
@@ -162,7 +152,7 @@ return $this->http->setBody(
 				docstring=[
 					'Create json response',
 					'',
-					'@return ResultInterface',
+					'@return \Magento\Framework\Controller\ResultInterface|\Magento\Framework\App\ResponseInterface',
 				]
 				)
 			)
