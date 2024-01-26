@@ -29,7 +29,7 @@ class ApiSnippet(Snippet):
 		('DELETE', 'DELETE'),
 	]
 
-	def add(self, api_name, api_method='GET',extra_params=None):
+	def add(self, api_name, api_method='GET', extra_params=None):
 		methodname = api_name
 		url = '/V1/' + self._module.package.lower() + '-' + self._module.name.lower() + '/' + api_name.lower()
 		resource = 'anonymous'

@@ -225,7 +225,7 @@ class ModelSnippet(Snippet):
 		self.add_class(resource_model_class)
 
 		# Create api data interface class
-		api_data_class =  InterfaceClass(
+		api_data_class = InterfaceClass(
 			'Api\\Data\\' + model_name_capitalized.replace('_', '\\') + 'Interface',
 			attributes=[
 				"const {} = '{}';".format(field_name.upper(),field_name),
@@ -236,7 +236,8 @@ class ModelSnippet(Snippet):
 		api_data_class.add_method(InterfaceMethod(
 			'get' + model_id_capitalized,
 			docstring=[
-				'Get {}'.format(model_id),
+				'Get {}'.format(model_id_capitalized),
+				"\n",
 				'@return {}'.format('string|null')
 			]
 		))
@@ -245,7 +246,8 @@ class ModelSnippet(Snippet):
 			'set' + model_id_capitalized,
 			params=['${}'.format(model_id_capitalized_after)],
 			docstring=[
-				'Set {}'.format(model_id),
+				'Set {}'.format(model_id_capitalized),
+				"\n",
 				'@param string ${}'.format(model_id_capitalized_after),
 				'@return \\{}\\{}\\{}'.format(
 					self.module_name.replace('_', '\\'),
@@ -258,7 +260,8 @@ class ModelSnippet(Snippet):
 		api_data_class.add_method(InterfaceMethod(
 			'get' + field_name_capitalized,
 			docstring=[
-				'Get {}'.format(field_name),
+				'Get {}'.format(field_name_capitalized),
+				"\n",
 				'@return {}'.format('string|null')
 			]
 		))
@@ -267,7 +270,8 @@ class ModelSnippet(Snippet):
 			'set' + field_name_capitalized,
 			params=['${}'.format(lowerfirst(field_name_capitalized))],
 			docstring=[
-				'Set {}'.format(field_name),
+				'Set {}'.format(field_name_capitalized),
+				"\n",
 				'@param string ${}'.format(lowerfirst(field_name_capitalized)),
 				'@return \\{}\\{}\\{}'.format(
 					self.module_name.replace('_', '\\'),
@@ -280,18 +284,100 @@ class ModelSnippet(Snippet):
 		self.add_class(api_data_class)
 
 		# Create api data interface class
-		api_data_search_class =  InterfaceClass('Api\\Data\\' + model_name_capitalized.replace('_', '\\') + 'SearchResultsInterface',extends='\Magento\Framework\Api\SearchResultsInterface')
-		api_data_search_class.add_method(InterfaceMethod('getItems',docstring=['Get {} list.'.format(model_name),'@return \{}[]'.format(api_data_class.class_namespace)]))
-		api_data_search_class.add_method(InterfaceMethod('setItems',params=['array $items'],docstring=['Set {} list.'.format(field_name),'@param \{}[] $items'.format(api_data_class.class_namespace),'@return $this']))
+		api_data_search_class = InterfaceClass(
+			'Api\\Data\\' + model_name_capitalized.replace('_', '\\') + 'SearchResultsInterface',
+			extends='\Magento\Framework\Api\SearchResultsInterface'
+		)
+		api_data_search_class.add_method(InterfaceMethod(
+			'getItems',
+			docstring=[
+				'Get {} list.'.format(model_name),
+				"\n",
+				'@return \{}[]'.format(api_data_class.class_namespace)
+			]
+		))
+		api_data_search_class.add_method(InterfaceMethod(
+			'setItems',
+			params=['array $items'],
+			docstring=[
+				'Set {} list.'.format(field_name),
+				"\n",
+				'@param \{}[] $items'.format(api_data_class.class_namespace),
+				'@return $this'
+			]
+		))
 		self.add_class(api_data_search_class)
 
 		# Create api data interface class
-		api_repository_class =  InterfaceClass('Api\\' + model_name_capitalized.replace('_', '\\') + 'RepositoryInterface',dependencies=['Magento\Framework\Api\SearchCriteriaInterface'])
-		api_repository_class.add_method(InterfaceMethod('save',params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],docstring=['Save {}'.format(model_name),'@param \{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after),'@return \{}'.format(api_data_class.class_namespace),'@throws \Magento\Framework\Exception\LocalizedException']))
-		api_repository_class.add_method(InterfaceMethod('get',params=['${}'.format(model_id_capitalized_after)],docstring=['Retrieve {}'.format(model_name),'@param string ${}'.format(model_id_capitalized_after),'@return \{}'.format(api_data_class.class_namespace),'@throws \Magento\Framework\Exception\LocalizedException']))
-		api_repository_class.add_method(InterfaceMethod('getList',params= ['\Magento\Framework\Api\SearchCriteriaInterface $searchCriteria'], docstring=['Retrieve {} matching the specified criteria.'.format(model_name),'@param \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria','@return \{}'.format(api_data_search_class.class_namespace),'@throws \Magento\Framework\Exception\LocalizedException']))
-		api_repository_class.add_method(InterfaceMethod('delete',params=['\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)],docstring=['Delete {}'.format(model_name),'@param \{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after),'@return bool true on success','@throws \Magento\Framework\Exception\LocalizedException']))
-		api_repository_class.add_method(InterfaceMethod('deleteById',params=['${}'.format(model_id_capitalized_after)],docstring=['Delete {} by ID'.format(model_name),'@param string ${}'.format(model_id_capitalized_after),'@return bool true on success','@throws \\Magento\\Framework\\Exception\\NoSuchEntityException','@throws \\Magento\\Framework\\Exception\\LocalizedException']))
+		api_repository_class =  InterfaceClass(
+			'Api\\' + model_name_capitalized.replace('_', '\\') + 'RepositoryInterface'
+		)
+		api_repository_class.add_method(InterfaceMethod(
+			'save',
+			params=[
+				'\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)
+			],
+			docstring=[
+				'Save {}'.format(model_name),
+				"\n",
+				'@param \{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after),
+				'@return \{}'.format(api_data_class.class_namespace),
+				'@throws \Magento\Framework\Exception\LocalizedException'
+			]
+		))
+		api_repository_class.add_method(InterfaceMethod(
+			'get',
+			params=[
+				'${}'.format(model_id_capitalized_after)
+			],
+			docstring=[
+				'Retrieve {}'.format(model_name),
+				"\n",
+				'@param string ${}'.format(model_id_capitalized_after),
+				'@return \{}'.format(api_data_class.class_namespace),
+				'@throws \Magento\Framework\Exception\LocalizedException'
+			]
+		))
+		api_repository_class.add_method(InterfaceMethod(
+			'getList',
+			params= [
+				'\Magento\Framework\Api\SearchCriteriaInterface $searchCriteria'
+			],
+			docstring=[
+				'Retrieve {} matching the specified criteria.'.format(model_name),
+				"\n",
+				'@param \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria',
+				'@return \{}'.format(api_data_search_class.class_namespace),
+				'@throws \Magento\Framework\Exception\LocalizedException'
+			]
+		))
+		api_repository_class.add_method(InterfaceMethod(
+			'delete',
+			params=[
+				'\{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after)
+			],
+			docstring=[
+				'Delete {}'.format(model_name),
+				"\n",
+				'@param \{} ${}'.format(api_data_class.class_namespace,model_name_capitalized_after),
+				'@return bool true on success',
+				'@throws \Magento\Framework\Exception\LocalizedException'
+			]
+		))
+		api_repository_class.add_method(InterfaceMethod(
+			'deleteById',
+			params=[
+				'${}'.format(model_id_capitalized_after)
+			],
+			docstring=[
+				'Delete {} by ID'.format(model_name),
+				"\n",
+				'@param string ${}'.format(model_id_capitalized_after),
+				'@return bool true on success',
+				'@throws \\Magento\\Framework\\Exception\\NoSuchEntityException',
+				'@throws \\Magento\\Framework\\Exception\\LocalizedException'
+			]
+		))
 		self.add_class(api_repository_class)
 
 		# Create model class
