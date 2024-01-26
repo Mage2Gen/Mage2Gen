@@ -16,10 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 import os
-from .. import Module, Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, Readme
+from .. import Phpclass, Phpmethod, Xmlnode, StaticFile, Snippet, SnippetParam, Readme
+
 
 class BlockSnippet(Snippet):
-
 	description = """Creates just a Block
 
 	Create a Simple Block for the Frontend or Adminhtml. 
@@ -44,7 +44,7 @@ class BlockSnippet(Snippet):
 	SCOPE_FRONTEND = 'frontend'
 	SCOPE_ADMINHTML = 'backend'
 
-	SCOPE_CHOISES = [
+	SCOPE_CHOICES = [
 		(SCOPE_FRONTEND, 'Frontend'),
 		(SCOPE_ADMINHTML, 'Backend'),
 	]
@@ -52,7 +52,7 @@ class BlockSnippet(Snippet):
 	REFERENCE_CONTAINER = 'referenceContainer'
 	REFERENCE_BLOCK = 'referenceBlock'
 
-	REFERENCE_CHOISES = [
+	REFERENCE_CHOICES = [
 		(REFERENCE_CONTAINER, 'Container'),
 		(REFERENCE_BLOCK, 'Block'),
 	]
@@ -60,27 +60,43 @@ class BlockSnippet(Snippet):
 	def add(self, classname, methodname, scope=SCOPE_FRONTEND, layout_handle=None, reference_type=REFERENCE_CONTAINER, reference_name='content', extra_params=None):
 		# strip the classname of the module when filled in
 		classname = classname.replace('{}\\Block\\'.format(self.module_name.replace('_', '\\')), '')
+
 		# Add class
-		block = Phpclass('Block\\{}'.format(classname),'\Magento\Framework\View\Element\Template')
-		scope_name = 'frontend'
-		context_class = '\Magento\Framework\View\Element\Template\Context'
 		if scope == self.SCOPE_ADMINHTML:
-			block = Phpclass('Block\\Adminhtml\\{}'.format(classname), '\Magento\Backend\Block\Template')
 			scope_name = 'adminhtml'
 			context_class = '\Magento\Backend\Block\Template\Context'
+			block = Phpclass(
+				'Block\\Adminhtml\\{}'.format(classname), '\Magento\Backend\Block\Template',
+				dependencies=[
+					'\Magento\Framework\View\Element\Template',
+					context_class
+				]
+			)
+		else:
+			scope_name = 'frontend'
+			context_class = '\Magento\Framework\View\Element\Template\Context'
+			block = Phpclass(
+				'Block\\{}'.format(classname), 'Template',
+				dependencies=[
+					'\Magento\Framework\View\Element\Template',
+					context_class
+				]
+			)
 
 		block.add_method(Phpmethod(
-				'__construct',
-				params=[
-					context_class + ' $context',
-					'array $data = []',
-				],
-				body="""parent::__construct($context, $data);""",
-				docstring=[
-					'Constructor',
-					'',
-					'@param ' + context_class + '  $context',
-					'@param array $data',
+			'__construct',
+			params=[
+				'Context $context',
+				'array $data = []',
+			],
+			body="""// __construct() added to easily add extra classes as dependency injection.
+			// Remove if you are not using extra classes.
+			parent::__construct($context, $data);""",
+			docstring=[
+				'Constructor',
+				'',
+				'@param Context $context',
+				'@param array $data',
 			]
 		))
 
@@ -88,11 +104,20 @@ class BlockSnippet(Snippet):
 		block.add_method(Phpmethod(
 			function_name,
 			body="""//Your block code
-			return __('Hello Developer! This how to get the storename: %1 and this is the way to build a url: %2', $this->_storeManager->getStore()->getName(), $this->getUrl('contacts'));""",
+			return __(
+			    'Hello Developer! This how to get the storename: %1 and this is the way to build a url: %2',
+			    $this->_storeManager->getStore()->getName(),
+			    $this->getUrl('contacts')
+			);""",
 			params=[],
-			docstring=['@return string']
+			docstring=[
+				'Print example notice',
+				'\n',
+				'@return \Magento\Framework\Phrase',
+				'@throws \\Magento\\Framework\\Exception\\NoSuchEntityException'
+			],
+			return_type='\Magento\Framework\Phrase',
 		))
-
 
 		# Add plug first will add the module namespace to PhpClass
 		self.add_class(block)
@@ -128,11 +153,12 @@ class BlockSnippet(Snippet):
 				body="""<?php
 /**
  * @var $block \{classname}
+ * @var $escaper \Magento\Framework\Escaper
  */
 ?>
 <div>
 	<?= $block->{function_name}() ?>
-	<?= __('Hello {module_name}::{block_template}') ?>
+	<?= $escaper->escapeHtml(__('Hello from: {module_name}::{block_template}')) ?>
 </div>""".format(
 					classname=block.class_namespace,
 					function_name=function_name,
@@ -152,27 +178,36 @@ class BlockSnippet(Snippet):
 	@classmethod
 	def params(cls):
 		return [
-			SnippetParam(name='classname', required=True,
+			SnippetParam(
+				name='classname', required=True,
 				description='Example: Html\\Notices',
 				regex_validator=r'^[\w\\]+$',
-				error_message='Only alphanumeric, underscore and backslash characters are allowed'),
-			SnippetParam(name='methodname', required=True,
+				error_message='Only alphanumeric, underscore and backslash characters are allowed'
+			),
+			SnippetParam(
+				name='methodname', required=True,
 				description='Example: displayDemoNotice',
-				regex_validator= r'^\w+$',
-				error_message='Only alphanumeric and underscore characters are allowed'),
-			SnippetParam(name='scope', choises=cls.SCOPE_CHOISES, default=cls.SCOPE_FRONTEND),
-			SnippetParam(name='layout_handle',
+				regex_validator=r'^\w+$',
+				error_message='Only alphanumeric and underscore characters are allowed'
+			),
+			SnippetParam(name='scope', choises=cls.SCOPE_CHOICES, default=cls.SCOPE_FRONTEND),
+			SnippetParam(
+				name='layout_handle',
 				description='Example: cms_index_index',
-				regex_validator= r'^\w+$',
-				error_message='Only alphanumeric and underscore characters are allowed'),
-			SnippetParam(name='reference_type',
-						 choises=cls.REFERENCE_CHOISES,
-						 depend={'layout_handle': r'^\w+$'},
-						 default=cls.REFERENCE_CONTAINER),
-			SnippetParam(name='reference_name',
-						 description='Example: content',
-						 depend={'layout_handle': r'^\w+$'},
-						 regex_validator=r'^[\w.]+$',
-						 error_message='Only alphanumeric, dots and underscore characters are allowed'),
+				regex_validator=r'^\w+$',
+				error_message='Only alphanumeric and underscore characters are allowed'
+			),
+			SnippetParam(
+				name='reference_type',
+				choises=cls.REFERENCE_CHOICES,
+				depend={'layout_handle': r'^\w+$'},
+				default=cls.REFERENCE_CONTAINER
+			),
+			SnippetParam(
+				name='reference_name',
+				description='Example: content',
+				depend={'layout_handle': r'^\w+$'},
+				regex_validator=r'^[\w.]+$',
+				error_message='Only alphanumeric, dots and underscore characters are allowed'
+			),
 		]
-		

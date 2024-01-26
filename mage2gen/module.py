@@ -67,7 +67,7 @@ class Phpclass:
 		if method in self.methods:
 			method_index = self.methods.index(method)
 			self.methods[method_index] = self.methods[method_index] + method
-		else :
+		else:
 			self.methods.append(method)
 
 	def context_data(self):
@@ -128,7 +128,8 @@ class Phpmethod:
 		self.name = name
 		self.access = kwargs.get('access', self.PUBLIC)
 		self.params = kwargs.get('params', [])
-		self.docstring = kwargs.get('docstring',[])
+		self.return_type = kwargs.get('return_type', '')
+		self.docstring = kwargs.get('docstring', [])
 		self.body = [kwargs.get('body', '')]
 		self.end_body = [kwargs.get('end_body', '')]
 		self.body_start = kwargs.get('body_start', '')
@@ -160,6 +161,11 @@ class Phpmethod:
 			return '\n\t\t' + ',\n\t\t'.join(self.params) + '\n\t'
 		else:
 			return ', '.join(self.params)
+
+	def return_type_code(self):
+		if self.return_type is not '':
+			return ': ' + self.return_type
+		return ''
 
 	def docstring_code(self):
 		if not self.docstring:
@@ -197,6 +203,7 @@ class Phpmethod:
 			access=self.access,
 			docstring=self.docstring_code(),
 			params=self.params_code(),
+			return_type=self.return_type_code(),
 			body=self.body_code(),
 			brace_break= ' ' if len(self.params_code()) > 40 else '\n\t'
 		).replace('\t', '    ') # Make generated code PSR2 compliant
