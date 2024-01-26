@@ -382,7 +382,8 @@ class ModelSnippet(Snippet):
 		model_class = Phpclass('Model\\' + model_name_capitalized.replace('_', '\\'),
 			dependencies=[
 				api_data_class.class_namespace,
-				'Magento\\Framework\\Model\\AbstractModel'
+				'Magento\\Framework\\Model\\AbstractModel',
+				resource_model_class.class_namespace + ' as Resource' + model_name_capitalized,
 			],
 			extends='AbstractModel',
 			implements=[
@@ -391,7 +392,7 @@ class ModelSnippet(Snippet):
 
 		model_class.add_method(Phpmethod('_construct',
 			docstring=['@inheritDoc'],
-			body='$this->_init(\\' + resource_model_class.class_namespace + '::class);',
+			body='$this->_init(Resource' + model_name_capitalized + '::class);',
 		))
 
 		model_class.add_method(Phpmethod('get' + model_id_capitalized,
@@ -425,7 +426,11 @@ class ModelSnippet(Snippet):
 		# Create collection
 		collection_model_class = Phpclass(
 			'Model\\ResourceModel\\' + model_name_capitalized.replace('_', '\\') + '\\Collection',
-			dependencies=['Magento\\Framework\\Model\\ResourceModel\\Db\\Collection\\AbstractCollection'],
+			dependencies=[
+				'Magento\\Framework\\Model\\ResourceModel\\Db\\Collection\\AbstractCollection',
+				model_class.class_namespace + ' as ' + model_name_capitalized,
+				resource_model_class.class_namespace + ' as Resource' + model_name_capitalized
+			],
 			extends='AbstractCollection',
 			attributes=[
 				"/**\n\t * @inheritDoc\n\t */\n\tprotected $_idFieldName = '{}';".format(model_id),
@@ -434,9 +439,9 @@ class ModelSnippet(Snippet):
 		collection_model_class.add_method(Phpmethod(
 			'_construct',
 			access=Phpmethod.PROTECTED,
-			body="$this->_init(\n    \{}::class,\n    \{}::class\n);".format(
-				model_class.class_namespace,
-				resource_model_class.class_namespace
+			body="$this->_init(\n    {}::class,\n    {}::class\n);".format(
+				model_name_capitalized,
+				'Resource' + model_name_capitalized
 			),
 			docstring=['@inheritDoc']
 		))
@@ -457,29 +462,16 @@ class ModelSnippet(Snippet):
 				resource_model_class.class_namespace + ' as Resource' + model_name_capitalized,
 				collection_model_class.class_namespace + 'Factory as '+ model_name_capitalized +'CollectionFactory'
 			],
-			attributes=[
-				'/**\n\t * @var Resource{}\n\t */\n\tprotected $resource;\n'.format(model_name_capitalized),
-				'/**\n\t * @var {}Factory\n\t */\n\tprotected ${}Factory;\n'.format(api_data_class.class_name, model_name_capitalized_after),
-				'/**\n\t * @var {}CollectionFactory\n\t */\n\tprotected ${}CollectionFactory;\n'.format(model_name_capitalized, model_name_capitalized_after),
-				'/**\n\t * @var {}\n\t */\n\tprotected $searchResultsFactory;\n'.format(model_name_capitalized),
-				'/**\n\t * @var CollectionProcessorInterface\n\t */\n\tprotected $collectionProcessor;\n',
-			],
 			implements=[model_name_capitalized.replace('_', '\\') + 'RepositoryInterface']
 		)
 		model_repository_class.add_method(Phpmethod('__construct', access=Phpmethod.PUBLIC,
 			params=[
-				"Resource{} $resource".format(model_name_capitalized),
-				"{}Factory ${}Factory".format(api_data_class.class_name, model_name_capitalized_after),
-				"{}CollectionFactory ${}CollectionFactory".format(model_name_capitalized, model_name_capitalized_after),
-				"{}SearchResultsInterfaceFactory $searchResultsFactory".format(model_name_capitalized),
-				"CollectionProcessorInterface $collectionProcessor",
+				"protected Resource{} $resource".format(model_name_capitalized),
+				"protected {}Factory ${}Factory".format(api_data_class.class_name, model_name_capitalized_after),
+				"protected {}CollectionFactory ${}CollectionFactory".format(model_name_capitalized, model_name_capitalized_after),
+				"protected {}SearchResultsInterfaceFactory $searchResultsFactory".format(model_name_capitalized),
+				"protected CollectionProcessorInterface $collectionProcessor",
 			],
-			body="""$this->resource = $resource;
-			$this->{variable}Factory = ${variable}Factory;
-			$this->{variable}CollectionFactory = ${variable}CollectionFactory;
-			$this->searchResultsFactory = $searchResultsFactory;
-			$this->collectionProcessor = $collectionProcessor;
-			""".format(variable=model_name_capitalized_after,variable_upper=model_name_capitalized),
 			docstring=[
 				"@param Resource{} $resource".format(model_name_capitalized),
 				"@param {}Factory ${}Factory".format(api_data_class.class_name, model_name_capitalized_after),
