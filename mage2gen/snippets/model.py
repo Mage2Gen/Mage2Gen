@@ -249,9 +249,8 @@ class ModelSnippet(Snippet):
 				'Set {}'.format(model_id_capitalized),
 				"\n",
 				'@param string ${}'.format(model_id_capitalized_after),
-				'@return \\{}\\{}\\{}'.format(
+				'@return \\{}\\{}'.format(
 					self.module_name.replace('_', '\\'),
-					model_name_capitalized,
 					api_data_class.class_namespace
 				)
 			]
@@ -273,9 +272,8 @@ class ModelSnippet(Snippet):
 				'Set {}'.format(field_name_capitalized),
 				"\n",
 				'@param string ${}'.format(lowerfirst(field_name_capitalized)),
-				'@return \\{}\\{}\\{}'.format(
+				'@return \\{}\\{}'.format(
 					self.module_name.replace('_', '\\'),
-					model_name_capitalized,
 					api_data_class.class_namespace
 				)
 			]
