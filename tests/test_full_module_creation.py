@@ -9,20 +9,20 @@ class TestFullModuleCreation(unittest.TestCase):
 		module = mage2gen.Module(
 			package='ExampleModule',
 			name='ModuleName',
-			description='Test module with all of the features Mage2Gen has to offer'
+			description='Test module with all features Mage2Gen has to offer'
 		)
 
 		self.add_all_snippet_elements(module)
 
 		# @TODO: Test all output against required output
 
-		if os.path.isdir('./app/code/ExampleModule'):
-			shutil.rmtree('./app/code/ExampleModule')
+		if os.path.isdir('./tmp/app/code/ExampleModule'):
+			shutil.rmtree('./tmp/app/code/ExampleModule')
 
-		if not os.path.isdir('./app/code'):
-			os.makedirs('./app/code')
+		if not os.path.isdir('./tmp/app/code'):
+			os.makedirs('./tmp/app/code')
 
-		module.generate_module(root_location='./app/code/')
+		module.generate_module(root_location='./tmp/app/code/')
 
 	def add_all_snippet_elements(self, module) -> None:
 		for (api_method, _) in mage2gen.snippets.ApiSnippet.API_METHOD_CHOISES:
@@ -62,5 +62,5 @@ class TestFullModuleCreation(unittest.TestCase):
 		mage2gen.snippets.UnitTestSnippet(module).add(test_suite='SampleTestSuite', test_name='sampleTest')
 
 	def tearDown(self):
-		if os.path.isdir('./app'):
-			shutil.rmtree('./app')
+		if os.path.isdir('./tmp'):
+			shutil.rmtree('./tmp')
