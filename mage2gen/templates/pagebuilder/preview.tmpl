@@ -4,7 +4,7 @@
      css="data.main.css"
      event="{{ mouseover: onMouseOver, mouseout: onMouseOut }}, mouseoverBubble: false"
 >
-    <render args="getOptions().template" />
+    <render args="getOptions().template"></render>
     <div class="{content_type_code}-content">
         <div attr="data.{field_name}.attributes"
              data-bind="liveEdit: {{ field: '{field_name}', placeholder: $t('{field_name}') }}">
