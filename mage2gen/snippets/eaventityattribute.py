@@ -72,7 +72,7 @@ class EavEntityAttributeSnippet(Snippet):
 		user_defined = 'true'
 		options = options.split(',') if options else []
 		options_php_array = '"'+'","'.join(x.strip() for x in options) + '"'
-		options_php_array_string = "array('values' => array("+options_php_array+"))"
+		options_php_array_string = "['values' => ["+options_php_array+"]]"
 
 		attribute_code = extra_params.get('attribute_code', None)
 		if not attribute_code:
